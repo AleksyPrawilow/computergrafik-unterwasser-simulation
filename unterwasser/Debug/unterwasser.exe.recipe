@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>J:\grk-projekt\grk-underwater-scene\Debug\unterwasser.exe</FullPath>
+      <FullPath>J:\grk-projekt\computergrafik-unterwasser-simulation\Debug\unterwasser.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />
