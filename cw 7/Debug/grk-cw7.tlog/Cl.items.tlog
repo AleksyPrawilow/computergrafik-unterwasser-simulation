@@ -1,0 +1,16 @@
+j:\Desktop\Grafika\grk\dependencies\imgui\backends\imgui_impl_glfw.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\imgui_impl_glfw.obj
+j:\Desktop\Grafika\grk\dependencies\imgui\backends\imgui_impl_opengl3.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\imgui_impl_opengl3.obj
+j:\Desktop\Grafika\grk\dependencies\imgui\imgui.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\imgui.obj
+j:\Desktop\Grafika\grk\dependencies\imgui\imgui_draw.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\imgui_draw.obj
+j:\Desktop\Grafika\grk\dependencies\imgui\imgui_tables.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\imgui_tables.obj
+j:\Desktop\Grafika\grk\dependencies\imgui\imgui_widgets.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\imgui_widgets.obj
+j:\Desktop\Grafika\grk\cw 7\src\Box.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\Box.obj
+j:\Desktop\Grafika\grk\cw 7\src\Camera.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\Camera.obj
+j:\Desktop\Grafika\grk\cw 7\src\main.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\main.obj
+j:\Desktop\Grafika\grk\cw 7\src\Render_Utils.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\Render_Utils.obj
+j:\Desktop\Grafika\grk\cw 7\src\Shader_Loader.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\Shader_Loader.obj
+j:\Desktop\Grafika\grk\cw 7\src\SOIL\image_DXT.c;j:\Desktop\Grafika\grk\cw 7\Debug\image_DXT.obj
+j:\Desktop\Grafika\grk\cw 7\src\SOIL\image_helper.c;j:\Desktop\Grafika\grk\cw 7\Debug\image_helper.obj
+j:\Desktop\Grafika\grk\cw 7\src\SOIL\SOIL.c;j:\Desktop\Grafika\grk\cw 7\Debug\SOIL.obj
+j:\Desktop\Grafika\grk\cw 7\src\SOIL\stb_image_aug.c;j:\Desktop\Grafika\grk\cw 7\Debug\stb_image_aug.obj
+j:\Desktop\Grafika\grk\cw 7\src\Texture.cpp;j:\Desktop\Grafika\grk\cw 7\Debug\Texture.obj
