@@ -62,6 +62,8 @@ target_include_directories(${PROJECT_NAME} PRIVATE
         external/glm
         external/imgui
         external/imgui/backends
+        external/glew-2.0.0/include/GL
+        external/freeglut/include/GL
 )
 
 if(WIN32)
@@ -69,6 +71,7 @@ if(WIN32)
 
     set(GLFW_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/glfw-3.3.8.bin.WIN64")
     set(GLEW_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/glew-2.0.0")
+    set(FREEGLUT_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/freeglut")
     set(ASSIMP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/assimp")
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE GLEW_STATIC)
@@ -77,27 +80,38 @@ if(WIN32)
             ${GLFW_DIR}/include
             ${GLEW_DIR}/include
             ${ASSIMP_DIR}/include
+            ${FREEGLUT_DIR}/include
     )
 
     target_link_directories(${PROJECT_NAME} PRIVATE
-            ${GLFW_DIR}/lib-vc2022
+            ${GLFW_DIR}/lib-mingw-w64
             ${GLEW_DIR}/lib/Release/x64
-            ${ASSIMP_DIR}/Release
+            ${FREEGLUT_DIR}/lib/x64
+            ${ASSIMP_DIR}/lib-mingw
     )
 
     target_link_libraries(${PROJECT_NAME} PRIVATE
-            opengl32
-            glfw3
             glew32s
-            assimp-vc141-mt
+            glfw3
+            assimp
+            freeglut
+            opengl32
+            gdi32
     )
+
 
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            "${CMAKE_CURRENT_SOURCE_DIR}/external/dlls/assimp-vc141-mt.dll"
+            "${CMAKE_CURRENT_SOURCE_DIR}/external/dlls/libassimp-6.dll"
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
             "${CMAKE_CURRENT_SOURCE_DIR}/external/dlls/zlib.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/external/freeglut/bin/x64/freeglut.dll"
+            $<TARGET_FILE_DIR:${PROJECT_NAME}>
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            "${CMAKE_CURRENT_SOURCE_DIR}/external/dlls/libminizip-1.dll"
             $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
 
@@ -110,7 +124,7 @@ else()
     find_package(GLEW REQUIRED)
     find_package(glfw3 REQUIRED)
     find_package(assimp REQUIRED)
-    find_package(GLUT REQUIRED) # Locates GLUT/FreeGLUT on the system
+    find_package(GLUT REQUIRED)
 
     target_include_directories(${PROJECT_NAME} PRIVATE
             ${GLEW_INCLUDE_DIRS}
@@ -127,7 +141,7 @@ else()
                 GLEW::GLEW
                 glfw
                 assimp::assimp
-                ${GLUT_LIBRARIES} # Links the FreeGLUT library
+                ${GLUT_LIBRARIES}
                 "-framework Cocoa"
                 "-framework IOKit"
                 "-framework CoreVideo"
@@ -138,7 +152,7 @@ else()
                 GLEW::GLEW
                 glfw
                 assimp::assimp
-                ${GLUT_LIBRARIES} # Links the FreeGLUT library
+                ${GLUT_LIBRARIES}
         )
     endif()
 endif()
