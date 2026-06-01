@@ -43,20 +43,20 @@ void daswesen::loadShader(const char *filepath) {
 
 
 void daswesen::render() {
-    void drawObjectShip(Core::RenderContext& context, glm::mat4 modelMatrix, GLuint textureID, GLuint textureID2, float a, float b) {
-        GLuint prog = programShip;
-        glUseProgram(prog);
-        glm::mat4 viewProjectionMatrix = createPerspectiveMatrix() * createCameraMatrix();
-        glm::mat4 transformation = viewProjectionMatrix * modelMatrix;
-        glUniformMatrix4fv(glGetUniformLocation(prog, "transformation"), 1, GL_FALSE, (float*)&transformation);
-        glUniformMatrix4fv(glGetUniformLocation(prog, "modelMatrix"), 1, GL_FALSE, (float*)&modelMatrix);
-        glUniform3f(glGetUniformLocation(prog, "lightPos"), -5, 3, 3);
-        glUniform3f(glGetUniformLocation(prog, "cameraPos"), cameraPos.x, cameraPos.y, cameraPos.z);
-
-        Core::SetActiveTexture(textureID, "colorTexture", prog, 0);
-        Core::SetActiveTexture(textureID2, "normalMap", prog, 1);
-
-        Core::DrawContext(context);
-        glUseProgram(0);
-    }
+    // void drawObjectShip(Core::RenderContext& context, glm::mat4 modelMatrix, GLuint textureID, GLuint textureID2, float a, float b) {
+    //     GLuint prog = programShip;
+    //     glUseProgram(prog);
+    //     glm::mat4 viewProjectionMatrix = createPerspectiveMatrix() * createCameraMatrix();
+    //     glm::mat4 transformation = viewProjectionMatrix * modelMatrix;
+    //     glUniformMatrix4fv(glGetUniformLocation(prog, "transformation"), 1, GL_FALSE, (float*)&transformation);
+    //     glUniformMatrix4fv(glGetUniformLocation(prog, "modelMatrix"), 1, GL_FALSE, (float*)&modelMatrix);
+    //     glUniform3f(glGetUniformLocation(prog, "lightPos"), -5, 3, 3);
+    //     glUniform3f(glGetUniformLocation(prog, "cameraPos"), cameraPos.x, cameraPos.y, cameraPos.z);
+    //
+    //     Core::SetActiveTexture(textureID, "colorTexture", prog, 0);
+    //     Core::SetActiveTexture(textureID2, "normalMap", prog, 1);
+    //
+    //     Core::DrawContext(context);
+    //     glUseProgram(0);
+    // }
 }

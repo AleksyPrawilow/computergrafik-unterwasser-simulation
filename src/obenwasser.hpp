@@ -8,6 +8,7 @@
 #include "Shader_Loader.h"
 #include "Render_Utils.h"
 #include "Texture.h"
+#include "transform.h"
 
 #include "Kiste.cpp"
 #include <assimp/Importer.hpp>
@@ -100,11 +101,8 @@ Core::Shader_Loader shaderLoader;
 Core::RenderContext shipContext;
 Core::RenderContext sphereContext;
 
-glm::vec3 cameraPos = glm::vec3(-12.f, -1.f, 0);
-glm::vec3 cameraDir = glm::vec3(1.f, 0.f, 0.f);
-
-glm::vec3 spaceshipPos = glm::vec3(-12.f, -1.f, 0);
-glm::vec3 spaceshipDir = glm::vec3(1.f, 0.f, 0.f);
+transform spaceshipTransform;
+transform cameraTransform;
 GLuint VAO, VBO;
 GLuint skyboxVAO, skyboxVBO;
 
@@ -121,18 +119,9 @@ float glowThreshold = 0.3f;
 
 glm::mat4 createCameraMatrix()
 {
-	glm::vec3 cameraSide = glm::normalize(glm::cross(cameraDir, glm::vec3(0.f, 1.f, 0.f)));
-	glm::vec3 cameraUp = glm::normalize(glm::cross(cameraSide, cameraDir));
-	glm::mat4 cameraRotrationMatrix = glm::mat4({
-		cameraSide.x,cameraSide.y,cameraSide.z,0,
-		cameraUp.x,cameraUp.y,cameraUp.z ,0,
-		-cameraDir.x,-cameraDir.y,-cameraDir.z,0,
-		0.,0.,0.,1.,
-		});
-	cameraRotrationMatrix = glm::transpose(cameraRotrationMatrix);
-	glm::mat4 cameraMatrix = cameraRotrationMatrix * glm::translate(-cameraPos);
-
-	return cameraMatrix;
+	glm::mat4 R = glm::toMat4(glm::conjugate(cameraTransform.rotation));
+	glm::mat4 T = glm::translate(glm::mat4(1.0f), -cameraTransform.position);
+	return R * T;
 }
 
 glm::mat4 createPerspectiveMatrix()
@@ -176,7 +165,7 @@ void drawObjectTexture(Core::RenderContext& context, glm::mat4 modelMatrix, GLui
 	glUniformMatrix4fv(glGetUniformLocation(prog, "transformation"), 1, GL_FALSE, (float*)&transformation);
 	glUniformMatrix4fv(glGetUniformLocation(prog, "modelMatrix"), 1, GL_FALSE, (float*)&modelMatrix);
 	glUniform3f(glGetUniformLocation(prog, "lightPos"), -5, 3, 3);
-	glUniform3f(glGetUniformLocation(prog, "cameraPos"), cameraPos.x, cameraPos.y, cameraPos.z);
+	glUniform3f(glGetUniformLocation(prog, "cameraPos"), cameraTransform.position.x, cameraTransform.position.y, cameraTransform.position.z);
 
 
 	
@@ -195,7 +184,7 @@ void drawObjectShip(Core::RenderContext& context, glm::mat4 modelMatrix, GLuint 
 	glUniformMatrix4fv(glGetUniformLocation(prog, "transformation"), 1, GL_FALSE, (float*)&transformation);
 	glUniformMatrix4fv(glGetUniformLocation(prog, "modelMatrix"), 1, GL_FALSE, (float*)&modelMatrix);
 	glUniform3f(glGetUniformLocation(prog, "lightPos"), -5, 3, 3);
-	glUniform3f(glGetUniformLocation(prog, "cameraPos"), cameraPos.x, cameraPos.y, cameraPos.z);
+	glUniform3f(glGetUniformLocation(prog, "cameraPos"), cameraTransform.position.x, cameraTransform.position.y, cameraTransform.position.z);
 	
 	Core::SetActiveTexture(textureID, "colorTexture", prog, 0);
 	Core::SetActiveTexture(textureID2, "normalMap", prog, 1);
@@ -215,21 +204,16 @@ void renderScene(GLFWwindow* window)
 
 	glm::mat4 model = glm::rotate(2.5f + time * 0.4f, glm::vec3(0, 1, 0)) * glm::scale(glm::vec3(9.0f) * 1.10f);
 	drawObjectTexture(sphereContext, model, texture::earth, texture::earthNormal, roughness, metallic);
-	
 
-	glm::vec3 spaceshipSide = glm::normalize(glm::cross(spaceshipDir, glm::vec3(0.f, 1.f, 0.f)));
-	glm::vec3 spaceshipUp = glm::normalize(glm::cross(spaceshipSide, spaceshipDir));
-	glm::mat4 specshipCameraRotrationMatrix = glm::mat4({
-		spaceshipSide.x,spaceshipSide.y,spaceshipSide.z,0,
-		spaceshipUp.x,spaceshipUp.y,spaceshipUp.z ,0,
-		-spaceshipDir.x,-spaceshipDir.y,-spaceshipDir.z,0,
-		0.,0.,0.,1.,
-		});
+	glm::mat4 shipModel = spaceshipTransform.getModelMatrix() * glm::eulerAngleY(glm::pi<float>());
 
-
-	drawObjectShip(shipContext,
-		glm::translate(spaceshipPos) * specshipCameraRotrationMatrix * glm::eulerAngleY(glm::pi<float>()) * glm::scale(glm::vec3(0.5)),
-		texture::ship, texture::shipNormal, roughnessShip, metallicShip
+	drawObjectShip(
+		shipContext,
+		shipModel,
+		texture::ship,
+		texture::shipNormal,
+		roughnessShip,
+		metallicShip
 	);
 
 	glUseProgram(0);
@@ -266,7 +250,8 @@ void init(GLFWwindow* window)
 
 	
 
-	
+	spaceshipTransform.position = glm::vec3(-12.f, -1.f, 0.f);
+	spaceshipTransform.scale = glm::vec3(0.5f);
 	texture::ship = Core::LoadTexture("assets/textures/rust.jpg");
 	texture::shipNormal = Core::LoadTexture("assets/textures/rust_normal.jpg");
 
@@ -283,35 +268,30 @@ void shutdown(GLFWwindow* window)
 //obsluga wejscia
 void processInput(GLFWwindow* window)
 {
-	glm::vec3 spaceshipSide = glm::normalize(glm::cross(spaceshipDir, glm::vec3(0.f, 1.f, 0.f)));
-	glm::vec3 spaceshipUp = glm::vec3(0.f, 1.f, 0.f);
 	float angleSpeed = 0.01f;
 	float moveSpeed = 0.01f;
 	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
 		glfwSetWindowShouldClose(window, true);
 	}
 	if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-		spaceshipPos += spaceshipDir * moveSpeed;
+		spaceshipTransform.position += spaceshipTransform.forward() * moveSpeed;
 	if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-		spaceshipPos -= spaceshipDir * moveSpeed;
+		spaceshipTransform.position -= spaceshipTransform.forward() * moveSpeed;
 	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
-		spaceshipPos += spaceshipSide * moveSpeed;
+		spaceshipTransform.position += spaceshipTransform.right() * moveSpeed;
 	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
-		spaceshipPos -= spaceshipSide * moveSpeed;
+		spaceshipTransform.position -= spaceshipTransform.right() * moveSpeed;
 	if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-		spaceshipPos += spaceshipUp * moveSpeed;
+		spaceshipTransform.position += spaceshipTransform.up() * moveSpeed;
 	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-		spaceshipPos -= spaceshipUp * moveSpeed;
+		spaceshipTransform.position -= spaceshipTransform.up() * moveSpeed;
 	if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-		spaceshipDir = glm::normalize(glm::vec3(glm::eulerAngleY(angleSpeed) * glm::vec4(spaceshipDir, 0)));
+		spaceshipTransform.yaw(angleSpeed);
 	if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-		spaceshipDir = glm::normalize(glm::vec3(glm::eulerAngleY(-angleSpeed) * glm::vec4(spaceshipDir, 0)));
+		spaceshipTransform.yaw(-angleSpeed);
 
-	cameraPos = spaceshipPos - 1.5 * spaceshipDir + glm::vec3(0, 1, 0) * 0.5f;
-	cameraDir = spaceshipDir;
-
-	//cameraDir = glm::normalize(-cameraPos);
-
+	cameraTransform.position = spaceshipTransform.position - spaceshipTransform.forward() * 1.5f + glm::vec3(0,1,0) * 0.5f;
+	cameraTransform.lookAt(spaceshipTransform.position + spaceshipTransform.forward());
 }
 
 // funkcja jest glowna petla
