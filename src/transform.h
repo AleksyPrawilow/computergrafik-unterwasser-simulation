@@ -31,7 +31,7 @@ class transform {
 
     void lookAt(const glm::vec3& target, const glm::vec3& worldUp = {0,1,0}) {
         glm::vec3 f = glm::normalize(target - position);
-        rotation = glm::quatLookAtLh(f, worldUp);
+        rotation = glm::quatLookAt(f, worldUp);
     }
 };
 
