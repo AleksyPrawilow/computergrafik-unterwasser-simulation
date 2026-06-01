@@ -17,6 +17,10 @@ set(PROJECT_SOURCES
         src/Texture.h
         src/obenwasser.hpp
         src/objload.h
+        src/daswesen.cpp
+        src/daswesen.h
+        src/transform.cpp
+        src/transform.h
 )
 
 set(SOIL_SOURCES
