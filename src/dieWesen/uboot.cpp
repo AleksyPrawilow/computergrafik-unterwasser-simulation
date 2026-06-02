@@ -14,26 +14,35 @@ void Uboot::init() {
 
 void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
     float angleSpeed = 0.02f;
-    float moveSpeed = 0.05f;
+    float moveSpeed = 18.0f;
+    float moveSpeedBackward = 12.0f;
+    float targetMoveSpeed = 0.0f;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        transform.position += transform.forward() * moveSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        targetMoveSpeed = moveSpeed;
+        transform.position += transform.forward() * actualMoveSpeed * deltaTime;
+    }
 
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        transform.position -= transform.forward() * moveSpeed;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        targetMoveSpeed = moveSpeedBackward;
+        transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
+    }
 
-    float targetYawVelocity = 0.0f;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetYawVelocity = angleSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetYawVelocity = -angleSpeed;
+    constexpr float accelerationSpeed = 0.75f;
+    float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
+    actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
 
-    yawVelocity = glm::mix(yawVelocity, targetYawVelocity, 10.0f * deltaTime);
-    transform.yaw(yawVelocity);
+    float targetRollVelocity = 0.0f;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+
+    rollVelocity = glm::mix(rollVelocity, targetRollVelocity, 10.0f * deltaTime);
+    transform.roll(rollVelocity);
 
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
 
-    if (firstMouse)
-    {
+    if (firstMouse) {
         lastX = mouseX;
         lastY = mouseY;
         firstMouse = false;
@@ -50,14 +59,14 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
     yoffset *= mouseSensitivity;
 
     const auto targetPitchVelocity = static_cast<float>(yoffset);
-    const auto targetRollVelocity = -static_cast<float>(xoffset);
+    const auto targetYawVelocity = -static_cast<float>(xoffset);
 
     constexpr float shipInertia = 8.0f;
     pitchVelocity = glm::mix(pitchVelocity, targetPitchVelocity, shipInertia * deltaTime);
-    rollVelocity = glm::mix(rollVelocity, targetRollVelocity, shipInertia * deltaTime);
+    yawVelocity = glm::mix(yawVelocity, targetYawVelocity, shipInertia * deltaTime);
 
     transform.pitch(pitchVelocity * deltaTime);
-    transform.roll(rollVelocity * deltaTime);
+    transform.yaw(yawVelocity * deltaTime);
 
 
     const glm::vec3 shipPos = transform.position;

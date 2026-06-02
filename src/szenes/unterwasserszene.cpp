@@ -23,6 +23,7 @@ Core::shaderLoader shaderLoader;
 Renderer renderer;
 Uboot uboot;
 Daswesen earth;
+Daswesen rock;
 Fadenkreuz crosshair;
 Kamera kamera;
 
@@ -54,7 +55,8 @@ void init(GLFWwindow* window)
 		"assets/shaders/shader_5_1_ship.frag"
 	);
 
-	earth.loadModel("assets/models/Rock001.obj");
+	earth.loadModel("assets/models/sphere.obj");
+	rock.loadModel("assets/models/Rock001.obj");
 
 	uboot.transform.position = glm::vec3(-12.f, -1.f, 0.f);
 	uboot.transform.scale = glm::vec3(0.5f);
@@ -62,12 +64,18 @@ void init(GLFWwindow* window)
 	uboot.init();
 	crosshair.init(kamera.getAspectRatio());
 
+	rock.material.shader = programTex;
+	rock.material.albedo = Core::LoadTexture("assets/textures/RockTexture001_ao.png");
+	rock.material.normal = Core::LoadTexture("assets/textures/RockTexture001_normal.png");
+	rock.material.metallic = Core::LoadTexture("assets/textures/RockTexture001_metallic.png");
+	rock.transform.position = glm::vec3(0);
+	rock.transform.scale = glm::vec3(36.0f);
+
 	earth.material.shader = programTex;
-	earth.material.albedo = Core::LoadTexture("assets/textures/RockTexture001_ao.png");
-	earth.material.normal = Core::LoadTexture("assets/textures/RockTexture001_normal.png");
-	earth.material.metallic = Core::LoadTexture("assets/textures/RockTexture001_metallic.png");
-	earth.transform.position = glm::vec3(0);
-	earth.transform.scale = glm::vec3(18.0f);
+	earth.material.albedo = Core::LoadTexture("assets/textures/earth.png");
+	earth.material.normal = Core::LoadTexture("assets/textures/earth_normal.png");
+	earth.transform.position = glm::vec3(40.0f, 50.0f, 30.0f);
+	earth.transform.scale = glm::vec3(28.0f);
 }
 
 void shutdown(GLFWwindow* window) {
@@ -96,10 +104,14 @@ void renderLoop(GLFWwindow* window) {
 
 		const auto time = static_cast<float>(glfwGetTime());
 		earth.transform.rotation = glm::angleAxis(time * 0.4f, glm::vec3(0, 1, 0));
+		rock.transform.rotation = glm::angleAxis(time * 0.6f, glm::vec3(0, 1, 0));
+		rock.transform.position.x = cos(time * 0.5f) * 100 + earth.transform.position.x;
+		rock.transform.position.y = sin(time * 0.5f) * 100 + earth.transform.position.y;
 		glm::mat4 viewProj = kamera.getProjectionMatrix() * kamera.getViewMatrix();
 
 		renderer.render(earth, viewProj, kamera.transform.position);
 		renderer.render(uboot, viewProj, kamera.transform.position);
+		renderer.render(rock, viewProj, kamera.transform.position);
 		crosshair.draw(uboot.transform, viewProj);
 
 		glfwSwapBuffers(window);

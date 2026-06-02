@@ -13,6 +13,8 @@ public:
     void init() override;
     void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 private:
+    float actualMoveSpeed = 0.0f;
+
     // Mouse state tracking
     double lastX = 0.0;
     double lastY = 0.0;
