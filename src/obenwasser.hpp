@@ -267,8 +267,8 @@ void init(GLFWwindow* window)
 	
 
 	
-	texture::ship = Core::LoadTexture("assets/textures/rust.jpg");
-	texture::shipNormal = Core::LoadTexture("assets/textures/rust_normal.jpg");
+	texture::ship = Core::LoadTexture("assets/textures/spaceship.jpg");
+	texture::shipNormal = Core::LoadTexture("assets/textures/spaceship_normal.jpg");
 
 }
 
