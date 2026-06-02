@@ -6,21 +6,27 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(PROJECT_SOURCES
         src/haupt.cpp
-        src/Kamera.cpp
-        src/Kamera.h
-        src/Kiste.cpp
-        src/Render_Utils.cpp
-        src/Render_Utils.h
-        src/Shader_Loader.cpp
-        src/Shader_Loader.h
-        src/Texture.cpp
-        src/Texture.h
-        src/obenwasser.hpp
-        src/objload.h
-        src/daswesen.cpp
-        src/daswesen.h
-        src/transform.cpp
-        src/transform.h
+        src/werkzeuge/renderWerkzeuge.cpp
+        src/werkzeuge/renderWerkzeuge.h
+        src/werkzeuge/ShaderLoader.cpp
+        src/werkzeuge/ShaderLoader.h
+        src/werkzeuge/textur.cpp
+        src/werkzeuge/textur.h
+        src/werkzeuge/objload.h
+        src/werkzeuge/daswesen.cpp
+        src/werkzeuge/daswesen.h
+        src/werkzeuge/transform.cpp
+        src/werkzeuge/transform.h
+        src/werkzeuge/renderer.cpp
+        src/werkzeuge/renderer.h
+        src/dieWesen/uboot.cpp
+        src/dieWesen/uboot.h
+        src/dieWesen/fadenkreuz.cpp
+        src/dieWesen/fadenkreuz.h
+        src/werkzeuge/kamera.cpp
+        src/werkzeuge/kamera.h
+        src/szenes/unterwasserszene.cpp
+        src/szenes/unterwasserszene.h
 )
 
 set(SOIL_SOURCES
