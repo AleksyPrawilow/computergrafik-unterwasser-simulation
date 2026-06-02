@@ -3,12 +3,18 @@
 //
 #include "uboot.h"
 #include "../werkzeuge/textur.h"
+#include "werkzeuge/shaderManager.h"
 
 void Uboot::init() {
-    material.albedo = Core::LoadTexture("assets/textures/albedo.png");
-    material.roughness = Core::LoadTexture("assets/textures/roughness.png");
-    material.metallic = Core::LoadTexture("assets/textures/metallness.png");
-    material.normal = Core::LoadTexture("assets/textures/normal.png");
+    material.albedo = Kern::LoadTexture("assets/textures/albedo.png");
+    material.roughness = Kern::LoadTexture("assets/textures/roughness.png");
+    material.metallic = Kern::LoadTexture("assets/textures/metallness.png");
+    material.normal = Kern::LoadTexture("assets/textures/normal.png");
+    material.shader = ShaderManager::getInstance().loadShader(
+        "uboot",
+        "assets/shaders/shader_5_1_ship.vert",
+        "assets/shaders/shader_5_1_ship.frag"
+        );
     loadModel("assets/models/spaceship2.obj");
 }
 

@@ -8,7 +8,7 @@
 
 typedef unsigned char byte;
 
-GLuint Core::LoadTexture( const char * filepath )
+GLuint Kern::LoadTexture( const char * filepath )
 {
 	GLuint id;
 	glGenTextures(1, &id);
@@ -29,7 +29,7 @@ GLuint Core::LoadTexture( const char * filepath )
 	return id;
 }
 
-GLuint Core::LoadCubemap(const char* faces[6])
+GLuint Kern::LoadCubemap(const char* faces[6])
 {
 	GLuint textureID;
 	glGenTextures(1, &textureID);
@@ -66,7 +66,7 @@ GLuint Core::LoadCubemap(const char* faces[6])
 
 
 
-void Core::SetActiveTexture(GLuint textureID, const char * shaderVariableName, GLuint programID, int textureUnit)
+void Kern::SetActiveTexture(GLuint textureID, const char * shaderVariableName, GLuint programID, int textureUnit)
 {
 	glUniform1i(glGetUniformLocation(programID, shaderVariableName), textureUnit);
 	glActiveTexture(GL_TEXTURE0 + textureUnit);

@@ -3,7 +3,7 @@
 #include "glew.h"
 #include "freeglut.h"
 
-namespace Core
+namespace Kern
 {
 	GLuint LoadTexture(const char * filepath);
 	GLuint LoadCubemap(const char* faces[6]);

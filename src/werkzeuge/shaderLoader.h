@@ -4,7 +4,7 @@
 #include "freeglut.h"
 #include <iostream>
 
-namespace Core {
+namespace Kern {
 	class shaderLoader {
 	private:
 		static std::string ReadShader(const char *filename);

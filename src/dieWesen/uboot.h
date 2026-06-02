@@ -4,11 +4,11 @@
 #pragma once
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
-#include "../werkzeuge/daswesen.h"
+#include "../werkzeuge/wesen.h"
 #include "../werkzeuge/transform.h"
 
 
-class Uboot: public Daswesen {
+class Uboot: public Wesen {
 public:
     void init() override;
     void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
