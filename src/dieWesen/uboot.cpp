@@ -13,7 +13,7 @@ void Uboot::init() {
 }
 
 void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
-    float angleSpeed = 0.02f;
+    float angleSpeed = 4.0f;
     float moveSpeed = 18.0f;
     float moveSpeedBackward = 12.0f;
     float targetMoveSpeed = 0.0f;
@@ -36,8 +36,9 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
 
-    rollVelocity = glm::mix(rollVelocity, targetRollVelocity, 10.0f * deltaTime);
-    transform.roll(rollVelocity);
+    const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
+    rollVelocity = glm::mix(rollVelocity, targetRollVelocity, tRoll);
+    transform.roll(rollVelocity * deltaTime);
 
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
