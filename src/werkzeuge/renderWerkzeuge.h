@@ -8,7 +8,7 @@
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-namespace Core
+namespace Kern
 {
 	struct RenderContext
     {

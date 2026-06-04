@@ -13,8 +13,8 @@ set(PROJECT_SOURCES
         src/werkzeuge/textur.cpp
         src/werkzeuge/textur.h
         src/werkzeuge/objload.h
-        src/werkzeuge/daswesen.cpp
-        src/werkzeuge/daswesen.h
+        src/werkzeuge/wesen.cpp
+        src/werkzeuge/wesen.h
         src/werkzeuge/transform.cpp
         src/werkzeuge/transform.h
         src/werkzeuge/renderer.cpp
@@ -27,6 +27,11 @@ set(PROJECT_SOURCES
         src/werkzeuge/kamera.h
         src/szenes/unterwasserszene.cpp
         src/szenes/unterwasserszene.h
+        src/werkzeuge/shaderManager.cpp
+        src/werkzeuge/shaderManager.h
+        src/werkzeuge/skyboxHelper.h
+        src/dieWesen/wasser.cpp
+        src/dieWesen/wasser.h
 )
 
 set(SOIL_SOURCES

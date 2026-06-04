@@ -6,9 +6,9 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
-const int Core::VertexData::MAX_ATTRIBS;
+const int Kern::VertexData::MAX_ATTRIBS;
 
-void Core::RenderContext::initFromAssimpMesh(aiMesh* mesh) {
+void Kern::RenderContext::initFromAssimpMesh(aiMesh* mesh) {
     vertexArray = 0;
     vertexBuffer = 0;
     vertexIndexBuffer = 0;
@@ -84,7 +84,7 @@ void Core::RenderContext::initFromAssimpMesh(aiMesh* mesh) {
 
 }
 
-void Core::DrawVertexArray(const float * vertexArray, int numVertices, int elementSize )
+void Kern::DrawVertexArray(const float * vertexArray, int numVertices, int elementSize )
 {
 	glVertexAttribPointer(0, elementSize, GL_FLOAT, false, 0, vertexArray);
 	glEnableVertexAttribArray(0);
@@ -92,7 +92,7 @@ void Core::DrawVertexArray(const float * vertexArray, int numVertices, int eleme
 	glDrawArrays(GL_TRIANGLES, 0, numVertices);
 }
 
-void Core::DrawVertexArrayIndexed( const float * vertexArray, const int * indexArray, int numIndexes, int elementSize )
+void Kern::DrawVertexArrayIndexed( const float * vertexArray, const int * indexArray, int numIndexes, int elementSize )
 {
 	glVertexAttribPointer(0, elementSize, GL_FLOAT, false, 0, vertexArray);
 	glEnableVertexAttribArray(0);
@@ -101,7 +101,7 @@ void Core::DrawVertexArrayIndexed( const float * vertexArray, const int * indexA
 }
 
 
-void Core::DrawVertexArray( const VertexData & data )
+void Kern::DrawVertexArray( const VertexData & data )
 {
 	int numAttribs = std::min(VertexData::MAX_ATTRIBS, data.NumActiveAttribs);
 	for(int i = 0; i < numAttribs; i++)
@@ -112,7 +112,7 @@ void Core::DrawVertexArray( const VertexData & data )
 	glDrawArrays(GL_TRIANGLES, 0, data.NumVertices);
 }
 
-void Core::DrawContext(const Core::RenderContext& context)
+void Kern::DrawContext(const Kern::RenderContext& context)
 {
 
 	glBindVertexArray(context.vertexArray);

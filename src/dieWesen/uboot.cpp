@@ -3,37 +3,53 @@
 //
 #include "uboot.h"
 #include "../werkzeuge/textur.h"
+#include "werkzeuge/shaderManager.h"
 
 void Uboot::init() {
-    material.albedo = Core::LoadTexture("assets/textures/albedo.png");
-    material.roughness = Core::LoadTexture("assets/textures/roughness.png");
-    material.metallic = Core::LoadTexture("assets/textures/metallness.png");
-    material.normal = Core::LoadTexture("assets/textures/normal.png");
-    loadModel("assets/models/spaceship2.obj");
+    material.albedo = Kern::LoadTexture("assets/textures/albedo.png");
+    material.roughness = Kern::LoadTexture("assets/textures/roughness.png");
+    material.metallic = Kern::LoadTexture("assets/textures/metallness.png");
+    material.normal = Kern::LoadTexture("assets/textures/normal.png");
+    material.shader = ShaderManager::getInstance().loadShader(
+        "uboot",
+        "assets/shaders/shader_5_1_ship.vert",
+        "assets/shaders/shader_5_1_ship.frag"
+        );
+    loadModel("assets/models/11097_squid_v1.obj");
 }
 
 void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
-    float angleSpeed = 0.02f;
-    float moveSpeed = 0.05f;
+    float angleSpeed = 4.0f;
+    float moveSpeed = 18.0f;
+    float moveSpeedBackward = 12.0f;
+    float targetMoveSpeed = 0.0f;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        transform.position += transform.forward() * moveSpeed;
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        targetMoveSpeed = moveSpeed;
+        transform.position += transform.forward() * actualMoveSpeed * deltaTime;
+    }
 
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        transform.position -= transform.forward() * moveSpeed;
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        targetMoveSpeed = moveSpeedBackward;
+        transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
+    }
 
-    float targetYawVelocity = 0.0f;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetYawVelocity = angleSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetYawVelocity = -angleSpeed;
+    constexpr float accelerationSpeed = 0.75f;
+    float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
+    actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
 
-    yawVelocity = glm::mix(yawVelocity, targetYawVelocity, 10.0f * deltaTime);
-    transform.yaw(yawVelocity);
+    float targetRollVelocity = 0.0f;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+
+    const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
+    rollVelocity = glm::mix(rollVelocity, targetRollVelocity, tRoll);
+    transform.roll(rollVelocity * deltaTime);
 
     double mouseX, mouseY;
     glfwGetCursorPos(window, &mouseX, &mouseY);
 
-    if (firstMouse)
-    {
+    if (firstMouse) {
         lastX = mouseX;
         lastY = mouseY;
         firstMouse = false;
@@ -50,14 +66,14 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
     yoffset *= mouseSensitivity;
 
     const auto targetPitchVelocity = static_cast<float>(yoffset);
-    const auto targetRollVelocity = -static_cast<float>(xoffset);
+    const auto targetYawVelocity = -static_cast<float>(xoffset);
 
     constexpr float shipInertia = 8.0f;
     pitchVelocity = glm::mix(pitchVelocity, targetPitchVelocity, shipInertia * deltaTime);
-    rollVelocity = glm::mix(rollVelocity, targetRollVelocity, shipInertia * deltaTime);
+    yawVelocity = glm::mix(yawVelocity, targetYawVelocity, shipInertia * deltaTime);
 
     transform.pitch(pitchVelocity * deltaTime);
-    transform.roll(rollVelocity * deltaTime);
+    transform.yaw(yawVelocity * deltaTime);
 
 
     const glm::vec3 shipPos = transform.position;
@@ -78,4 +94,10 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     cameraTransform.position = glm::mix(cameraTransform.position, targetCamPos, tFollow);
     cameraTransform.rotation = glm::slerp(currentCamRot, targetCamRot, tRotate);
+}
+
+void Uboot::prepareUniforms() const {
+    if (const GLint timeLocation = glGetUniformLocation(material.shader, "time"); timeLocation != -1) {
+        glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
+    }
 }

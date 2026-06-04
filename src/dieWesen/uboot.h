@@ -4,15 +4,18 @@
 #pragma once
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
-#include "../werkzeuge/daswesen.h"
+#include "../werkzeuge/wesen.h"
 #include "../werkzeuge/transform.h"
 
 
-class Uboot: public Daswesen {
+class Uboot: public Wesen {
 public:
     void init() override;
     void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
+    void prepareUniforms() const override;
 private:
+    float actualMoveSpeed = 0.0f;
+
     // Mouse state tracking
     double lastX = 0.0;
     double lastY = 0.0;

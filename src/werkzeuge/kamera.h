@@ -18,13 +18,13 @@ public:
     Transform transform;
 
     float nearPlane = 0.05f;
-    float farPlane = 80.0f;
+    float farPlane = 1000.0f;
 
-    glm::mat4 getViewMatrix() const;
-    glm::mat4 getProjectionMatrix() const;
+    [[nodiscard]] glm::mat4 getViewMatrix() const;
+    [[nodiscard]] glm::mat4 getProjectionMatrix() const;
 
     void setAspectRatio(float ratio);
-    float getAspectRatio() const;
+    [[nodiscard]] float getAspectRatio() const;
 
 private:
     float aspectRatio = 1.7777777778f;

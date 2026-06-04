@@ -8,7 +8,7 @@
 #include "gtc/type_ptr.inl"
 
 void Renderer::render (
-    const Daswesen& e,
+    const Wesen& e,
     const glm::mat4& viewProj,
     const glm::vec3& cameraPos)
 {
@@ -18,6 +18,8 @@ void Renderer::render (
 
     glm::mat4 model = e.transform.getModelMatrix();
     glm::mat4 mvp = viewProj * model;
+
+    e.prepareUniforms();
 
     glUniformMatrix4fv(
         glGetUniformLocation(m.shader, "transformation"),
@@ -39,16 +41,16 @@ void Renderer::render (
         glm::value_ptr(cameraPos)
     );
 
-    Core::SetActiveTexture(m.albedo, "colorTexture", m.shader, 0);
-    Core::SetActiveTexture(m.normal, "normalMap", m.shader, 1);
+    Kern::SetActiveTexture(m.albedo, "colorTexture", m.shader, 0);
+    Kern::SetActiveTexture(m.normal, "normalMap", m.shader, 1);
 
     if (m.roughness)
-        Core::SetActiveTexture(m.roughness, "roughnessMap", m.shader, 2);
+        Kern::SetActiveTexture(m.roughness, "roughnessMap", m.shader, 2);
 
     if (m.metallic)
-        Core::SetActiveTexture(m.metallic, "metallicMap", m.shader, 3);
+        Kern::SetActiveTexture(m.metallic, "metallicMap", m.shader, 3);
 
-    Core::DrawContext(e.mesh);
+    Kern::DrawContext(e.mesh);
 
     glUseProgram(0);
 }

@@ -3,19 +3,16 @@
 #include<fstream>
 #include<vector>
 
-using namespace Core;
+using namespace Kern;
 
 shaderLoader::shaderLoader()= default;
 shaderLoader::~shaderLoader()= default;
 
-std::string shaderLoader::ReadShader(const char *filename)
-{
-
+std::string shaderLoader::ReadShader(const char *filename) {
 	std::string shaderCode;
 	std::ifstream file(filename, std::ios::in);
 
-	if (!file.good())
-	{
+	if (!file.good()) {
 		std::cout << "Can't read file " << filename << std::endl;
 		std::terminate();
 	}
@@ -51,9 +48,7 @@ GLuint shaderLoader::CreateShader(const GLenum shaderType, const std::string& so
 	return shader;
 }
 
-GLuint shaderLoader::CreateProgram(const char* vertexShaderFilename, const char* fragmentShaderFilename)
-{
-
+GLuint shaderLoader::CreateProgram(const char* vertexShaderFilename, const char* fragmentShaderFilename) {
 	//wczytaj shadery
 	std::string vertex_shader_code = ReadShader(vertexShaderFilename);
 	std::string fragment_shader_code = ReadShader(fragmentShaderFilename);
@@ -70,9 +65,7 @@ GLuint shaderLoader::CreateProgram(const char* vertexShaderFilename, const char*
 	glLinkProgram(program);
 	glGetProgramiv(program, GL_LINK_STATUS, &link_result);
 	//sprawdz bledy w linkerze
-	if (link_result == GL_FALSE)
-	{
-
+	if (link_result == GL_FALSE) {
 		int info_log_length = 0;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &info_log_length);
 		std::vector<char> program_log(info_log_length);
@@ -89,7 +82,6 @@ GLuint shaderLoader::CreateProgram(const char* vertexShaderFilename, const char*
 	return program;
 }
 
-void shaderLoader::DeleteProgram( GLuint program )
-{
+void shaderLoader::DeleteProgram( GLuint program ) {
 	glDeleteProgram(program);
 }
