@@ -52,6 +52,14 @@ void Wesen::update(GLFWwindow* window, const float deltaTime, Transform& cameraT
     for (Wesen* child : children) {
         child->update(window, deltaTime, cameraTransform);
     }
+
+    children.erase(std::remove_if(children.begin(), children.end(), [](Wesen* child) {
+        if (child->isQueuedDestroyed) {
+            delete child;
+            return true;
+        }
+        return false;
+    }), children.end());
 }
 
 void Wesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {}

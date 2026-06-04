@@ -33,9 +33,9 @@ std::vector<std::string> skyboxFaces {
 };
 
 Renderer renderer;
-Uboot uboot;
-Wasser wasser;
-Earth earth;
+auto * uboot = new Uboot();
+auto * wasser = new Wasser();
+auto * earth = new Earth();
 Fadenkreuz fadenkreuz;
 Kamera kamera;
 std::vector<Wesen *> diewesen;
@@ -53,21 +53,20 @@ void init(GLFWwindow* window)
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	wasser.init();
+	wasser->init();
 
 	initSkybox();
 	cubemapTexture = Kern::LoadCubemap(skyboxFaces);
 	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
-	diewesen.push_back(&uboot);
-	diewesen.push_back(&earth);
+	diewesen.push_back(uboot);
+	diewesen.push_back(earth);
 
 	for (Wesen * wesen: diewesen) {
 		wesen->init();
 	}
 
-	uboot.transform.position = glm::vec3(-12.f, -1.f, 0.f);
-	uboot.transform.scale = glm::vec3(0.04f);
+	uboot->transform.position = glm::vec3(-12.f, -1.f, 0.f);
 	fadenkreuz.init(kamera.getAspectRatio());
 }
 
@@ -109,12 +108,12 @@ void renderLoop(GLFWwindow* window) {
 			renderer.render(*wesen, viewProj, kamera.transform.position);
 		}
 
-		fadenkreuz.draw(uboot.transform, viewProj);
+		fadenkreuz.draw(uboot->transform, viewProj);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_CULL_FACE);
-		renderer.render(wasser, viewProj, kamera.transform.position);
+		renderer.render(*wasser, viewProj, kamera.transform.position);
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
 

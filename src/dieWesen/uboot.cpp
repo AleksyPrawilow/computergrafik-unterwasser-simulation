@@ -16,6 +16,8 @@ void Uboot::init() {
         "assets/shaders/shader_5_1_ship.frag"
         );
     loadModel("assets/models/11097_squid_v1.obj");
+
+    transform.scale = glm::vec3(0.04f);
 }
 
 void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
@@ -43,18 +45,10 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
 
     glm::vec3 right = glm::cross(transform.forward(), transform.up());
-
-    // Calculate the tilt error relative to world up (0, 1, 0)
     float rollError = glm::dot(right, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    // How fast the squid fights rotation and snaps back upright
     constexpr float stabilizationSpeed = 6.0f;
-
-    // Apply the restorative torque
     targetRollVelocity += rollError * stabilizationSpeed;
-    // --------------------------------------------------
 
-    // 3. Apply the rolling transformation (keeps your existing mix code)
     const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
     rollVelocity = glm::mix(rollVelocity, targetRollVelocity, tRoll);
     transform.roll(rollVelocity * deltaTime);
