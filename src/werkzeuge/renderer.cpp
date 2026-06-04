@@ -19,6 +19,8 @@ void Renderer::render (
     glm::mat4 model = e.transform.getModelMatrix();
     glm::mat4 mvp = viewProj * model;
 
+    e.prepareUniforms();
+
     glUniformMatrix4fv(
         glGetUniformLocation(m.shader, "transformation"),
         1,

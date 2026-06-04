@@ -1,12 +1,13 @@
 #pragma once
  
 #include "glew.h"
+#include <vector>
 #include "freeglut.h"
 
 namespace Kern
 {
 	GLuint LoadTexture(const char * filepath);
-	GLuint LoadCubemap(const char* faces[6]);
+	GLuint LoadCubemap(const std::vector<std::string>& faces);
 	// textureID - identyfikator tekstury otrzymany z funkcji LoadTexture
 	// shaderVariableName - nazwa zmiennej typu 'sampler2D' w shaderze, z ktora ma zostac powiazana tekstura
 	// programID - identyfikator aktualnego programu karty graficznej

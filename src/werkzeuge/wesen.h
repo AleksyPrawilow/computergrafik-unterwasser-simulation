@@ -33,6 +33,7 @@ public:
 
     virtual void init();
     virtual void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
+    virtual void prepareUniforms() const {}
 private:
 };
 

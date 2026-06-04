@@ -15,7 +15,7 @@ void Uboot::init() {
         "assets/shaders/shader_5_1_ship.vert",
         "assets/shaders/shader_5_1_ship.frag"
         );
-    loadModel("assets/models/spaceship2.obj");
+    loadModel("assets/models/11097_squid_v1.obj");
 }
 
 void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
@@ -94,4 +94,10 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     cameraTransform.position = glm::mix(cameraTransform.position, targetCamPos, tFollow);
     cameraTransform.rotation = glm::slerp(currentCamRot, targetCamRot, tRotate);
+}
+
+void Uboot::prepareUniforms() const {
+    if (const GLint timeLocation = glGetUniformLocation(material.shader, "time"); timeLocation != -1) {
+        glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
+    }
 }

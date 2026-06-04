@@ -14,21 +14,33 @@
 #include "../dieWesen/fadenkreuz.h"
 #include "../dieWesen/uboot.h"
 #include "../werkzeuge/kamera.h"
+#include "dieWesen/wasser.h"
 #include "werkzeuge/shaderManager.h"
+#include "werkzeuge/skyboxHelper.h"
 
-GLuint program;
 GLuint programTex;
-GLuint programShip;
+GLuint cubemapTexture;
+GLuint skyboxShader;
+
+std::vector<std::string> skyboxFaces {
+	"assets/textures/skybox/px.png",
+	"assets/textures/skybox/nx.png",
+	"assets/textures/skybox/py.png",
+	"assets/textures/skybox/ny.png",
+	"assets/textures/skybox/pz.png",
+	"assets/textures/skybox/nz.png"
+};
 
 Renderer renderer;
 Uboot uboot;
+Wasser wasser;
 Wesen earth;
 Wesen rock;
 Fadenkreuz fadenkreuz;
 Kamera kamera;
 std::vector<Wesen *> diewesen;
 
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
+void framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
 {
 	kamera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 	glViewport(0, 0, width, height);
@@ -40,6 +52,12 @@ void init(GLFWwindow* window)
 	glEnable(GL_DEPTH_TEST);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+
+	wasser.init();
+
+	initSkybox();
+	cubemapTexture = Kern::LoadCubemap(skyboxFaces);
+	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
 	diewesen.push_back(&uboot);
 	diewesen.push_back(&rock);
@@ -59,7 +77,7 @@ void init(GLFWwindow* window)
 	rock.loadModel("assets/models/Rock001.obj");
 
 	uboot.transform.position = glm::vec3(-12.f, -1.f, 0.f);
-	uboot.transform.scale = glm::vec3(0.5f);
+	uboot.transform.scale = glm::vec3(0.04f);
 	fadenkreuz.init(kamera.getAspectRatio());
 
 	rock.material.shader = programTex;
@@ -108,7 +126,12 @@ void renderLoop(GLFWwindow* window) {
 
 		glm::mat4 viewProj = kamera.getProjectionMatrix() * kamera.getViewMatrix();
 
-		glClearColor(0, 0, 0, 1);
+		if (constexpr float WATER_HEIGHT = 0.0f; kamera.transform.position.y < WATER_HEIGHT) {
+			glClearColor(0.0f, 0.05f, 0.15f, 1.0f);
+		} else {
+			glClearColor(0.4f, 0.6f, 0.9f, 1.0f);
+		}
+
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (const Wesen * wesen: diewesen) {
@@ -116,6 +139,15 @@ void renderLoop(GLFWwindow* window) {
 		}
 
 		fadenkreuz.draw(uboot.transform, viewProj);
+
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glDisable(GL_CULL_FACE);
+		renderer.render(wasser, viewProj, kamera.transform.position);
+		glEnable(GL_CULL_FACE);
+		glDisable(GL_BLEND);
+
+		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

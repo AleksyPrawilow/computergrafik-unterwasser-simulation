@@ -29,6 +29,9 @@ set(PROJECT_SOURCES
         src/szenes/unterwasserszene.h
         src/werkzeuge/shaderManager.cpp
         src/werkzeuge/shaderManager.h
+        src/werkzeuge/skyboxHelper.h
+        src/dieWesen/wasser.cpp
+        src/dieWesen/wasser.h
 )
 
 set(SOIL_SOURCES
