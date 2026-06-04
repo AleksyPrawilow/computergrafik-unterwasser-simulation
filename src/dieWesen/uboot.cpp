@@ -18,11 +18,12 @@ void Uboot::init() {
     loadModel("assets/models/11097_squid_v1.obj");
 }
 
-void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
+void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
     float angleSpeed = 4.0f;
     float moveSpeed = 18.0f;
     float moveSpeedBackward = 12.0f;
     float targetMoveSpeed = 0.0f;
+    float targetRollVelocity = 0.0f;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         targetMoveSpeed = moveSpeed;
@@ -34,14 +35,26 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
         transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
     }
 
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+
     constexpr float accelerationSpeed = 0.75f;
     float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
     actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
 
-    float targetRollVelocity = 0.0f;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+    glm::vec3 right = glm::cross(transform.forward(), transform.up());
 
+    // Calculate the tilt error relative to world up (0, 1, 0)
+    float rollError = glm::dot(right, glm::vec3(0.0f, 1.0f, 0.0f));
+
+    // How fast the squid fights rotation and snaps back upright
+    constexpr float stabilizationSpeed = 6.0f;
+
+    // Apply the restorative torque
+    targetRollVelocity += rollError * stabilizationSpeed;
+    // --------------------------------------------------
+
+    // 3. Apply the rolling transformation (keeps your existing mix code)
     const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
     rollVelocity = glm::mix(rollVelocity, targetRollVelocity, tRoll);
     transform.roll(rollVelocity * deltaTime);

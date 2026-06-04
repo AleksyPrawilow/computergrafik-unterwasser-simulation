@@ -11,7 +11,7 @@
 class Uboot: public Wesen {
 public:
     void init() override;
-    void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
+    void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void prepareUniforms() const override;
 private:
     float actualMoveSpeed = 0.0f;
