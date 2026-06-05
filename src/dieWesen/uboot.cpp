@@ -6,23 +6,26 @@
 #include "werkzeuge/shaderManager.h"
 
 void Uboot::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/albedo.png");
-    material.roughness = Kern::LoadTexture("assets/textures/roughness.png");
-    material.metallic = Kern::LoadTexture("assets/textures/metallness.png");
-    material.normal = Kern::LoadTexture("assets/textures/normal.png");
+    material.albedo = Kern::LoadTexture("assets/textures/initialShadingGroup_Base_Color.png");
+    material.roughness = Kern::LoadTexture("assets/textures/initialShadingGroup_Opacityаа.png");
+    material.metallic = Kern::LoadTexture("assets/textures/initialShadingGroup_Metallic.png");
+    material.normal = Kern::LoadTexture("assets/textures/initialShadingGroup_Normal_OpenGL.png");
     material.shader = ShaderManager::getInstance().loadShader(
         "uboot",
         "assets/shaders/shader_5_1_ship.vert",
         "assets/shaders/shader_5_1_ship.frag"
         );
-    loadModel("assets/models/11097_squid_v1.obj");
+    loadModel("assets/models/squid.obj");
+
+    transform.scale = glm::vec3(0.4f);
 }
 
-void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
+void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
     float angleSpeed = 4.0f;
     float moveSpeed = 18.0f;
     float moveSpeedBackward = 12.0f;
     float targetMoveSpeed = 0.0f;
+    float targetRollVelocity = 0.0f;
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         targetMoveSpeed = moveSpeed;
@@ -34,13 +37,17 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
         transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
     }
 
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+
     constexpr float accelerationSpeed = 0.75f;
     float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
     actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
 
-    float targetRollVelocity = 0.0f;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+    glm::vec3 right = glm::cross(transform.forward(), transform.up());
+    float rollError = glm::dot(right, glm::vec3(0.0f, 1.0f, 0.0f));
+    constexpr float stabilizationSpeed = 6.0f;
+    targetRollVelocity += rollError * stabilizationSpeed;
 
     const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
     rollVelocity = glm::mix(rollVelocity, targetRollVelocity, tRoll);

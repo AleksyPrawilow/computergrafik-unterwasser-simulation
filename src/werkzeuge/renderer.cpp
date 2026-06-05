@@ -16,7 +16,7 @@ void Renderer::render (
 
     glUseProgram(m.shader);
 
-    glm::mat4 model = e.transform.getModelMatrix();
+    glm::mat4 model = e.getGlobalModelMatrix();
     glm::mat4 mvp = viewProj * model;
 
     e.prepareUniforms();
@@ -53,4 +53,6 @@ void Renderer::render (
     Kern::DrawContext(e.mesh);
 
     glUseProgram(0);
+
+    e.postRender(this, viewProj, cameraPos);
 }

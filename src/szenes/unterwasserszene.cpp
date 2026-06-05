@@ -14,6 +14,7 @@
 #include "../dieWesen/fadenkreuz.h"
 #include "../dieWesen/uboot.h"
 #include "../werkzeuge/kamera.h"
+#include "dieWesen/earth.h"
 #include "dieWesen/wasser.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/skyboxHelper.h"
@@ -32,10 +33,9 @@ std::vector<std::string> skyboxFaces {
 };
 
 Renderer renderer;
-Uboot uboot;
-Wasser wasser;
-Wesen earth;
-Wesen rock;
+auto * uboot = new Uboot();
+auto * wasser = new Wasser();
+auto * earth = new Earth();
 Fadenkreuz fadenkreuz;
 Kamera kamera;
 std::vector<Wesen *> diewesen;
@@ -53,45 +53,21 @@ void init(GLFWwindow* window)
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-	wasser.init();
+	wasser->init();
 
 	initSkybox();
 	cubemapTexture = Kern::LoadCubemap(skyboxFaces);
 	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
-	diewesen.push_back(&uboot);
-	diewesen.push_back(&rock);
-	diewesen.push_back(&earth);
-
-	programTex = ShaderManager::getInstance().loadShader(
-		"default",
-		"assets/shaders/shader_5_1_tex.vert",
-		"assets/shaders/shader_5_1_tex.frag"
-	);
+	diewesen.push_back(uboot);
+	diewesen.push_back(earth);
 
 	for (Wesen * wesen: diewesen) {
 		wesen->init();
 	}
 
-	earth.loadModel("assets/models/sphere.obj");
-	rock.loadModel("assets/models/Rock001.obj");
-
-	uboot.transform.position = glm::vec3(-12.f, -1.f, 0.f);
-	uboot.transform.scale = glm::vec3(0.04f);
+	uboot->transform.position = glm::vec3(-12.f, -1.f, 0.f);
 	fadenkreuz.init(kamera.getAspectRatio());
-
-	rock.material.shader = programTex;
-	rock.material.albedo = Kern::LoadTexture("assets/textures/RockTexture001_ao.png");
-	rock.material.normal = Kern::LoadTexture("assets/textures/RockTexture001_normal.png");
-	rock.material.metallic = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
-	rock.transform.position = glm::vec3(0);
-	rock.transform.scale = glm::vec3(36.0f);
-
-	earth.material.shader = programTex;
-	earth.material.albedo = Kern::LoadTexture("assets/textures/earth.png");
-	earth.material.normal = Kern::LoadTexture("assets/textures/earth_normal.png");
-	earth.transform.position = glm::vec3(40.0f, 50.0f, 30.0f);
-	earth.transform.scale = glm::vec3(28.0f);
 }
 
 void shutdown(GLFWwindow* window) {
@@ -114,12 +90,6 @@ void renderLoop(GLFWwindow* window) {
 
 		processInput(window);
 
-		const auto time = static_cast<float>(glfwGetTime());
-		earth.transform.rotation = glm::angleAxis(time * 0.4f, glm::vec3(0, 1, 0));
-		rock.transform.rotation = glm::angleAxis(time * 0.6f, glm::vec3(0, 1, 0));
-		rock.transform.position.x = cos(time * 0.5f) * 100 + earth.transform.position.x;
-		rock.transform.position.y = sin(time * 0.5f) * 100 + earth.transform.position.y;
-
 		for (Wesen * wesen: diewesen) {
 			wesen->update(window, deltaTime, kamera.transform);
 		}
@@ -138,16 +108,25 @@ void renderLoop(GLFWwindow* window) {
 			renderer.render(*wesen, viewProj, kamera.transform.position);
 		}
 
-		fadenkreuz.draw(uboot.transform, viewProj);
+		fadenkreuz.draw(uboot->transform, viewProj);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_CULL_FACE);
-		renderer.render(wasser, viewProj, kamera.transform.position);
+		renderer.render(*wasser, viewProj, kamera.transform.position);
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
 
 		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera);
+
+		diewesen.erase(std::remove_if(diewesen.begin(), diewesen.end(), [](const Wesen* wesen) {
+			if (wesen->isQueuedDestroyed) {
+					delete wesen;
+					return true;
+				}
+				return false;
+			}), diewesen.end()
+		);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

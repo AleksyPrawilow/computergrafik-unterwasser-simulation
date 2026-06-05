@@ -5,7 +5,9 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_RENDERER_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_RENDERER_H
 #include "wesen.h"
+#include <glm.hpp>
 
+class Wesen;
 
 class Renderer {
 public:

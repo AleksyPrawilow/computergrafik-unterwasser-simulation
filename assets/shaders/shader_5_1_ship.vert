@@ -23,15 +23,15 @@ vec3 deformTentacle(vec3 pos, float t)
 
     // Change this value to the coordinate where the tentacles start on your model.
     // If your squid is vertical, this will be a Y coordinate.
-    float threshold = -12;
+    float threshold = 5;
 
     if (pos.y < threshold)
     {
         float distanceDown = abs(pos.y - threshold);
 
         // Rhythmic wave on X and Z axes
-        float waveX = sin(t * 3.0 + pos.y * 0.5) * 0.15;
-        float waveZ = cos(t * 3.0 + pos.y * 0.5) * 0.15;
+        float waveX = sin(t * 3.0 + pos.y * 0.5) * 0.4;
+        float waveZ = cos(t * 3.0 + pos.y * 0.5) * 0.4;
 
         modified.x += waveX * distanceDown;
         modified.z += waveZ * distanceDown;

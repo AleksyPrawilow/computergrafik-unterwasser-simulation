@@ -32,6 +32,10 @@ set(PROJECT_SOURCES
         src/werkzeuge/skyboxHelper.h
         src/dieWesen/wasser.cpp
         src/dieWesen/wasser.h
+        src/dieWesen/earth.cpp
+        src/dieWesen/earth.h
+        src/dieWesen/moon.cpp
+        src/dieWesen/moon.h
 )
 
 set(SOIL_SOURCES

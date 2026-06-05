@@ -6,6 +6,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #include "glew.h"
+#include "renderer.h"
 #include "renderWerkzeuge.h"
 #include "transform.h"
 
@@ -17,23 +18,28 @@ struct Material {
     GLuint metallic = 0;
 };
 
+class Renderer;
+
 class Wesen {
 public:
-    virtual ~Wesen() = default;
+    virtual ~Wesen();
     Transform transform;
     Kern::RenderContext mesh;
     Material material;
+    Wesen * parent = nullptr;
+    std::vector<Wesen *> children;
+    bool isQueuedDestroyed = false;
 
-    void loadTexture( const char * filepath );
-    void loadNormalMap( const char * filepath );
-    void loadRoughnessMap( const char * filepath );
-    void loadMetallicMap( const char * filepath );
     void loadModel( const char * filepath );
-    void loadShader( const char * filepath );
+    void addChild( Wesen * wesen );
+    void queueDestroy();
+    [[nodiscard]] glm::mat4 getGlobalModelMatrix() const;
 
     virtual void init();
-    virtual void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
+    void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
+    virtual void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
     virtual void prepareUniforms() const {}
+    void postRender(Renderer * renderer, const glm::mat4& viewProj, const glm::vec3& cameraPos) const;
 private:
 };
 
