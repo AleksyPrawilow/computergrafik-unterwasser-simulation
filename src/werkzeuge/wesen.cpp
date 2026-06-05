@@ -32,6 +32,7 @@ void Wesen::loadModel(const char *filepath) {
 void Wesen::addChild(Wesen* wesen) {
     children.push_back(wesen);
     wesen->parent = this;
+    wesen->init();
 }
 
 void Wesen::queueDestroy() {

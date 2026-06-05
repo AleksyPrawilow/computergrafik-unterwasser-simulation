@@ -6,18 +6,18 @@
 #include "werkzeuge/shaderManager.h"
 
 void Uboot::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/albedo.png");
-    material.roughness = Kern::LoadTexture("assets/textures/roughness.png");
-    material.metallic = Kern::LoadTexture("assets/textures/metallness.png");
-    material.normal = Kern::LoadTexture("assets/textures/normal.png");
+    material.albedo = Kern::LoadTexture("assets/textures/initialShadingGroup_Base_Color.png");
+    material.roughness = Kern::LoadTexture("assets/textures/initialShadingGroup_Opacityаа.png");
+    material.metallic = Kern::LoadTexture("assets/textures/initialShadingGroup_Metallic.png");
+    material.normal = Kern::LoadTexture("assets/textures/initialShadingGroup_Normal_OpenGL.png");
     material.shader = ShaderManager::getInstance().loadShader(
         "uboot",
         "assets/shaders/shader_5_1_ship.vert",
         "assets/shaders/shader_5_1_ship.frag"
         );
-    loadModel("assets/models/11097_squid_v1.obj");
+    loadModel("assets/models/squid.obj");
 
-    transform.scale = glm::vec3(0.04f);
+    transform.scale = glm::vec3(0.4f);
 }
 
 void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){

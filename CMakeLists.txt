@@ -34,6 +34,8 @@ set(PROJECT_SOURCES
         src/dieWesen/wasser.h
         src/dieWesen/earth.cpp
         src/dieWesen/earth.h
+        src/dieWesen/moon.cpp
+        src/dieWesen/moon.h
 )
 
 set(SOIL_SOURCES

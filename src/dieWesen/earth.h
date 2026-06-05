@@ -9,7 +9,6 @@
 
 class Earth: public Wesen {
 public:
-    Wesen * rock = nullptr;
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 };
