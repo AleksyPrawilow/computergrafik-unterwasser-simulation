@@ -2,6 +2,7 @@
  
 #include "glew.h"
 #include <vector>
+#include <string>
 #include "freeglut.h"
 
 namespace Kern

@@ -18,6 +18,7 @@
 #include "dieWesen/wasser.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/skyboxHelper.h"
+#include "../dieWesen/jellyfish.h"
 
 GLuint programTex;
 GLuint cubemapTexture;
@@ -61,6 +62,8 @@ void init(GLFWwindow* window)
 
 	diewesen.push_back(uboot);
 	diewesen.push_back(earth);
+
+	diewesen.push_back(new Jellyfish());
 
 	for (Wesen * wesen: diewesen) {
 		wesen->init();
