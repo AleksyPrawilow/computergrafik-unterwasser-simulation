@@ -67,6 +67,8 @@ set(IMGUI_SOURCES
         external/imgui/backends/imgui_impl_glfw.h
         external/imgui/backends/imgui_impl_opengl3.cpp
         external/imgui/backends/imgui_impl_opengl3.h
+        src/dieWesen/jellyfish.h
+        src/dieWesen/jellyfish.cpp
 )
 
 add_executable(${PROJECT_NAME}
