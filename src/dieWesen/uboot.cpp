@@ -65,8 +65,16 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
         transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        targetMoveSpeed = moveSpeedBackward;
+        targetRollVelocity = -angleSpeed;
+        transform.position -= transform.right() * actualMoveSpeed / 2.0f * deltaTime;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        targetMoveSpeed = moveSpeedBackward;
+        targetRollVelocity = angleSpeed;
+        transform.position += transform.right() * actualMoveSpeed / 2.0f * deltaTime;
+    }
 
     constexpr float accelerationSpeed = 0.75f;
     float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
