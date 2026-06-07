@@ -36,6 +36,12 @@ set(PROJECT_SOURCES
         src/dieWesen/earth.h
         src/dieWesen/moon.cpp
         src/dieWesen/moon.h
+        src/werkzeuge/lightManager.cpp
+        src/werkzeuge/lightManager.h
+        src/dieWesen/ubootRotor.cpp
+        src/dieWesen/ubootRotor.h
+        src/dieWesen/particleEmitter.cpp
+        src/dieWesen/particleEmitter.h
 )
 
 set(SOIL_SOURCES

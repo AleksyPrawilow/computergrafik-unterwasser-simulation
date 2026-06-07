@@ -5,6 +5,7 @@
 #include "wasser.h"
 
 #include "werkzeuge/shaderManager.h"
+#include "werkzeuge/textur.h"
 
 void Wasser::init() {
     loadModel("assets/models/wasser.obj");
@@ -13,6 +14,7 @@ void Wasser::init() {
         "assets/shaders/wasser.vert",
         "assets/shaders/wasser.frag"
     );
+    material.normal = Kern::LoadTexture("assets/textures/water_normal.png");
     transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
     transform.scale = glm::vec3(3.0f, 1.0f, 3.0f);
 }

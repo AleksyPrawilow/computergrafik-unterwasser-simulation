@@ -75,6 +75,7 @@ inline void RenderSkybox(const GLuint skyboxShader, const GLuint skyboxCubemapTe
     // Pass view and projection matrices
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projection"), 1, GL_FALSE, glm::value_ptr(kamera.getProjectionMatrix()));
     glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "view"), 1, GL_FALSE, glm::value_ptr(kamera.getViewMatrix()));
+    glUniform3fv(glGetUniformLocation(skyboxShader, "cameraPos"), 1, glm::value_ptr(kamera.transform.position));
 
     if (const GLint timeLocation = glGetUniformLocation(skyboxShader, "time"); timeLocation != -1) {
      glUniform1f(timeLocation, static_cast<GLfloat>(glfwGetTime()));

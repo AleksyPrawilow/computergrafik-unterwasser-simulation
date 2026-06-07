@@ -39,7 +39,9 @@ public:
     void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
     virtual void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
     virtual void prepareUniforms() const {}
-    void postRender(Renderer * renderer, const glm::mat4& viewProj, const glm::vec3& cameraPos) const;
+    void postRender(Renderer * renderer, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const;
+    [[nodiscard]] virtual bool hasCustomRender() const { return false; }
+    virtual void customRender(const glm::mat4& view, const glm::mat4& projection) const {}
 private:
 };
 

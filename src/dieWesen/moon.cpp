@@ -25,6 +25,6 @@ void Moon::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransf
 
     const auto time = static_cast<float>(glfwGetTime());
     transform.rotation = glm::angleAxis(time, glm::vec3(0, 1, 0));
-    transform.position.x = cos(-time * 0.5f) * 4;
-    transform.position.z = sin(-time * 0.5f) * 4;
+    transform.position.x = cos(-time * 0.05f) * 4;
+    transform.position.z = sin(-time * 0.05f) * 4;
 }

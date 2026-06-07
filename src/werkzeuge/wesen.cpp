@@ -67,11 +67,12 @@ void Wesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
 
 void Wesen::postRender(
     Renderer * renderer,
-    const glm::mat4& viewProj,
+    const glm::mat4& view,
+    const glm::mat4& projection,
     const glm::vec3& cameraPos
 ) const {
     for (const Wesen * wesen : children) {
-        renderer->render(*wesen, viewProj, cameraPos);
-        wesen->postRender(renderer, viewProj, cameraPos);
+        renderer->render(*wesen, view, projection, cameraPos);
+        wesen->postRender(renderer, view, projection, cameraPos);
     }
 }

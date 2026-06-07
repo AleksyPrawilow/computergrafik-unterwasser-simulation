@@ -5,13 +5,13 @@
 void Jellyfish::init() {
     material.albedo = Kern::LoadTexture("assets/textures/jellyfish.png");
 
-    transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+    transform.position = glm::vec3(1.0f, 0.0f, 1.0f);
     transform.scale = glm::vec3(1.0f);
 
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
-        "assets/shaders/shader_5_1_tex.vert",
-        "assets/shaders/shader_5_1_tex.frag"
+        "assets/shaders/default.vert",
+        "assets/shaders/default.frag"
     );
 
     loadModel("assets/models/jellyfish.obj");

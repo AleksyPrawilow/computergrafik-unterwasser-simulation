@@ -2,34 +2,59 @@
 out vec4 FragColor;
 
 in vec3 worldPos;
-in vec3 worldNormal;
+in vec2 texCoord; // Added
+in mat3 TBN;     // Added
 
-uniform vec3 cameraPos; // Passed from your Renderer
+uniform vec3 cameraPos;
+uniform float time;
+uniform sampler2D normalMap; // Binds your water_normal.png automatically!
 
 void main() {
-    // 1. Basic properties
-    vec3 normal = normalize(worldNormal);
     vec3 viewDir = normalize(cameraPos - worldPos);
+    vec3 lightDir = normalize(vec3(0.3, 1.0, 0.4)); // Directional sun
 
-    // Directional light representing the sun/moon shining down
-    vec3 lightDir = normalize(vec3(0.3, 1.0, 0.4));
+    // 1. --- DUAL-SCROLLING NORMAL RIPPLES ---
+    // Scale up the texCoords (e.g., 15.0) so the ripples tile nicely across the giant water plane
+    vec2 uv1 = texCoord * 15.0 + vec2(time * 0.02, time * 0.01);
+    vec2 uv2 = texCoord * 15.0 + vec2(time * -0.015, time * 0.02);
 
-    // 2. Ambient light (base color of the water)
-    vec4 waterColor = vec4(0.0, 0.35, 0.5, 0.6); // Cyan-blue with 60% opacity
-    vec3 ambient = waterColor.rgb * 0.4;
+    // Sample the normal map twice
+    vec3 norm1 = texture(normalMap, uv1).rgb * 2.0 - 1.0;
+    vec3 norm2 = texture(normalMap, uv2).rgb * 2.0 - 1.0;
 
-    // 3. Diffuse light (how light scatters on the waves)
+    // Blend them together and transform into World Space using TBN
+    vec3 blendedNormal = normalize(norm1 + norm2);
+    vec3 normal = normalize(TBN * blendedNormal);
+
+    // 2. Base colors
+    vec3 surfaceColor = vec3(0.0, 0.35, 0.5);
+
+    // 3. Ambient & Diffuse lighting (Using the new detailed scrolling normal!)
+    vec3 ambient = surfaceColor * 0.4;
     float diff = max(dot(normal, lightDir), 0.0);
-    vec3 diffuse = waterColor.rgb * diff * 0.6;
+    vec3 diffuse = surfaceColor * diff * 0.6;
 
-    // 4. Specular reflections (the shiny "wet" highlights on wave crests)
+    // 4. Specular reflections (Calculates tiny glistening sun highlights!)
     vec3 halfwayDir = normalize(lightDir + viewDir);
-    float specFactor = pow(max(dot(normal, halfwayDir), 0.0), 128.0); // 128 is shininess
-    vec3 specular = vec3(0.9, 0.95, 1.0) * specFactor * 0.8; // Bright white highlights
+    float specFactor = pow(max(dot(normal, halfwayDir), 0.0), 128.0);
+    vec3 specular = vec3(0.9, 0.95, 1.0) * specFactor * 0.8;
 
-    // 5. Combine and output
     vec3 finalColor = ambient + diffuse + specular;
 
-    // Output with transparency
-    FragColor = vec4(finalColor, waterColor.a);
+    // 5. --- FOG TO SEAMLESSLY BLEND WITH THE DEEP SEA ---
+    vec3 fogColor;
+    if (cameraPos.y < 0.0) {
+        fogColor = vec3(0.0, 0.05, 0.15);
+    } else {
+        fogColor = vec3(0.4, 0.6, 0.9);
+    }
+
+    float dist = length(cameraPos - worldPos);
+    float fogDensity = 0.035;
+    float fogFactor = clamp(exp(-dist * fogDensity), 0.0, 1.0);
+
+    vec3 foggedColor = mix(fogColor, finalColor, fogFactor);
+    float finalAlpha = mix(1.0, 0.6, fogFactor); // 1.0 at distance, 0.6 close up
+
+    FragColor = vec4(foggedColor, finalAlpha);
 }

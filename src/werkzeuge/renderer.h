@@ -11,7 +11,9 @@ class Wesen;
 
 class Renderer {
 public:
-    void render(const Wesen& e, const glm::mat4& viewProj, const glm::vec3& cameraPos);
+    GLuint defaultNormal;
+    void init();
+    void render(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
 };
 
 

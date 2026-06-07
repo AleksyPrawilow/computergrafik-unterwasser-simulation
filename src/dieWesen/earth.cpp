@@ -11,12 +11,12 @@
 void Earth::init() {
     material.albedo = Kern::LoadTexture("assets/textures/earth.png");
     material.normal = Kern::LoadTexture("assets/textures/earth_normal.png");
-    transform.position = glm::vec3(40.0f, 50.0f, 30.0f);
+    transform.position = glm::vec3(40.0f, -50.0f, 30.0f);
     transform.scale = glm::vec3(28.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
-        "assets/shaders/shader_5_1_tex.vert",
-        "assets/shaders/shader_5_1_tex.frag"
+        "assets/shaders/default.vert",
+        "assets/shaders/default.frag"
     );
     loadModel("assets/models/sphere.obj");
 

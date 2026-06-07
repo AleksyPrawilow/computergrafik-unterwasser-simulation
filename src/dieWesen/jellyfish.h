@@ -8,5 +8,4 @@ public:
     void init() override;
     void draw(Kamera& kamera, unsigned int shaderId);
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
-
 };

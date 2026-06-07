@@ -19,6 +19,7 @@
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/skyboxHelper.h"
 #include "../dieWesen/jellyfish.h"
+#include "werkzeuge/lightManager.h"
 
 GLuint programTex;
 GLuint cubemapTexture;
@@ -54,6 +55,8 @@ void init(GLFWwindow* window)
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
+	renderer.init();
+
 	wasser->init();
 
 	initSkybox();
@@ -75,6 +78,7 @@ void init(GLFWwindow* window)
 
 void shutdown(GLFWwindow* window) {
 	ShaderManager::getInstance().cleanup();
+	LightManager::getInstance().cleanup();
 }
 
 void processInput(GLFWwindow* window) {
@@ -97,7 +101,8 @@ void renderLoop(GLFWwindow* window) {
 			wesen->update(window, deltaTime, kamera.transform);
 		}
 
-		glm::mat4 viewProj = kamera.getProjectionMatrix() * kamera.getViewMatrix();
+		glm::mat4 view = kamera.getViewMatrix();
+		glm::mat4 projection = kamera.getProjectionMatrix();
 
 		if (constexpr float WATER_HEIGHT = 0.0f; kamera.transform.position.y < WATER_HEIGHT) {
 			glClearColor(0.0f, 0.05f, 0.15f, 1.0f);
@@ -108,19 +113,19 @@ void renderLoop(GLFWwindow* window) {
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		for (const Wesen * wesen: diewesen) {
-			renderer.render(*wesen, viewProj, kamera.transform.position);
+			renderer.render(*wesen, view, projection, kamera.transform.position);
 		}
 
-		fadenkreuz.draw(uboot->transform, viewProj);
+		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_CULL_FACE);
-		renderer.render(*wasser, viewProj, kamera.transform.position);
+		renderer.render(*wasser, view, projection, kamera.transform.position);
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
 
-		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera);
+		fadenkreuz.draw(uboot->transform, view * projection);
 
 		diewesen.erase(std::remove_if(diewesen.begin(), diewesen.end(), [](const Wesen* wesen) {
 			if (wesen->isQueuedDestroyed) {

@@ -1,12 +1,9 @@
 #version 410 core
-layout (location = 0) in vec3 vertexPosition;
 
-uniform mat4 transformation; // MVP Matrix
-uniform mat4 modelMatrix;
+// 1. Inherit all standard layout inputs, outputs (including TBN/texCoord), and matrices!
+#include "common_transform.glsl"
+
 uniform float time;
-
-out vec3 worldPos;
-out vec3 worldNormal;
 
 // Define a structure for customizable Gerstner Waves
 struct GerstnerWave {
@@ -17,7 +14,6 @@ struct GerstnerWave {
     float speed;
 };
 
-// We will sum 3 waves
 const int NUM_WAVES = 3;
 uniform GerstnerWave waves[NUM_WAVES];
 
@@ -51,7 +47,8 @@ vec3 calculateGerstnerWave(GerstnerWave wave, vec3 pos, inout vec3 tangent, inou
 }
 
 void main() {
-    vec3 localPos = vertexPosition;
+    // 2. Initialize local calculation variables using the inherited 'vertexPosition' input
+    vec3 displacedPos = vertexPosition;
     vec3 tangent = vec3(1.0, 0.0, 0.0);
     vec3 binangent = vec3(0.0, 0.0, 1.0);
     vec3 displacement = vec3(0.0);
@@ -61,14 +58,14 @@ void main() {
         displacement += calculateGerstnerWave(waves[i], vertexPosition, tangent, binangent);
     }
 
-    // Apply the displacement to get final vertex position
-    localPos += displacement;
+    // Apply displacement to get final local vertex position
+    displacedPos += displacement;
 
-    // The normal is the cross product of the tangent and binangent derivatives
+    // Calculate the local normal using the updated tangent and binangent
     vec3 localNormal = normalize(cross(binangent, tangent));
 
-    worldPos = vec3(modelMatrix * vec4(localPos, 1.0));
-    worldNormal = normalize(mat3(transpose(inverse(modelMatrix))) * localNormal);
-
-    gl_Position = transformation * vec4(localPos, 1.0);
+    // 3. Pass the wave-displaced position, the normal, and the wave tangents
+    // to the shared function. It will automatically calculate TBN, worldPos,
+    // texCoord, and gl_Position for the fragment shader!
+    transformVertex(displacedPos, localNormal, vertexTexCoord, tangent, binangent);
 }
