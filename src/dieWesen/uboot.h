@@ -24,7 +24,8 @@ public:
     void prepareUniforms() const override;
 private:
     static float getWaterHeight(float x, float z, float t);
-    SpotLight * spotlight{};
+    SpotLight * spotlightLeft {};
+    SpotLight * spotlightRight {};
     ParticleEmitter* emitters[4] = {nullptr};
     UbootRotor * rotors[4] {nullptr};
     float actualMoveSpeed = 0.0f;

@@ -9,19 +9,21 @@
 #include "werkzeuge/textur.h"
 
 void Earth::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/earth.png");
-    material.normal = Kern::LoadTexture("assets/textures/earth_normal.png");
+    material.albedo = Kern::LoadTexture("assets/textures/RockTexture001_ao.png");
+    material.normal = Kern::LoadTexture("assets/textures/RockTexture001_normal.png");
+    material.metallic = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
     transform.position = glm::vec3(40.0f, -50.0f, 30.0f);
-    transform.scale = glm::vec3(28.0f);
+    transform.scale = glm::vec3(40.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
-    loadModel("assets/models/sphere.obj");
+    loadModel("assets/models/Rock001.obj");
 
     auto * moon = new Moon();
     addChild(moon);
+
 }
 
 void Earth::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {

@@ -93,14 +93,36 @@ vec3 calculatePBR() {
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));
 
-    // --- 3. EXPONENTIAL UNDERWATER DISTANCE FOG ---
     if (cameraPos.y < 0.0) {
         float dist = length(cameraPos - worldPos);
         float fogDensity = 0.035;
         float fogFactor = clamp(exp(-dist * fogDensity), 0.0, 1.0);
 
-        vec3 waterFogColor = vec3(0.0, 0.05, 0.15); // Matches glClearColor
-        color = mix(waterFogColor, color, fogFactor);
+        vec3 waterFogColor = vec3(0.0, 0.05, 0.15); // Base dark blue
+        vec3 finalFogColor = waterFogColor;
+
+        // Loop through all active spotlights and accumulate their scattering glow
+        for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
+            if (spotLights[i].intensity > 0.0) {
+                vec3 L = normalize(spotLights[i].position - worldPos);
+
+                // Spotlight cone angle check
+                float theta = dot(-L, normalize(spotLights[i].direction));
+                float epsilon = spotLights[i].cutOff - spotLights[i].outerCutOff;
+                float spotIntensity = clamp((theta - spotLights[i].outerCutOff) / epsilon, 0.0, 1.0);
+
+                // Light attenuation over distance
+                float distanceToLight = length(spotLights[i].position - worldPos);
+                float attenuation = 1.0 / (distanceToLight * distanceToLight + 0.001);
+
+                // Accumulate soft scattering glow
+                vec3 fogGlow = spotLights[i].color * spotLights[i].intensity * attenuation * spotIntensity * 0.15;
+                finalFogColor += fogGlow;
+            }
+        }
+
+        // Blend the final pixel color with the multi-lit fog color
+        color = mix(finalFogColor, color, fogFactor);
     }
 
     return color;

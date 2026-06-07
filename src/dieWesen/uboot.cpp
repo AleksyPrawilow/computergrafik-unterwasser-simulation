@@ -21,11 +21,12 @@ void Uboot::init() {
         );
     loadModel("assets/models/uboot.obj");
 
-    spotlight = LightManager::getInstance().createSpotLight(
-        glm::vec3(1.0f, 0.95f, 0.8f),
-        150.0f,
-        12.5f,
-        17.5f
+    spotlightLeft = LightManager::getInstance().createSpotLight(
+        glm::vec3(1.0f, 0.95f, 0.8f), 100.0f, 12.5f, 17.5f
+    );
+
+    spotlightRight = LightManager::getInstance().createSpotLight(
+        glm::vec3(1.0f, 0.95f, 0.8f), 100.0f, 12.5f, 17.5f
     );
 
     for (int i = 0; i < 4; i++) {
@@ -169,9 +170,12 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
         emitter->active = (transform.position.y < waveHeight) && (glm::abs(actualRotorSpeed) > 2.0f);
     }
 
-    if (spotlight != nullptr) {
-        spotlight->position = transform.position + transform.forward() * glm::vec3(1.0f);
-        spotlight->direction = transform.forward();
+    if (spotlightLeft != nullptr && spotlightRight != nullptr) {
+        spotlightLeft->position = transform.position + forward * 1.0f - right * 0.4f + up * 0.75f;
+        spotlightLeft->direction = forward;
+
+        spotlightRight->position = transform.position + forward * 1.0f + right * 0.4f + up * 0.75f;
+        spotlightRight->direction = forward;
     }
 }
 
