@@ -6,6 +6,7 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #include "particleEmitter.h"
 #include "timer.h"
+#include "ubootHeadlight.h"
 #include "ubootRotor.h"
 #include "../werkzeuge/wesen.h"
 #include "../werkzeuge/transform.h"
@@ -24,8 +25,7 @@ public:
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void prepareUniforms() const override;
 private:
-    SpotLight * spotlightLeft {};
-    SpotLight * spotlightRight {};
+    UbootHeadlight * headlights[2] = {nullptr};
     Timer * spotlightTimer {};
     ParticleEmitter* emitters[4] = {nullptr};
     UbootRotor * rotors[4] {nullptr};
@@ -53,7 +53,6 @@ private:
     void processInput(GLFWwindow* window, float deltaTime);
     void updateCameraTransform(Transform& cameraTransform, float deltaTime) const;
     void handleRolls(GLFWwindow* window, float deltaTime);
-    void onTimerEnd();
     static float getWaterHeight(float x, float z, float t);
 };
 

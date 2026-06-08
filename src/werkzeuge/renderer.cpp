@@ -10,6 +10,7 @@
 
 void Renderer::init() {
     defaultNormal = Kern::LoadTexture("assets/textures/default_normal.png");
+    defaultEmission = Kern::LoadTexture("assets/textures/default_emission.png");
 }
 
 void Renderer::render (const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos)
@@ -64,6 +65,14 @@ void Renderer::render (const Wesen& e, const glm::mat4& view, const glm::mat4& p
 
     if (m.metallic)
         Kern::SetActiveTexture(m.metallic, "metallicMap", m.shader, 3);
+    else
+        Kern::SetActiveTexture(defaultEmission, "metallicMap", m.shader, 3);
+
+    if (m.emission != 0) {
+        Kern::SetActiveTexture(m.emission, "emissionMap", m.shader, 5);
+    } else {
+        Kern::SetActiveTexture(defaultEmission, "emissionMap", m.shader, 5);
+    }
 
     const auto& pointLights = LightManager::getInstance().getPointLights();
     const auto& spotLights = LightManager::getInstance().getSpotLights();

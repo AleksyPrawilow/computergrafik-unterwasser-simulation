@@ -10,6 +10,7 @@ uniform sampler2D colorTexture;
 uniform sampler2D normalMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D metallicMap;
+uniform sampler2D emissionMap;
 uniform vec3 cameraPos;
 uniform float time;
 
@@ -34,6 +35,7 @@ vec3 calculatePBR() {
     vec3 albedo = texture(colorTexture, texCoord).rgb;
     float roughness = texture(roughnessMap, texCoord).g;
     float metallic  = texture(metallicMap, texCoord).b;
+    vec3 emission = texture(emissionMap, texCoord).rgb;
 
     vec3 tangentNormal = texture(normalMap, texCoord).rgb;
     tangentNormal = normalize(tangentNormal * 2.0 - 1.0);
@@ -88,6 +90,8 @@ vec3 calculatePBR() {
     }
 
     vec3 color = ambient + Lo;
+
+    color += emission * 3.0;
 
     if (worldPos.y < 0.0) {
         float causticIntensity = calculateCaustics(worldPos.xz, time);

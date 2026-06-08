@@ -16,6 +16,7 @@ struct Material {
     GLuint normal = 0;
     GLuint roughness = 0;
     GLuint metallic = 0;
+    GLuint emission = 0;
 };
 
 class Renderer;
@@ -32,6 +33,7 @@ public:
 
     void loadModel( const char * filepath );
     void addChild( Wesen * wesen );
+    Transform getGlobalTransform() const;
     void queueDestroy();
     [[nodiscard]] glm::mat4 getGlobalModelMatrix() const;
 

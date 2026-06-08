@@ -35,6 +35,19 @@ void Wesen::addChild(Wesen* wesen) {
     wesen->init();
 }
 
+Transform Wesen::getGlobalTransform() const {
+    if (parent == nullptr) {
+        return transform;
+    }
+    auto [position, rotation, scale] = parent->getGlobalTransform();
+    Transform global;
+    global.scale = scale * transform.scale;
+    global.rotation = rotation * transform.rotation;
+    global.position = position + (rotation * (transform.position * scale));
+
+    return global;
+}
+
 void Wesen::queueDestroy() {
     isQueuedDestroyed = true;
 }

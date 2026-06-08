@@ -19,19 +19,12 @@ void Uboot::init() {
         );
     loadModel("assets/models/uboot.obj");
 
-    spotlightLeft = LightManager::getInstance().createSpotLight(
-        glm::vec3(1.0f, 0.95f, 0.8f), 100.0f, 12.5f, 17.5f
-    );
-
-    spotlightRight = LightManager::getInstance().createSpotLight(
-        glm::vec3(1.0f, 0.95f, 0.8f), 100.0f, 12.5f, 17.5f
-    );
-
-    spotlightTimer = new Timer();
-    addChild(spotlightTimer);
-    spotlightTimer->startTimer(10.0f, [this]() {
-        this->onTimerEnd();
-    });
+    for (int i = 0; i < 2; i++) {
+        auto * headlight = new UbootHeadlight();
+        addChild(headlight);
+        headlight->transform.position = glm::vec3(-0.43f * (i < 1 ? 1.0f : -1.0f), 0.79f, -0.86f);
+        headlights[i] = headlight;
+    }
 
     for (int i = 0; i < 4; i++) {
         auto * rotor = new UbootRotor();
@@ -82,15 +75,6 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
 
     for (ParticleEmitter * emitter : emitters) {
         emitter->active = (transform.position.y < waveHeight) && (glm::abs(actualRotorSpeed) > 2.0f);
-    }
-
-    const glm::vec3 right = glm::cross(transform.forward(), transform.up());
-    if (spotlightLeft != nullptr && spotlightRight != nullptr) {
-        spotlightLeft->position = transform.position + transform.forward() * 1.0f - right * 0.4f + transform.up() * 0.75f;
-        spotlightLeft->direction = transform.forward();
-
-        spotlightRight->position = transform.position + transform.forward() * 1.0f + right * 0.4f + transform.up() * 0.75f;
-        spotlightRight->direction = transform.forward();
     }
 }
 
@@ -201,13 +185,13 @@ void Uboot::handleRolls(GLFWwindow* window, const float deltaTime) {
     transform.yaw(yawVelocity * deltaTime);
 }
 
-void Uboot::onTimerEnd() {
-    spotlightLeft->intensity = spotlightLeft->intensity == 100.0f ? 0.0f: 100.0f;
-    spotlightRight->intensity = spotlightRight->intensity == 100.0f ? 0.0f: 100.0f;
-    spotlightTimer->startTimer(0.5f, [this]() {
-        this->onTimerEnd();
-    });
-}
+// void Uboot::onTimerEnd() {
+//     spotlightLeft->intensity = spotlightLeft->intensity == 100.0f ? 0.0f: 100.0f;
+//     spotlightRight->intensity = spotlightRight->intensity == 100.0f ? 0.0f: 100.0f;
+//     spotlightTimer->startTimer(0.5f, [this]() {
+//         this->onTimerEnd();
+//     });
+// }
 
 float Uboot::getWaterHeight(const float x, const float z, const float t) {
     CPUWave waves[3] = {

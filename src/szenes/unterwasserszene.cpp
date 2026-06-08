@@ -21,6 +21,7 @@
 #include "../dieWesen/jellyfish.h"
 #include "dieWesen/oceanFloor.h"
 #include "werkzeuge/lightManager.h"
+#include "werkzeuge/tween.h"
 
 GLuint programTex;
 GLuint cubemapTexture;
@@ -82,6 +83,7 @@ void init(GLFWwindow* window)
 void shutdown(GLFWwindow* window) {
 	ShaderManager::getInstance().cleanup();
 	LightManager::getInstance().cleanup();
+	TweenManager::getInstance().cleanup();
 }
 
 void processInput(GLFWwindow* window) {
@@ -103,6 +105,8 @@ void renderLoop(GLFWwindow* window) {
 		for (Wesen * wesen: diewesen) {
 			wesen->update(window, deltaTime, kamera.transform);
 		}
+
+		TweenManager::getInstance().update(deltaTime);
 
 		glm::mat4 view = kamera.getViewMatrix();
 		glm::mat4 projection = kamera.getProjectionMatrix();

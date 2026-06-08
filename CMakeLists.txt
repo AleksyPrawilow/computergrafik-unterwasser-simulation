@@ -46,6 +46,10 @@ set(PROJECT_SOURCES
         src/dieWesen/timer.h
         src/dieWesen/oceanFloor.cpp
         src/dieWesen/oceanFloor.h
+        src/dieWesen/ubootHeadlight.cpp
+        src/dieWesen/ubootHeadlight.h
+        src/werkzeuge/tween.cpp
+        src/werkzeuge/tween.h
 )
 
 set(SOIL_SOURCES

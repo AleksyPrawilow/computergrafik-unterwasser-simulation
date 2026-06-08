@@ -7,12 +7,13 @@
 #include "moon.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/tween.h"
 
 void Earth::init() {
     material.albedo = Kern::LoadTexture("assets/textures/RockTexture001_ao.png");
     material.normal = Kern::LoadTexture("assets/textures/RockTexture001_normal.png");
     material.metallic = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
-    transform.position = glm::vec3(40.0f, -50.0f, 30.0f);
+    //transform.position = glm::vec3(40.0f, -50.0f, 30.0f);
     transform.scale = glm::vec3(40.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
@@ -23,12 +24,17 @@ void Earth::init() {
 
     auto * moon = new Moon();
     addChild(moon);
-
+    TweenManager::getInstance().createTween()
+        ->tweenProperty(&transform.position.y, 2.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
+        ->tweenCallback([this]() {
+            std::cout << "Rock reached peak! Emitting bubble burst..." << std::endl;
+        })
+        ->tweenProperty(&transform.position.y, 0.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
+        ->setLoops(-1);
 }
 
 void Earth::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
         queueDestroy();
-
     }
 }
