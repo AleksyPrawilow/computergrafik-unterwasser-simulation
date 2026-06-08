@@ -1,4 +1,3 @@
-// assets/shaders/common_pbr.glsl
 #include "pbr_lighting.glsl"
 
 in vec3 worldPos;
@@ -12,13 +11,30 @@ uniform sampler2D normalMap;
 uniform sampler2D roughnessMap;
 uniform sampler2D metallicMap;
 uniform vec3 cameraPos;
+uniform float time;
+
+float calculateCaustics(vec2 xz, float t) {
+    vec2 p = mod(xz * 0.12, 6.28) - 250.0;
+    vec2 i = vec2(p);
+    float c = 1.0;
+    float inten = 0.005;
+
+    for (int n = 0; n < 3; n++) {
+        float tOffset = t * (1.0 - (3.5 / float(n + 1)));
+        i = p + vec2(cos(tOffset - i.x) + sin(tOffset + i.y), sin(tOffset - i.y) + cos(tOffset + i.x));
+        c += 1.0 / length(vec2(p.x / (sin(i.x + tOffset) / inten), p.y / (cos(i.y + tOffset) / inten)));
+    }
+    c /= 3.0;
+    c = 1.17 - pow(c, 1.4);
+
+    return pow(max(c, 0.0), 8.0) * 0.5;
+}
 
 vec3 calculatePBR() {
     vec3 albedo = texture(colorTexture, texCoord).rgb;
     float roughness = texture(roughnessMap, texCoord).g;
     float metallic  = texture(metallicMap, texCoord).b;
 
-    // Normals
     vec3 tangentNormal = texture(normalMap, texCoord).rgb;
     tangentNormal = normalize(tangentNormal * 2.0 - 1.0);
     vec3 N = normalize(TBN * tangentNormal);
@@ -26,11 +42,8 @@ vec3 calculatePBR() {
     vec3 V = normalize(cameraPos - worldPos);
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
-    // --- 1. DYNAMIC AMBIENT (Brighter on surface, dark underwater) ---
-    // Smoothly scale ambient base factor between 0.01 (abyss) and 0.12 (bright sky)
     float ambientScale = mix(0.01, 0.12, smoothstep(-2.0, 0.0, cameraPos.y));
 
-    // Calculate depth-based light absorption (if fragment itself is below water)
     float depthFactor = 1.0;
     if (worldPos.y < 0.0) {
         depthFactor = clamp(exp(worldPos.y * 0.02), 0.0, 1.0);
@@ -38,20 +51,16 @@ vec3 calculatePBR() {
 
     vec3 ambient = vec3(ambientScale) * albedo * depthFactor;
 
-    // Accumulated outgoing light
     vec3 Lo = vec3(0.0);
 
-    // --- 2. DEFAULT SUN LIGHT (Directional PBR Light) ---
-    vec3 sunDir = normalize(vec3(0.3, 1.0, 0.4)); // Shines down from the sky
-    vec3 sunColor = vec3(1.0, 0.95, 0.9);         // Warm, natural sunlight
-    float sunIntensity = 1.0;                     // Brightness of the sun
+    vec3 sunDir = normalize(vec3(0.1, 1.0, 0.15));
+    vec3 sunColor = vec3(1.0, 0.95, 0.9);
+    float sunIntensity = 1.0;
 
-    // The sun's light is absorbed by the water depth as well!
     vec3 sunRadiance = sunColor * sunIntensity * depthFactor;
 
     Lo += CalculateCookTorrance(N, V, sunDir, sunRadiance, albedo, roughness, metallic, F0, worldPos);
 
-    // A. ACCUMULATE POINT LIGHTS (glowing creatures, etc.)
     for (int i = 0; i < MAX_POINT_LIGHTS; ++i) {
         vec3 L = normalize(pointLights[i].position - worldPos);
         float distance = length(pointLights[i].position - worldPos);
@@ -61,67 +70,80 @@ vec3 calculatePBR() {
         Lo += CalculateCookTorrance(N, V, L, radiance, albedo, roughness, metallic, F0, worldPos);
     }
 
-    // B. ACCUMULATE SPOTLIGHTS (Flashlights)
     for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
         vec3 L = normalize(spotLights[i].position - worldPos);
 
-        // Spotlight cone angle check
         float theta = dot(-L, normalize(spotLights[i].direction));
         float epsilon = spotLights[i].cutOff - spotLights[i].outerCutOff;
         float intensity = clamp((theta - spotLights[i].outerCutOff) / epsilon, 0.0, 1.0);
 
         float distance = length(spotLights[i].position - worldPos);
-        float attenuation = 1.0 / (distance * distance);
-        vec3 radiance = spotLights[i].color * spotLights[i].intensity * attenuation * intensity;
+        float attenuation = 1.0 / (distance * distance + 0.5);
+
+        float absorption = exp(-distance * 0.01);
+
+        vec3 radiance = spotLights[i].color * spotLights[i].intensity * attenuation * intensity * absorption;
 
         Lo += CalculateCookTorrance(N, V, L, radiance, albedo, roughness, metallic, F0, worldPos);
     }
 
-    // Combine
     vec3 color = ambient + Lo;
 
-    // --- 1. UNDERWATER COLOR ABSORPTION FILTER ---
-    if (cameraPos.y < 0.0) {
-        // Red is heavily absorbed (0.35), Green is slightly absorbed (0.75), Blue passes fully (1.0)
-        vec3 absorptionFilter = vec3(0.35, 0.75, 1.0);
+    if (worldPos.y < 0.0) {
+        float causticIntensity = calculateCaustics(worldPos.xz, time);
+        vec3 causticColor = vec3(0.5, 0.85, 1.0) * causticIntensity * 1.5;
 
+        float projectionMask = clamp(N.y, 0.0, 1.0);
+        causticColor *= depthFactor * projectionMask;
+        color += causticColor * albedo;
+    }
+
+    if (cameraPos.y < 0.0) {
+        vec3 absorptionFilter = vec3(0.35, 0.75, 1.0);
         color *= absorptionFilter;
     }
-    // ---------------------------------------------
 
-    // 2. Reinhard Tonemapping & Gamma Correction (Crucial for PBR)
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));
 
     if (cameraPos.y < 0.0) {
         float dist = length(cameraPos - worldPos);
-        float fogDensity = 0.035;
-        float fogFactor = clamp(exp(-dist * fogDensity), 0.0, 1.0);
 
-        vec3 waterFogColor = vec3(0.0, 0.05, 0.15); // Base dark blue
-        vec3 finalFogColor = waterFogColor;
+        float currentDrift = sin(worldPos.x * 0.08 + time * 0.3)
+        * cos(worldPos.z * 0.08 - time * 0.2)
+        * sin(worldPos.y * 0.04);
 
-        // Loop through all active spotlights and accumulate their scattering glow
+        float baseFogDensity = 0.035;
+        float dynamicDensity = baseFogDensity + (currentDrift * 0.008);
+        float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
+
+        vec3 surfaceFogColor = vec3(0.02, 0.22, 0.28);
+        vec3 deepAbyssalColor = vec3(0.002, 0.015, 0.06);
+        float depthBlend = clamp((worldPos.y + 45.0) / 45.0, 0.0, 1.0);
+        vec3 baseWaterColor = mix(deepAbyssalColor, surfaceFogColor, depthBlend);
+
+        vec3 sunDirection = normalize(vec3(0.1, 1.0, 0.15));
+        float viewSunAngle = max(dot(-V, sunDirection), 0.0);
+        vec3 sunHazeColor = vec3(0.4, 0.75, 0.9) * pow(viewSunAngle, 6.0) * 0.3;
+
+        vec3 finalFogColor = baseWaterColor + sunHazeColor;
+
         for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
             if (spotLights[i].intensity > 0.0) {
                 vec3 L = normalize(spotLights[i].position - worldPos);
-
-                // Spotlight cone angle check
                 float theta = dot(-L, normalize(spotLights[i].direction));
                 float epsilon = spotLights[i].cutOff - spotLights[i].outerCutOff;
                 float spotIntensity = clamp((theta - spotLights[i].outerCutOff) / epsilon, 0.0, 1.0);
 
-                // Light attenuation over distance
                 float distanceToLight = length(spotLights[i].position - worldPos);
-                float attenuation = 1.0 / (distanceToLight * distanceToLight + 0.001);
+                float attenuation = 1.0 / (distanceToLight * distanceToLight + 0.5);
+                float absorption = exp(-distanceToLight * 0.01);
 
-                // Accumulate soft scattering glow
-                vec3 fogGlow = spotLights[i].color * spotLights[i].intensity * attenuation * spotIntensity * 0.15;
+                vec3 fogGlow = spotLights[i].color * spotLights[i].intensity * attenuation * spotIntensity * 0.15 * absorption;
                 finalFogColor += fogGlow;
             }
         }
 
-        // Blend the final pixel color with the multi-lit fog color
         color = mix(finalFogColor, color, fogFactor);
     }
 

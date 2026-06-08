@@ -27,9 +27,8 @@ public:
     ParticleEmitter(unsigned int maxParticles);
     ~ParticleEmitter() override;
 
-    bool active = false; // Toggle on/off
+    bool active = false;
 
-    // Virtual overrides to integrate into your engine
     bool hasCustomRender() const override { return true; }
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
 
@@ -40,11 +39,11 @@ private:
     void emit();
 
     std::vector<CPUParticle> particles;
-    mutable std::vector<GPUParticle> gpuData; // mutable so we can modify it inside const customRender
+    mutable std::vector<GPUParticle> gpuData;
 
     GLuint vao = 0;
     GLuint quadVbo = 0;
-    mutable GLuint instanceVbo = 0; // mutable to allow buffer updates in const function
+    mutable GLuint instanceVbo = 0;
     GLuint shader = 0;
     unsigned int maxParticlesCount;
     float spawnTimer = 0.0f;

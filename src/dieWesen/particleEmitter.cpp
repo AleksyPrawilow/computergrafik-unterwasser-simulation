@@ -53,17 +53,13 @@ ParticleEmitter::~ParticleEmitter() {
 void ParticleEmitter::emit() {
     if (particles.size() >= maxParticlesCount) return;
 
-    // --- MATHEMATICAL GENIUS PORTION ---
-    // Convert local emission offset (e.g. at the back of the sub) to WORLD space
-    // using the inherited global matrix!
     glm::mat4 globalMatrix = getGlobalModelMatrix();
     glm::vec3 globalOrigin = glm::vec3(globalMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    // Convert local velocity direction to WORLD space (W = 0.0f ignores parent position, only rotates/scales)
     glm::vec3 localVelocity = glm::vec3(
         (rand() % 100 / 1000.0f) - 0.05f,
         (rand() % 100 / 1000.0f) - 0.05f,
-        -1.5f - (rand() % 100 / 100.0f) // Shoot backward relative to parent front
+        -1.5f - (rand() % 100 / 100.0f)
     );
     glm::vec3 globalVelocity = glm::vec3(globalMatrix * glm::vec4(localVelocity, 0.0f));
 
@@ -74,37 +70,29 @@ void ParticleEmitter::emit() {
 }
 
 void ParticleEmitter::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    // 1. Spawning logic
     if (active) {
         spawnTimer += deltaTime;
-        while (spawnTimer >= 0.02f) { // Emit a bubble every 20ms
+        while (spawnTimer >= 0.02f) {
             spawnTimer -= 0.02f;
             emit();
         }
     }
 
-    // 2. Update active world-space particles
     gpuData.clear();
     for (auto it = particles.begin(); it != particles.end();) {
         it->life -= deltaTime;
         if (it->life <= 0.0f) {
             it = particles.erase(it);
         } else {
-            // 1. --- APPLY FLUID DRAG & BUOYANCY ---
-            // Damp horizontal and forward velocity rapidly to 0.0f (water drag)
-            float dragFactor = 4.0f; // Higher values make them slow down faster
+            float dragFactor = 4.0f;
             it->velocity.x *= glm::exp(-dragFactor * deltaTime);
             it->velocity.z *= glm::exp(-dragFactor * deltaTime);
 
-            // Buoyancy: Smoothly transition vertical speed to a gentle rising speed (e.g. 1.8 m/s)
             float riseTarget = 1.8f;
             it->velocity.y = glm::mix(it->velocity.y, riseTarget, 1.0f - glm::exp(-2.0f * deltaTime));
-            // --------------------------------------
 
-            // Move particle
             it->position += it->velocity * deltaTime;
 
-            // Wobble physics (decreases as the particle slows down)
             float speedDamping = glm::exp(-dragFactor * (it->maxLife - it->life));
             it->position.x += sin(it->life * 6.0f) * 0.05f * speedDamping * deltaTime;
             it->position.z += cos(it->life * 6.0f) * 0.05f * speedDamping * deltaTime;

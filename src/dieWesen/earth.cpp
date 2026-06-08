@@ -29,8 +29,6 @@ void Earth::init() {
 void Earth::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
         queueDestroy();
-    }
 
-    const auto time = static_cast<float>(glfwGetTime());
-    transform.rotation = glm::angleAxis(time * 0.4f, glm::vec3(0, 1, 0));
+    }
 }

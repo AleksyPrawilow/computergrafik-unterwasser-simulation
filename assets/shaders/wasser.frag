@@ -2,46 +2,38 @@
 out vec4 FragColor;
 
 in vec3 worldPos;
-in vec2 texCoord; // Added
-in mat3 TBN;     // Added
+in vec2 texCoord;
+in mat3 TBN;
 
 uniform vec3 cameraPos;
 uniform float time;
-uniform sampler2D normalMap; // Binds your water_normal.png automatically!
+uniform sampler2D normalMap;
 
 void main() {
     vec3 viewDir = normalize(cameraPos - worldPos);
-    vec3 lightDir = normalize(vec3(0.3, 1.0, 0.4)); // Directional sun
+    vec3 lightDir = normalize(vec3(0.3, 1.0, 0.4));
 
-    // 1. --- DUAL-SCROLLING NORMAL RIPPLES ---
-    // Scale up the texCoords (e.g., 15.0) so the ripples tile nicely across the giant water plane
     vec2 uv1 = texCoord * 15.0 + vec2(time * 0.02, time * 0.01);
     vec2 uv2 = texCoord * 15.0 + vec2(time * -0.015, time * 0.02);
 
-    // Sample the normal map twice
     vec3 norm1 = texture(normalMap, uv1).rgb * 2.0 - 1.0;
     vec3 norm2 = texture(normalMap, uv2).rgb * 2.0 - 1.0;
 
-    // Blend them together and transform into World Space using TBN
     vec3 blendedNormal = normalize(norm1 + norm2);
     vec3 normal = normalize(TBN * blendedNormal);
 
-    // 2. Base colors
     vec3 surfaceColor = vec3(0.0, 0.35, 0.5);
 
-    // 3. Ambient & Diffuse lighting (Using the new detailed scrolling normal!)
     vec3 ambient = surfaceColor * 0.4;
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = surfaceColor * diff * 0.6;
 
-    // 4. Specular reflections (Calculates tiny glistening sun highlights!)
     vec3 halfwayDir = normalize(lightDir + viewDir);
     float specFactor = pow(max(dot(normal, halfwayDir), 0.0), 128.0);
     vec3 specular = vec3(0.9, 0.95, 1.0) * specFactor * 0.8;
 
     vec3 finalColor = ambient + diffuse + specular;
 
-    // 5. --- FOG TO SEAMLESSLY BLEND WITH THE DEEP SEA ---
     vec3 fogColor;
     if (cameraPos.y < 0.0) {
         fogColor = vec3(0.0, 0.05, 0.15);
@@ -54,7 +46,7 @@ void main() {
     float fogFactor = clamp(exp(-dist * fogDensity), 0.0, 1.0);
 
     vec3 foggedColor = mix(fogColor, finalColor, fogFactor);
-    float finalAlpha = mix(1.0, 0.6, fogFactor); // 1.0 at distance, 0.6 close up
+    float finalAlpha = mix(1.0, 0.6, fogFactor);
 
     FragColor = vec4(foggedColor, finalAlpha);
 }

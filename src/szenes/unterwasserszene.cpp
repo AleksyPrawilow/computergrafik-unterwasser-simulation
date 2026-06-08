@@ -19,6 +19,7 @@
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/skyboxHelper.h"
 #include "../dieWesen/jellyfish.h"
+#include "dieWesen/oceanFloor.h"
 #include "werkzeuge/lightManager.h"
 
 GLuint programTex;
@@ -38,6 +39,7 @@ Renderer renderer;
 auto * uboot = new Uboot();
 auto * wasser = new Wasser();
 auto * earth = new Earth();
+auto * oceanFloor = new OceanFloor();
 Fadenkreuz fadenkreuz;
 Kamera kamera;
 std::vector<Wesen *> diewesen;
@@ -65,6 +67,7 @@ void init(GLFWwindow* window)
 
 	diewesen.push_back(uboot);
 	diewesen.push_back(earth);
+	diewesen.push_back(oceanFloor);
 
 	diewesen.push_back(new Jellyfish());
 
@@ -116,7 +119,7 @@ void renderLoop(GLFWwindow* window) {
 			renderer.render(*wesen, view, projection, kamera.transform.position);
 		}
 
-		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera);
+		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -125,7 +128,7 @@ void renderLoop(GLFWwindow* window) {
 		glEnable(GL_CULL_FACE);
 		glDisable(GL_BLEND);
 
-		fadenkreuz.draw(uboot->transform, view * projection);
+		fadenkreuz.draw(uboot->transform, projection * view);
 
 		diewesen.erase(std::remove_if(diewesen.begin(), diewesen.end(), [](const Wesen* wesen) {
 			if (wesen->isQueuedDestroyed) {

@@ -42,6 +42,10 @@ set(PROJECT_SOURCES
         src/dieWesen/ubootRotor.h
         src/dieWesen/particleEmitter.cpp
         src/dieWesen/particleEmitter.h
+        src/dieWesen/timer.cpp
+        src/dieWesen/timer.h
+        src/dieWesen/oceanFloor.cpp
+        src/dieWesen/oceanFloor.h
 )
 
 set(SOIL_SOURCES

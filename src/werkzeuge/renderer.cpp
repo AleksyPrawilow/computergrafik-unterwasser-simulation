@@ -48,6 +48,10 @@ void Renderer::render (const Wesen& e, const glm::mat4& view, const glm::mat4& p
         glm::value_ptr(cameraPos)
     );
 
+    if (const GLint timeLocation = glGetUniformLocation(m.shader, "time"); timeLocation != -1) {
+        glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
+    }
+
     Kern::SetActiveTexture(m.albedo, "colorTexture", m.shader, 0);
     if (m.normal != 0) {
         Kern::SetActiveTexture(m.normal, "normalMap", m.shader, 1);

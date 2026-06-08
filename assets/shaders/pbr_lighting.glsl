@@ -1,7 +1,5 @@
-// assets/shaders/pbr_lighting.glsl
 const float PI = 3.14159265359;
 
-// 1. Structures
 struct PointLight {
     vec3 position;
     vec3 color;
@@ -23,7 +21,6 @@ struct SpotLight {
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 
-// 2. Math Helpers (Must be declared before CalculateCookTorrance)
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
     float a = roughness * roughness;
     float a2 = a * a;
@@ -60,7 +57,6 @@ vec3 FresnelSchlick(float cosTheta, vec3 F0) {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-// 3. Cook-Torrance calculation (Must be declared after Math Helpers)
 vec3 CalculateCookTorrance(
     vec3 N, vec3 V, vec3 L, vec3 radiance, vec3 albedo,
     float roughness, float metallic, vec3 F0, vec3 worldPos
