@@ -5,6 +5,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SKYBOXHELPER_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SKYBOXHELPER_H
 #include "glew.h"
+#include <glm.hpp>
 
 inline float skyboxVertices[] = {
     // Positions

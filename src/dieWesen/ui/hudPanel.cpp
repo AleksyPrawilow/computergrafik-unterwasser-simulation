@@ -1,0 +1,82 @@
+//
+// Created by Alexey Pravilov on 10/06/2026.
+//
+
+#include "hudPanel.h"
+
+#include "werkzeuge/textur.h"
+#include "werkzeuge/ui/uiLabel.h"
+
+void HudPanel::onInit() {
+	GLuint fontTex = Kern::LoadTexture("assets/textures/font_atlas.png");
+    GLuint heartTex = Kern::LoadTexture("assets/textures/heart.png");
+    GLuint waveTex = Kern::LoadTexture("assets/textures/heart.png");
+    GLuint propTex = Kern::LoadTexture("assets/textures/heart.png");
+
+	setSpacing(12.0f);
+    transform.position = glm::vec3(80.0f, 20.0f, 0.0f);
+
+    const auto healthRow = new HBoxUI();
+	healthRow->setSpacing(8.0f);
+    healthRow->init();
+    addChild(healthRow);
+
+    const auto hpIcon = new UIElement();
+    hpIcon->init();
+    hpIcon->material.albedo = heartTex;
+    hpIcon->transform.scale = glm::vec3(72.0f, 72.0f, 1.0f);
+    healthRow->addChild(hpIcon);
+
+    hpLabel = new UILabel();
+	hpLabel->setText("100", 64.0f, fontTex);
+    hpLabel->init();
+    hpLabel->color = glm::vec4(1.0f, 0.2f, 0.2f, 0.9f);
+    healthRow->addChild(hpLabel);
+
+    const auto depthRow = new HBoxUI();
+	depthRow->setSpacing(8.0f);
+    depthRow->init();
+    addChild(depthRow);
+
+    const auto depthIcon = new UIElement();
+    depthIcon->init();
+    depthIcon->material.albedo = waveTex;
+    depthIcon->transform.scale = glm::vec3(72.0f, 72.0f, 1.0f);
+    depthRow->addChild(depthIcon);
+
+    depthLabel = new UILabel();
+	depthLabel->setText("DEPTH: 0M", 64.0f, fontTex);
+    depthLabel->init();
+    depthLabel->color = glm::vec4(0.0f, 0.8f, 1.0f, 0.9f);
+    depthRow->addChild(depthLabel);
+
+
+    const auto speedRow = new HBoxUI();
+	speedRow->setSpacing(8.0f);
+    speedRow->init();
+    addChild(speedRow);
+
+    const auto speedIcon = new UIElement();
+    speedIcon->init();
+    speedIcon->material.albedo = propTex;
+    speedIcon->transform.scale = glm::vec3(72.0f, 72.0f, 1.0f);
+    speedRow->addChild(speedIcon);
+
+    speedLabel = new UILabel();
+	speedLabel->setText("SPEED: 0M", 64.0f, fontTex);
+    speedLabel->init();
+    speedLabel->color = glm::vec4(0.0f, 1.0f, 0.4f, 0.9f);
+    speedRow->addChild(speedLabel);
+}
+
+void HudPanel::setHealth(const float newHealth) const {
+	hpLabel->text = std::to_string(newHealth);
+}
+
+void HudPanel::setDepth(const float newDepth) const {
+	depthLabel->text = std::to_string(static_cast<int>(newDepth)) + "m";
+}
+
+void HudPanel::setSpeed(const float newSpeed) const {
+	speedLabel->text = std::to_string(static_cast<int>(newSpeed)) + "km/h";
+}

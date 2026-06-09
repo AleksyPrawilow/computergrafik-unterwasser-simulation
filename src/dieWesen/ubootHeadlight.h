@@ -5,7 +5,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_UBOOTHEADLIGHT_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_UBOOTHEADLIGHT_H
 #include "timer.h"
-#include "werkzeuge/lightManager.h"
+#include "../werkzeuge/visual/lightManager.h"
 #include "werkzeuge/wesen.h"
 
 

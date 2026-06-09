@@ -18,6 +18,7 @@ struct Material {
     GLuint metallic = 0;
     GLuint emission = 0;
     bool isTransparent = false;
+    bool isUI = false;
 };
 
 class Renderer;
@@ -30,11 +31,12 @@ public:
     Material material;
     Wesen * parent = nullptr;
     std::vector<Wesen *> children;
+    float boundingRadius = 0.0f;
     bool isQueuedDestroyed = false;
 
     void loadModel( const char * filepath );
     void addChild( Wesen * wesen );
-    Transform getGlobalTransform() const;
+    virtual Transform getGlobalTransform() const;
     void queueDestroy();
     [[nodiscard]] glm::mat4 getGlobalModelMatrix() const;
 

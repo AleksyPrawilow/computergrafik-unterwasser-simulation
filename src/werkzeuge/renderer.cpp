@@ -3,11 +3,13 @@
 //
 
 #include "renderer.h"
-
-#include "lightManager.h"
+#include "visual/lightManager.h"
 #include "shaderManager.h"
 #include "textur.h"
+#include "wesen.h"
+#include "renderWerkzeuge.h"
 #include "gtc/type_ptr.inl"
+#include <algorithm>
 
 extern GLuint cubemapTexture;
 
@@ -17,8 +19,9 @@ void Renderer::init() {
 }
 
 void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
-    // Simply push to the correct queue depending on material transparency
-    if (e.material.isTransparent) {
+    if (e.material.isUI) {
+        uiQueue.push_back(&e);
+    } else if (e.material.isTransparent) {
         transparentQueue.push_back(&e);
     } else {
         opaqueQueue.push_back(&e);
@@ -29,7 +32,7 @@ void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& pr
     }
 }
 
-void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const {
     for (const Wesen* e : opaqueQueue) {
         drawElement(*e, view, projection, cameraPos);
     }
@@ -38,31 +41,38 @@ void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, co
 void Renderer::drawTransparent(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
     if (transparentQueue.empty()) return;
 
-    // --- ALPHA BLENDING DEPTH SORTING ---
-    // Sort transparent objects back-to-front relative to camera position
     std::sort(transparentQueue.begin(), transparentQueue.end(), [&cameraPos](const Wesen* a, const Wesen* b) {
-        float distA = glm::distance(glm::vec3(a->getGlobalModelMatrix()[3]), cameraPos);
-        float distB = glm::distance(glm::vec3(b->getGlobalModelMatrix()[3]), cameraPos);
-        return distA > distB; // Descending order (furthest away rendered first)
+        const float distA = glm::distance(glm::vec3(a->getGlobalModelMatrix()[3]), cameraPos);
+        const float distB = glm::distance(glm::vec3(b->getGlobalModelMatrix()[3]), cameraPos);
+        return distA > distB;
     });
 
-    // Enable transparent rendering states
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_CULL_FACE);
-    glDepthMask(GL_FALSE); // Disable depth writing so transparent objects don't block each other
+    Kern::SetBlendState(true);
+    Kern::SetCullState(false);
+    Kern::SetDepthWriteState(false);
 
     for (const Wesen* e : transparentQueue) {
         drawElement(*e, view, projection, cameraPos);
     }
 
-    glDepthMask(GL_TRUE); // Re-enable depth writing
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
+    Kern::SetDepthWriteState(true);
+    Kern::SetCullState(true);
+    Kern::SetBlendState(false);
 }
 
-// Your actual OpenGL drawing code (moved from render)
-void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+void Renderer::drawUI(const glm::mat4& view, const glm::mat4& projection) const {
+    if (uiQueue.empty()) return;
+
+    Kern::Set2DRenderState(true);
+
+    for (const Wesen* e : uiQueue) {
+        drawElement(*e, view, projection, glm::vec3(0.0f));
+    }
+
+    Kern::Set2DRenderState(false);
+}
+
+void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const {
     if (e.hasCustomRender()) {
         e.customRender(view, projection);
         return;
@@ -85,6 +95,7 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     }
 
     Kern::SetActiveTexture(m.albedo, "colorTexture", m.shader, 0);
+
     if (m.normal != 0) {
         Kern::SetActiveTexture(m.normal, "normalMap", m.shader, 1);
     } else {
@@ -106,8 +117,6 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     }
 
     const auto& pointLights = LightManager::getInstance().getPointLights();
-    const auto& spotLights = LightManager::getInstance().getSpotLights();
-
     for (int i = 0; i < 4; ++i) {
         std::string base = "pointLights[" + std::to_string(i) + "].";
         if (i < pointLights.size()) {
@@ -119,6 +128,7 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
         }
     }
 
+    const auto& spotLights = LightManager::getInstance().getSpotLights();
     for (int i = 0; i < 2; ++i) {
         std::string base = "spotLights[" + std::to_string(i) + "].";
         if (i < spotLights.size()) {

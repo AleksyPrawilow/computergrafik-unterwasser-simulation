@@ -57,6 +57,11 @@ void Uboot::init() {
         rotors[i] = rotor;
         emitters[i] = emitter;
     }
+
+    testRaycast = new RayCast();
+    testRaycast->targetPosition = glm::vec3(0.0f, 0.0f, -15.0f);
+
+    addChild(testRaycast);
 }
 
 void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
@@ -95,6 +100,16 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     for (ParticleEmitter * emitter : emitters) {
         emitter->active = (transform.position.y < waveHeight) && (glm::abs(actualRotorSpeed) > 2.0f);
     }
+
+    // if (testRaycast != nullptr && testRaycast->isColliding()) {
+    //     Wesen* hitObject = testRaycast->getCollider();
+    //     const glm::vec3 hitPoint = testRaycast->getCollisionPoint();
+    //     const glm::vec3 hitNormal = testRaycast->getCollisionNormal();
+    //
+    //     std::cout << "Laser pointing at: " << typeid(*hitObject).name() << std::endl
+    //               << " | Hit Point: " << hitPoint.y
+    //               << " | Normal: " << hitNormal.y << std::endl;
+    // }
 }
 
 void Uboot::prepareUniforms() const {

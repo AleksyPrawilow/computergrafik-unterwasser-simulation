@@ -7,13 +7,13 @@
 #include "moon.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
-#include "werkzeuge/tween.h"
+#include "../werkzeuge/visual/tween.h"
 
 void Earth::init() {
     material.albedo = Kern::LoadTexture("assets/textures/RockTexture001_ao.png");
     material.normal = Kern::LoadTexture("assets/textures/RockTexture001_normal.png");
     material.metallic = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
-    //transform.position = glm::vec3(40.0f, -50.0f, 30.0f);
+    boundingRadius = 4.0f;
     transform.scale = glm::vec3(40.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",

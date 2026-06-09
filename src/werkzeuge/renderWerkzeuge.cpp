@@ -6,6 +6,8 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include "gtc/matrix_transform.hpp"
+
 const int Kern::VertexData::MAX_ATTRIBS;
 
 void Kern::RenderContext::initFromAssimpMesh(aiMesh* mesh) {
@@ -123,4 +125,54 @@ void Kern::DrawContext(const Kern::RenderContext& context)
 		(void*)0           // element array buffer offset
 	);
 	glBindVertexArray(0);
+}
+
+glm::vec2 Kern::GetViewportSize() {
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	return glm::vec2(static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
+}
+
+glm::mat4 Kern::GetOrthoProjection() {
+	const glm::vec2 size = GetViewportSize();
+	// Top-Left of screen is (0,0)
+	return glm::ortho(0.0f, size.x, size.y, 0.0f, -1.0f, 1.0f);
+}
+
+void Kern::Set2DRenderState(const bool enable) {
+	if (enable) {
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+	}
+}
+
+void Kern::DrawQuad(const GLuint vao) {
+	glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+void Kern::SetBlendState(const bool enable) {
+	if (enable) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glDisable(GL_BLEND);
+	}
+}
+
+void Kern::SetDepthWriteState(const bool enable) {
+	glDepthMask(enable ? GL_TRUE : GL_FALSE);
+}
+
+void Kern::SetCullState(const bool enable) {
+	if (enable) {
+		glEnable(GL_CULL_FACE);
+	} else {
+		glDisable(GL_CULL_FACE);
+	}
 }

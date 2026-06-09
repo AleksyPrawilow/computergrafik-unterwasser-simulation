@@ -11,7 +11,7 @@
 #include "../werkzeuge/transform.h"
 #include "../werkzeuge/renderer.h"
 #include "../werkzeuge/wesen.h"
-#include "../dieWesen/fadenkreuz.h"
+#include "../dieWesen/ui/fadenkreuz.h"
 #include "../dieWesen/uboot.h"
 #include "../werkzeuge/kamera.h"
 #include "dieWesen/earth.h"
@@ -20,8 +20,9 @@
 #include "werkzeuge/skyboxHelper.h"
 #include "../dieWesen/jellyfish.h"
 #include "dieWesen/oceanFloor.h"
-#include "werkzeuge/lightManager.h"
-#include "werkzeuge/tween.h"
+#include "../werkzeuge/visual/lightManager.h"
+#include "../werkzeuge/visual/tween.h"
+#include "dieWesen/ui/hudPanel.h"
 
 GLuint programTex;
 GLuint cubemapTexture;
@@ -41,6 +42,7 @@ auto * uboot = new Uboot();
 auto * wasser = new Wasser();
 auto * earth = new Earth();
 auto * oceanFloor = new OceanFloor();
+auto * hudPanel = new HudPanel();
 Fadenkreuz fadenkreuz;
 Kamera kamera;
 std::vector<Wesen *> diewesen;
@@ -68,7 +70,7 @@ void init(GLFWwindow* window)
 	diewesen.push_back(earth);
 	diewesen.push_back(oceanFloor);
 	diewesen.push_back(wasser);
-
+	diewesen.push_back(hudPanel);
 	diewesen.push_back(new Jellyfish());
 
 	for (Wesen * wesen: diewesen) {
@@ -101,25 +103,36 @@ void renderLoop(GLFWwindow* window) {
 
 		processInput(window);
 
-       for (Wesen * wesen: diewesen) {
-            wesen->update(window, deltaTime, kamera.transform);
-        }
+		for (Wesen * wesen: diewesen) {
+       		wesen->update(window, deltaTime, kamera.transform);
+		}
 
-        glm::mat4 view = kamera.getViewMatrix();
-        glm::mat4 projection = kamera.getProjectionMatrix();
-        glm::mat4 viewProj = projection * view;
+		if (hudPanel != nullptr) {
+			float depthVal = -uboot->transform.position.y;
+			float speedVal = 3 * 3.6f;
 
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+			if (depthVal < 0.0f) depthVal = 0.0f;
 
-        for (const Wesen * wesen: diewesen) {
-            renderer.render(*wesen, view, projection, kamera.transform.position);
-        }
+			hudPanel->setDepth(depthVal);
+			hudPanel->setSpeed(speedVal);
+		}
 
-        renderer.drawOpaque(view, projection, kamera.transform.position);
-        RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
-        renderer.drawTransparent(view, projection, kamera.transform.position);
+	    glm::mat4 view = kamera.getViewMatrix();
+	    glm::mat4 projection = kamera.getProjectionMatrix();
+	    glm::mat4 viewProj = projection * view;
+
+	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	    for (const Wesen * wesen: diewesen) {
+	        renderer.render(*wesen, view, projection, kamera.transform.position);
+	    }
+
+	    renderer.drawOpaque(view, projection, kamera.transform.position);
+	    RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
+	    renderer.drawTransparent(view, projection, kamera.transform.position);
 		fadenkreuz.draw(uboot->transform, viewProj);
-        renderer.clearQueues();
+		renderer.drawUI(view, projection);
+	    renderer.clearQueues();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

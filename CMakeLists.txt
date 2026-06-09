@@ -21,8 +21,8 @@ set(PROJECT_SOURCES
         src/werkzeuge/renderer.h
         src/dieWesen/uboot.cpp
         src/dieWesen/uboot.h
-        src/dieWesen/fadenkreuz.cpp
-        src/dieWesen/fadenkreuz.h
+        src/dieWesen/ui/fadenkreuz.cpp
+        src/dieWesen/ui/fadenkreuz.h
         src/werkzeuge/kamera.cpp
         src/werkzeuge/kamera.h
         src/szenes/unterwasserszene.cpp
@@ -36,8 +36,8 @@ set(PROJECT_SOURCES
         src/dieWesen/earth.h
         src/dieWesen/moon.cpp
         src/dieWesen/moon.h
-        src/werkzeuge/lightManager.cpp
-        src/werkzeuge/lightManager.h
+        src/werkzeuge/visual/lightManager.cpp
+        src/werkzeuge/visual/lightManager.h
         src/dieWesen/ubootRotor.cpp
         src/dieWesen/ubootRotor.h
         src/dieWesen/particleEmitter.cpp
@@ -48,8 +48,20 @@ set(PROJECT_SOURCES
         src/dieWesen/oceanFloor.h
         src/dieWesen/ubootHeadlight.cpp
         src/dieWesen/ubootHeadlight.h
-        src/werkzeuge/tween.cpp
-        src/werkzeuge/tween.h
+        src/werkzeuge/visual/tween.cpp
+        src/werkzeuge/visual/tween.h
+        src/werkzeuge/physics/raycast.cpp
+        src/werkzeuge/physics/raycast.h
+        src/werkzeuge/ui/wesenUI.cpp
+        src/werkzeuge/ui/wesenUI.h
+        src/werkzeuge/ui/uiLabel.cpp
+        src/werkzeuge/ui/uiLabel.h
+        src/werkzeuge/ui/worldspaceUI.cpp
+        src/werkzeuge/ui/worldspaceUI.h
+        src/werkzeuge/ui/uiContainers.cpp
+        src/werkzeuge/ui/uiContainers.h
+        src/dieWesen/ui/hudPanel.cpp
+        src/dieWesen/ui/hudPanel.h
 )
 
 set(SOIL_SOURCES

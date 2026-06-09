@@ -5,12 +5,13 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #include "particleEmitter.h"
+#include "../werkzeuge/physics/raycast.h"
 #include "timer.h"
 #include "ubootHeadlight.h"
 #include "ubootRotor.h"
 #include "../werkzeuge/wesen.h"
 #include "../werkzeuge/transform.h"
-#include "../werkzeuge/lightManager.h"
+#include "../werkzeuge/visual/lightManager.h"
 
 struct CPUWave {
     glm::vec2 direction;
@@ -31,7 +32,7 @@ public:
     void prepareUniforms() const override;
 private:
     ViewMode viewMode = ViewMode::THIRD_PERSON;
-
+    RayCast * testRaycast = nullptr;
     UbootHeadlight * headlights[2] = {nullptr};
     Timer * spotlightTimer {};
     ParticleEmitter* emitters[4] = {nullptr};
