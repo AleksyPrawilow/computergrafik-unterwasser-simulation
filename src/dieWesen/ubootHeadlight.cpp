@@ -32,15 +32,18 @@ void UbootHeadlight::init() {
     );
 }
 
-void UbootHeadlight::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+void UbootHeadlight::onUpdate(GLFWwindow* window, const float deltaTime, Transform& cameraTransform) {
+    constexpr float pitchSpeed = 1.0f;
     if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
-        transform.pitch(1.0f * deltaTime);
+        currentPitch += pitchSpeed * deltaTime;
     }
 
     if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
-        transform.pitch(-1.0f * deltaTime);
+        currentPitch -= pitchSpeed * deltaTime;
     }
 
+    currentPitch = glm::clamp(currentPitch, glm::radians(-30.0f), glm::radians(30.0f));
+    transform.rotation = glm::angleAxis(currentPitch, glm::vec3(1.0f, 0.0f, 0.0f));
     spotlight->position = getGlobalTransform().position;
     spotlight->direction = getGlobalTransform().forward();
 }

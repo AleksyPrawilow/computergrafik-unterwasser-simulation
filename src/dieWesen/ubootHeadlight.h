@@ -14,6 +14,7 @@ public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 private:
+    float currentPitch = 0.0f;
     SpotLight * spotlight {};
     Timer * timer {};
     void onTimerEnd();

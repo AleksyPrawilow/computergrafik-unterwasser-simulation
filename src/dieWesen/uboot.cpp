@@ -167,7 +167,7 @@ void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) c
 
     glm::vec3 swayedCamPos = targetCamPos;
 
-    if (transform.position.y < getWaterHeight(transform.position.x, transform.position.z, deltaTime)) {
+    if (auto time = static_cast<float>(glfwGetTime()); transform.position.y < getWaterHeight(transform.position.x, transform.position.z, time)) {
         auto t = static_cast<float>(glfwGetTime());
         float swayMultiplier = (viewMode == ViewMode::FIRST_PERSON) ? 0.2f : 1.0f;
 
