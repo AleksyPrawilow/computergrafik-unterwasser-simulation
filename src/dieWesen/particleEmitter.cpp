@@ -9,7 +9,7 @@
 
 ParticleEmitter::ParticleEmitter(unsigned int maxParticles) : maxParticlesCount(maxParticles) {
     shader = ShaderManager::getInstance().loadShader("particle", "assets/shaders/particle.vert", "assets/shaders/particle.frag");
-
+    material.isTransparent = true;
     float quadVertices[] = {
         -0.5f,  0.5f, 0.0f,  0.0f, 1.0f,
         -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
@@ -113,14 +113,8 @@ void ParticleEmitter::customRender(const glm::mat4& view, const glm::mat4& proje
     glBindBuffer(GL_ARRAY_BUFFER, instanceVbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, gpuData.size() * sizeof(GPUParticle), gpuData.data());
 
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    glDisable(GL_CULL_FACE);
-
     glBindVertexArray(vao);
     glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, gpuData.size());
 
-    glEnable(GL_CULL_FACE);
-    glDisable(GL_BLEND);
     glUseProgram(0);
 }

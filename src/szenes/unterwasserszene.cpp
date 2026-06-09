@@ -60,8 +60,6 @@ void init(GLFWwindow* window)
 
 	renderer.init();
 
-	wasser->init();
-
 	initSkybox();
 	cubemapTexture = Kern::LoadCubemap(skyboxFaces);
 	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
@@ -69,6 +67,7 @@ void init(GLFWwindow* window)
 	diewesen.push_back(uboot);
 	diewesen.push_back(earth);
 	diewesen.push_back(oceanFloor);
+	diewesen.push_back(wasser);
 
 	diewesen.push_back(new Jellyfish());
 
@@ -102,46 +101,25 @@ void renderLoop(GLFWwindow* window) {
 
 		processInput(window);
 
-		for (Wesen * wesen: diewesen) {
-			wesen->update(window, deltaTime, kamera.transform);
-		}
+       for (Wesen * wesen: diewesen) {
+            wesen->update(window, deltaTime, kamera.transform);
+        }
 
-		TweenManager::getInstance().update(deltaTime);
+        glm::mat4 view = kamera.getViewMatrix();
+        glm::mat4 projection = kamera.getProjectionMatrix();
+        glm::mat4 viewProj = projection * view;
 
-		glm::mat4 view = kamera.getViewMatrix();
-		glm::mat4 projection = kamera.getProjectionMatrix();
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		if (constexpr float WATER_HEIGHT = 0.0f; kamera.transform.position.y < WATER_HEIGHT) {
-			glClearColor(0.0f, 0.05f, 0.15f, 1.0f);
-		} else {
-			glClearColor(0.4f, 0.6f, 0.9f, 1.0f);
-		}
+        for (const Wesen * wesen: diewesen) {
+            renderer.render(*wesen, view, projection, kamera.transform.position);
+        }
 
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-		for (const Wesen * wesen: diewesen) {
-			renderer.render(*wesen, view, projection, kamera.transform.position);
-		}
-
-		RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
-
-		glEnable(GL_BLEND);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		glDisable(GL_CULL_FACE);
-		renderer.render(*wasser, view, projection, kamera.transform.position);
-		glEnable(GL_CULL_FACE);
-		glDisable(GL_BLEND);
-
-		fadenkreuz.draw(uboot->transform, projection * view);
-
-		diewesen.erase(std::remove_if(diewesen.begin(), diewesen.end(), [](const Wesen* wesen) {
-			if (wesen->isQueuedDestroyed) {
-					delete wesen;
-					return true;
-				}
-				return false;
-			}), diewesen.end()
-		);
+        renderer.drawOpaque(view, projection, kamera.transform.position);
+        RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
+        renderer.drawTransparent(view, projection, kamera.transform.position);
+		fadenkreuz.draw(uboot->transform, viewProj);
+        renderer.clearQueues();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();

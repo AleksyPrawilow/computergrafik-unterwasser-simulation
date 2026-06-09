@@ -46,7 +46,7 @@ void UbootHeadlight::onUpdate(GLFWwindow* window, float deltaTime, Transform& ca
 }
 
 void UbootHeadlight::onTimerEnd() {
-    spotlight->intensity = spotlight->intensity > 0 ? 0.0f : 100.0f;
+    //spotlight->intensity = spotlight->intensity > 0 ? 0.0f : 100.0f;
     timer->startTimer(1.0f, [this]() {
         this->onTimerEnd();
     });

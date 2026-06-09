@@ -5,23 +5,70 @@
 #include "renderer.h"
 
 #include "lightManager.h"
+#include "shaderManager.h"
 #include "textur.h"
 #include "gtc/type_ptr.inl"
+
+extern GLuint cubemapTexture;
 
 void Renderer::init() {
     defaultNormal = Kern::LoadTexture("assets/textures/default_normal.png");
     defaultEmission = Kern::LoadTexture("assets/textures/default_emission.png");
 }
 
-void Renderer::render (const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos)
-{
+void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+    // Simply push to the correct queue depending on material transparency
+    if (e.material.isTransparent) {
+        transparentQueue.push_back(&e);
+    } else {
+        opaqueQueue.push_back(&e);
+    }
+
+    for (const Wesen* child : e.children) {
+        render(*child, view, projection, cameraPos);
+    }
+}
+
+void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+    for (const Wesen* e : opaqueQueue) {
+        drawElement(*e, view, projection, cameraPos);
+    }
+}
+
+void Renderer::drawTransparent(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+    if (transparentQueue.empty()) return;
+
+    // --- ALPHA BLENDING DEPTH SORTING ---
+    // Sort transparent objects back-to-front relative to camera position
+    std::sort(transparentQueue.begin(), transparentQueue.end(), [&cameraPos](const Wesen* a, const Wesen* b) {
+        float distA = glm::distance(glm::vec3(a->getGlobalModelMatrix()[3]), cameraPos);
+        float distB = glm::distance(glm::vec3(b->getGlobalModelMatrix()[3]), cameraPos);
+        return distA > distB; // Descending order (furthest away rendered first)
+    });
+
+    // Enable transparent rendering states
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glDisable(GL_CULL_FACE);
+    glDepthMask(GL_FALSE); // Disable depth writing so transparent objects don't block each other
+
+    for (const Wesen* e : transparentQueue) {
+        drawElement(*e, view, projection, cameraPos);
+    }
+
+    glDepthMask(GL_TRUE); // Re-enable depth writing
+    glEnable(GL_CULL_FACE);
+    glDisable(GL_BLEND);
+}
+
+// Your actual OpenGL drawing code (moved from render)
+void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
     if (e.hasCustomRender()) {
         e.customRender(view, projection);
         return;
     }
 
     const Material& m = e.material;
-
     glUseProgram(m.shader);
 
     glm::mat4 model = e.getGlobalModelMatrix();
@@ -29,25 +76,9 @@ void Renderer::render (const Wesen& e, const glm::mat4& view, const glm::mat4& p
 
     e.prepareUniforms();
 
-    glUniformMatrix4fv(
-        glGetUniformLocation(m.shader, "transformation"),
-        1,
-        GL_FALSE,
-        &mvp[0][0]
-    );
-
-    glUniformMatrix4fv(
-        glGetUniformLocation(m.shader, "modelMatrix"),
-        1,
-        GL_FALSE,
-        &model[0][0]
-    );
-
-    glUniform3fv(
-        glGetUniformLocation(m.shader, "cameraPos"),
-        1,
-        glm::value_ptr(cameraPos)
-    );
+    glUniformMatrix4fv(glGetUniformLocation(m.shader, "transformation"), 1, GL_FALSE, &mvp[0][0]);
+    glUniformMatrix4fv(glGetUniformLocation(m.shader, "modelMatrix"), 1, GL_FALSE, &model[0][0]);
+    glUniform3fv(glGetUniformLocation(m.shader, "cameraPos"), 1, glm::value_ptr(cameraPos));
 
     if (const GLint timeLocation = glGetUniformLocation(m.shader, "time"); timeLocation != -1) {
         glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
@@ -102,9 +133,13 @@ void Renderer::render (const Wesen& e, const glm::mat4& view, const glm::mat4& p
         }
     }
 
+    GLint skyboxLocation = glGetUniformLocation(m.shader, "skybox");
+    if (skyboxLocation != -1) {
+        glUniform1i(skyboxLocation, 4);
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+    }
+
     Kern::DrawContext(e.mesh);
-
     glUseProgram(0);
-
-    e.postRender(this, view, projection, cameraPos);
 }

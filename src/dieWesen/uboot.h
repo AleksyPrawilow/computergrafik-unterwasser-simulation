@@ -19,12 +19,19 @@ struct CPUWave {
     float speed;
 };
 
+enum class ViewMode {
+    FIRST_PERSON,
+    THIRD_PERSON
+};
+
 class Uboot: public Wesen {
 public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void prepareUniforms() const override;
 private:
+    ViewMode viewMode = ViewMode::THIRD_PERSON;
+
     UbootHeadlight * headlights[2] = {nullptr};
     Timer * spotlightTimer {};
     ParticleEmitter* emitters[4] = {nullptr};

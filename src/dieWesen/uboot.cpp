@@ -19,6 +19,25 @@ void Uboot::init() {
         );
     loadModel("assets/models/uboot.obj");
 
+    auto * windshield = new Wesen();
+    windshield->init();
+    windshield->loadModel("assets/models/uboot_windshield.obj");
+
+    windshield->material.albedo = material.albedo;
+    windshield->material.roughness = material.roughness;
+    windshield->material.metallic = material.metallic;
+    windshield->material.normal = Kern::LoadTexture("assets/textures/water_normal.png");
+    windshield->material.isTransparent = true;
+    windshield->material.shader = ShaderManager::getInstance().loadShader(
+        "windshield",
+        "assets/shaders/default.vert",
+        "assets/shaders/refract.frag"
+    );
+
+    addChild(windshield);
+    windshield->transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
+
+
     for (int i = 0; i < 2; i++) {
         auto * headlight = new UbootHeadlight();
         addChild(headlight);
@@ -89,6 +108,13 @@ void Uboot::prepareUniforms() const {
 }
 
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
+    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+        viewMode = ViewMode::FIRST_PERSON;
+    }
+    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+        viewMode = ViewMode::THIRD_PERSON;
+    }
+
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
         targetMoveSpeed = moveSpeed;
         targetRotorSpeed = rotorSpeed;
@@ -120,26 +146,43 @@ void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) c
     const glm::vec3 forward = transform.forward();
     const glm::vec3 up = transform.up();
 
-    const glm::vec3 targetCamPos = shipPos - forward * 3.0f + up * 0.5f;
+    glm::vec3 targetCamPos;
+    glm::vec3 lookAtTarget;
+    float camFollowSpeed;
+    float camRotateSpeed;
+
+    if (viewMode == ViewMode::THIRD_PERSON) {
+        targetCamPos = shipPos - forward * 3.0f + up * 0.5f;
+        lookAtTarget = shipPos + up * 0.5f;
+        camFollowSpeed = 6.0f;
+        camRotateSpeed = 8.0f;
+    }
+    else {
+        targetCamPos = shipPos + forward * 0.7f;
+        lookAtTarget = shipPos + forward * 10.0f;
+
+        camFollowSpeed = 200.0f;
+        camRotateSpeed = 40.0f;
+    }
+
     glm::vec3 swayedCamPos = targetCamPos;
 
     if (transform.position.y < getWaterHeight(transform.position.x, transform.position.z, deltaTime)) {
         auto t = static_cast<float>(glfwGetTime());
-        float swayX = sin(t * 1.2f) * 0.15f;
-        float swayY = cos(t * 1.0f) * 0.10f;
-        float swayZ = sin(t * 0.8f) * 0.15f;
+        float swayMultiplier = (viewMode == ViewMode::FIRST_PERSON) ? 0.2f : 1.0f;
+
+        float swayX = sin(t * 1.2f) * 0.15f * swayMultiplier;
+        float swayY = cos(t * 1.0f) * 0.10f * swayMultiplier;
+        float swayZ = sin(t * 0.8f) * 0.15f * swayMultiplier;
         swayedCamPos += glm::vec3(swayX, swayY, swayZ);
     }
 
     const glm::quat currentCamRot = cameraTransform.rotation;
-    cameraTransform.lookAt(shipPos + up * 0.5f, up);
+    cameraTransform.lookAt(lookAtTarget, up);
     const glm::quat targetCamRot = cameraTransform.rotation;
 
-    constexpr float camFollowSpeed = 6.0f;
-    constexpr float camRotateSpeed = 8.0f;
-
-    const float tFollow = 1.0f - glm::exp(-camFollowSpeed * deltaTime);
-    const float tRotate = 1.0f - glm::exp(-camRotateSpeed * deltaTime);
+    const float tFollow = viewMode == ViewMode::FIRST_PERSON ? 1.0f : 1.0f - glm::exp(-camFollowSpeed * deltaTime);
+    const float tRotate = viewMode == ViewMode::FIRST_PERSON ? 1.0f : 1.0f - glm::exp(-camRotateSpeed * deltaTime);
 
     cameraTransform.position = glm::mix(cameraTransform.position, swayedCamPos, tFollow);
     cameraTransform.rotation = glm::slerp(currentCamRot, targetCamRot, tRotate);
@@ -184,14 +227,6 @@ void Uboot::handleRolls(GLFWwindow* window, const float deltaTime) {
     transform.pitch(pitchVelocity * deltaTime);
     transform.yaw(yawVelocity * deltaTime);
 }
-
-// void Uboot::onTimerEnd() {
-//     spotlightLeft->intensity = spotlightLeft->intensity == 100.0f ? 0.0f: 100.0f;
-//     spotlightRight->intensity = spotlightRight->intensity == 100.0f ? 0.0f: 100.0f;
-//     spotlightTimer->startTimer(0.5f, [this]() {
-//         this->onTimerEnd();
-//     });
-// }
 
 float Uboot::getWaterHeight(const float x, const float z, const float t) {
     CPUWave waves[3] = {
