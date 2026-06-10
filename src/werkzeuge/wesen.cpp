@@ -4,6 +4,7 @@
 
 #include "wesen.h"
 #include "freeglut.h"
+#include "groupManager.h"
 #include "textur.h"
 #include "renderWerkzeuge.h"
 
@@ -12,6 +13,11 @@ Wesen::~Wesen() {
         delete child;
     }
     children.clear();
+
+    for (const std::string& groupName : myGroups) {
+        GroupManager::getInstance().removeFromGroup(groupName, this);
+    }
+    myGroups.clear();
 
     if (parent != nullptr) {
         auto& pc = parent->children;
@@ -35,34 +41,39 @@ void Wesen::addChild(Wesen* wesen) {
     wesen->init();
 }
 
-Transform Wesen::getGlobalTransform() const {
-    if (parent == nullptr) {
-        return transform;
-    }
-    auto [position, rotation, scale] = parent->getGlobalTransform();
-    Transform global;
-    global.scale = scale * transform.scale;
-    global.rotation = rotation * transform.rotation;
-    global.position = position + (rotation * (transform.position * scale));
-
-    return global;
-}
-
 void Wesen::queueDestroy() {
     isQueuedDestroyed = true;
 }
 
-glm::mat4 Wesen::getGlobalModelMatrix() const {
-    if (parent != nullptr) {
-        return parent->getGlobalModelMatrix() * transform.getModelMatrix();
+void Wesen::addToGroup(const std::string& groupName) {
+    if (std::find(myGroups.begin(), myGroups.end(), groupName) == myGroups.end()) {
+        myGroups.push_back(groupName);
+        GroupManager::getInstance().addToGroup(groupName, this);
     }
-    return transform.getModelMatrix();
+}
+
+void Wesen::removeFromGroup(const std::string& groupName) {
+    if (const auto it = std::find(myGroups.begin(), myGroups.end(), groupName); it != myGroups.end()) {
+        myGroups.erase(it);
+        GroupManager::getInstance().removeFromGroup(groupName, this);
+    }
+}
+
+bool Wesen::isInGroup(const std::string& groupName) const {
+    return std::find(myGroups.begin(), myGroups.end(), groupName) != myGroups.end();
+}
+
+const std::vector<Wesen*>& Wesen::getNodesInGroup(const std::string& groupName) {
+    return GroupManager::getInstance().getEntitiesInGroup(groupName);
 }
 
 void Wesen::init() {}
 
 void Wesen::update(GLFWwindow* window, const float deltaTime, Transform& cameraTransform) {
     onUpdate(window, deltaTime, cameraTransform);
+
+    updateGlobalTransforms();
+
     for (Wesen* child : children) {
         child->update(window, deltaTime, cameraTransform);
     }
@@ -88,4 +99,20 @@ void Wesen::postRender(
         renderer->render(*wesen, view, projection, cameraPos);
         wesen->postRender(renderer, view, projection, cameraPos);
     }
+}
+
+void Wesen::updateGlobalTransforms() {
+    if (parent == nullptr) {
+        cachedGlobalModelMatrix = transform.getModelMatrix();
+        cachedGlobalTransform = transform;
+        return;
+    }
+
+    auto [position, rotation, scale] = parent->getGlobalTransform();
+
+    cachedGlobalTransform.scale = scale * transform.scale;
+    cachedGlobalTransform.rotation = rotation * transform.rotation;
+    cachedGlobalTransform.position = position + (rotation * (transform.position * scale));
+
+    cachedGlobalModelMatrix = parent->getGlobalModelMatrix() * transform.getModelMatrix();
 }

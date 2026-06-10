@@ -6,6 +6,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #include "glew.h"
+#include "groupManager.h"
 #include "renderer.h"
 #include "renderWerkzeuge.h"
 #include "transform.h"
@@ -36,9 +37,13 @@ public:
 
     void loadModel( const char * filepath );
     void addChild( Wesen * wesen );
-    virtual Transform getGlobalTransform() const;
+    [[nodiscard]] virtual Transform getGlobalTransform() const { return cachedGlobalTransform; }
     void queueDestroy();
-    [[nodiscard]] glm::mat4 getGlobalModelMatrix() const;
+    [[nodiscard]] glm::mat4 getGlobalModelMatrix() const { return cachedGlobalModelMatrix; }
+    void addToGroup(const std::string& groupName);
+    void removeFromGroup(const std::string& groupName);
+    bool isInGroup(const std::string& groupName) const;
+    static const std::vector<Wesen*>& getNodesInGroup(const std::string& groupName);
 
     virtual void init();
     void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
@@ -47,7 +52,15 @@ public:
     void postRender(Renderer * renderer, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const;
     [[nodiscard]] virtual bool hasCustomRender() const { return false; }
     virtual void customRender(const glm::mat4& view, const glm::mat4& projection) const {}
+
+protected:
+    virtual void updateGlobalTransforms();
+
+    glm::mat4 cachedGlobalModelMatrix = glm::mat4(1.0f);
+    Transform cachedGlobalTransform;
+
 private:
+    std::vector<std::string> myGroups;
 };
 
 

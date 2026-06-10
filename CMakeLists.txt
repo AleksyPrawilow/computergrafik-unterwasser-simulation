@@ -62,6 +62,8 @@ set(PROJECT_SOURCES
         src/werkzeuge/ui/uiContainers.h
         src/dieWesen/ui/hudPanel.cpp
         src/dieWesen/ui/hudPanel.h
+        src/werkzeuge/groupManager.cpp
+        src/werkzeuge/groupManager.h
 )
 
 set(SOIL_SOURCES
