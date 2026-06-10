@@ -8,6 +8,8 @@
 #include "werkzeuge/ui/uiLabel.h"
 
 void HudPanel::onInit() {
+	uboot = static_cast<Uboot* >(getNodesInGroup("player")[0]);
+
 	GLuint fontTex = Kern::LoadTexture("assets/textures/font_atlas.png");
     GLuint heartTex = Kern::LoadTexture("assets/textures/heart.png");
     GLuint waveTex = Kern::LoadTexture("assets/textures/heart.png");
@@ -67,6 +69,20 @@ void HudPanel::onInit() {
     speedLabel->init();
     speedLabel->color = glm::vec4(0.0f, 1.0f, 0.4f, 0.9f);
     speedRow->addChild(speedLabel);
+}
+
+void HudPanel::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+	VBoxUI::onUpdate(window, deltaTime, cameraTransform);
+
+	if (uboot != nullptr) {
+		float depthVal = -uboot->transform.position.y;
+		const float speedVal = uboot->getSpeed() * 3.6f;
+
+		if (depthVal < 0.0f) depthVal = 0.0f;
+
+		setDepth(depthVal);
+		setSpeed(speedVal);
+	}
 }
 
 void HudPanel::setHealth(const float newHealth) const {

@@ -18,6 +18,9 @@ void Uboot::init() {
         "assets/shaders/default.frag"
         );
     loadModel("assets/models/uboot.obj");
+    transform.position = glm::vec3(-12.f, -1.f, 0.f);
+
+    addToGroup("player");
 
     auto * windshield = new Wesen();
     windshield->init();

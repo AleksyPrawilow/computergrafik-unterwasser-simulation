@@ -24,7 +24,9 @@ public:
 
     [[nodiscard]] bool hasCustomRender() const override { return true; }
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
-    [[nodiscard]] Transform getGlobalTransform() const override;
+
+protected:
+    void updateGlobalTransforms() override;
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_WESENUI_H

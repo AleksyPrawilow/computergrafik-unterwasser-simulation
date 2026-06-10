@@ -37,12 +37,8 @@ std::vector<std::string> skyboxFaces {
 	"assets/textures/skybox/nz.png"
 };
 
-Renderer renderer;
 auto * uboot = new Uboot();
-auto * wasser = new Wasser();
-auto * earth = new Earth();
-auto * oceanFloor = new OceanFloor();
-auto * hudPanel = new HudPanel();
+Renderer renderer;
 Fadenkreuz fadenkreuz;
 Kamera kamera;
 std::vector<Wesen *> diewesen;
@@ -67,17 +63,16 @@ void init(GLFWwindow* window)
 	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
 	diewesen.push_back(uboot);
-	diewesen.push_back(earth);
-	diewesen.push_back(oceanFloor);
-	diewesen.push_back(wasser);
-	diewesen.push_back(hudPanel);
+	diewesen.push_back(new Earth());
+	diewesen.push_back(new OceanFloor());
+	diewesen.push_back(new Wasser());
+	diewesen.push_back(new HudPanel());
 	diewesen.push_back(new Jellyfish());
 
 	for (Wesen * wesen: diewesen) {
 		wesen->init();
 	}
 
-	uboot->transform.position = glm::vec3(-12.f, -1.f, 0.f);
 	fadenkreuz.init(kamera.getAspectRatio());
 }
 
@@ -105,16 +100,6 @@ void renderLoop(GLFWwindow* window) {
 
 		for (Wesen * wesen: diewesen) {
        		wesen->update(window, deltaTime, kamera.transform);
-		}
-
-		if (hudPanel != nullptr) {
-			float depthVal = -uboot->transform.position.y;
-			float speedVal = 3 * 3.6f;
-
-			if (depthVal < 0.0f) depthVal = 0.0f;
-
-			hudPanel->setDepth(depthVal);
-			hudPanel->setSpeed(speedVal);
 		}
 
 	    glm::mat4 view = kamera.getViewMatrix();

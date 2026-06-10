@@ -34,11 +34,11 @@ void UbootHeadlight::init() {
 
 void UbootHeadlight::onUpdate(GLFWwindow* window, const float deltaTime, Transform& cameraTransform) {
     constexpr float pitchSpeed = 1.0f;
-    if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
         currentPitch += pitchSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
         currentPitch -= pitchSpeed * deltaTime;
     }
 

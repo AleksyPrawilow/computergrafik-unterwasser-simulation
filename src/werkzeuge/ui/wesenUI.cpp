@@ -61,18 +61,19 @@ void UIElement::customRender(const glm::mat4& view, const glm::mat4& projection)
     glUseProgram(0);
 }
 
-Transform UIElement::getGlobalTransform() const {
+void UIElement::updateGlobalTransforms() {
     if (parent == nullptr) {
-        return transform;
+        cachedGlobalModelMatrix = transform.getModelMatrix();
+        cachedGlobalTransform = transform;
+        return;
     }
 
-    auto [position, rotation, scale] = parent->getGlobalTransform();
-    Transform global;
+    const Transform parentGlobal = parent->getGlobalTransform();
 
-    global.scale = transform.scale;
-    global.rotation = rotation * transform.rotation;
+    cachedGlobalTransform.scale = transform.scale;
+    cachedGlobalTransform.rotation = parentGlobal.rotation * transform.rotation;
+    cachedGlobalTransform.position = parentGlobal.position + (parentGlobal.rotation * transform.position);
 
-    global.position = position + (rotation * transform.position);
-
-    return global;
+    const glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(cachedGlobalTransform.position.x, cachedGlobalTransform.position.y, 0.0f));
+    cachedGlobalModelMatrix = glm::scale(model, glm::vec3(cachedGlobalTransform.scale.x, cachedGlobalTransform.scale.y, 1.0f));
 }
