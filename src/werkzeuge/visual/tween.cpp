@@ -75,6 +75,14 @@ void Tween::addProperty(std::unique_ptr<TweenPropertyBase> prop) {
     parallelMode = false;
 }
 
+void TweenManager::killTweensOwnedBy(const Wesen* ownerEntity) {
+    if (ownerEntity == nullptr) return;
+
+    activeTweens.erase(std::remove_if(activeTweens.begin(), activeTweens.end(), [ownerEntity](const std::unique_ptr<Tween>& t) {
+        return t->owner == ownerEntity;
+    }), activeTweens.end());
+}
+
 Tween* TweenManager::createTween() {
     auto tween = std::make_unique<Tween>();
     Tween* ptr = tween.get();

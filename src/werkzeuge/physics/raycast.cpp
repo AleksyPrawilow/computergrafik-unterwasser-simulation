@@ -8,7 +8,7 @@
 
 #include "werkzeuge/wesen.h"
 
-extern std::vector<Wesen*> diewesen;
+extern Wesen * scene;
 
 bool IntersectRaySphere(const glm::vec3& ro, const glm::vec3& rd, const glm::vec3& sCenter, const float radius, float& out_t) {
     const glm::vec3 l = sCenter - ro;
@@ -68,7 +68,7 @@ void RayCast::ensureUpdated() const {
     float closestHitT = std::numeric_limits<float>::max();
     Wesen* closestHitEntity = nullptr;
 
-    for (Wesen* rootEntity : diewesen) {
+    for (Wesen* rootEntity : scene->children) {
         CheckRayCollisionRecursive(
             rayOrigin,
             rayDirection,

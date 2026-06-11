@@ -5,6 +5,7 @@
 #include "ubootHeadlight.h"
 
 #include "gtx/wrap.inl"
+#include "werkzeuge/input.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 
@@ -34,11 +35,11 @@ void UbootHeadlight::init() {
 
 void UbootHeadlight::onUpdate(GLFWwindow* window, const float deltaTime, Transform& cameraTransform) {
     constexpr float pitchSpeed = 1.0f;
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_Q)) {
         currentPitch += pitchSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_E)) {
         currentPitch -= pitchSpeed * deltaTime;
     }
 

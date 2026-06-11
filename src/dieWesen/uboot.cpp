@@ -5,6 +5,8 @@
 
 #include "ubootRotor.h"
 #include "../werkzeuge/textur.h"
+#include "ui/fadenkreuz.h"
+#include "werkzeuge/input.h"
 #include "werkzeuge/shaderManager.h"
 
 void Uboot::init() {
@@ -40,6 +42,9 @@ void Uboot::init() {
     addChild(windshield);
     windshield->transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
 
+    auto* crosshair = new Fadenkreuz();
+    crosshair->init(16.0f / 9.0f);
+    addChild(crosshair);
 
     for (int i = 0; i < 2; i++) {
         auto * headlight = new UbootHeadlight();
@@ -126,32 +131,32 @@ void Uboot::prepareUniforms() const {
 }
 
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
-    if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS) {
+    if (Input::isKeyJustPressed(GLFW_KEY_1)) {
         viewMode = ViewMode::FIRST_PERSON;
     }
-    if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS) {
+    if (Input::isKeyJustPressed(GLFW_KEY_2)) {
         viewMode = ViewMode::THIRD_PERSON;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_W)) {
         targetMoveSpeed = moveSpeed;
         targetRotorSpeed = rotorSpeed;
         transform.position += transform.forward() * actualMoveSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_S)) {
         targetMoveSpeed = moveSpeedBackward;
         targetRotorSpeed = rotorSpeedBackward;
         transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_A)) {
         targetMoveSpeed = moveSpeedBackward;
         targetRotorSpeed = rotorSpeedBackward;
         targetRollVelocity = -angleSpeed;
         transform.position -= transform.right() * actualMoveSpeed / 2.0f * deltaTime;
     }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_D)) {
         targetMoveSpeed = moveSpeedBackward;
         targetRotorSpeed = rotorSpeedBackward;
         targetRollVelocity = angleSpeed;

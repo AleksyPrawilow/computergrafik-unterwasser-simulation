@@ -1,7 +1,8 @@
 #include "glew.h"
 #include <GLFW/glfw3.h>
 #include <iostream>
-#include "szenes/unterwasserszene.h"
+
+#include "sceneManager.h"
 
 int main(int argc, char** argv)
 {
@@ -27,10 +28,11 @@ int main(int argc, char** argv)
 	glViewport(0, 0, fbWidth, fbHeight);
 
 	glewInit();
-	init(window);
-	renderLoop(window);
 
-	shutdown(window);
+	Scene::init(window);
+	Scene::renderLoop(window);
+	Scene::shutdown(window);
+
 	glfwTerminate();
 	return 0;
 }

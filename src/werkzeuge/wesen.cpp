@@ -7,12 +7,15 @@
 #include "groupManager.h"
 #include "textur.h"
 #include "renderWerkzeuge.h"
+#include "visual/tween.h"
 
 Wesen::~Wesen() {
     for (const Wesen* child : children) {
         delete child;
     }
     children.clear();
+
+    TweenManager::getInstance().killTweensOwnedBy(this);
 
     for (const std::string& groupName : myGroups) {
         GroupManager::getInstance().removeFromGroup(groupName, this);
@@ -47,6 +50,10 @@ float Wesen::getUIScaleFactor() const {
 
 void Wesen::queueDestroy() {
     isQueuedDestroyed = true;
+}
+
+Tween* Wesen::createTween() {
+    return TweenManager::getInstance().createTween()->setOwner(this);
 }
 
 void Wesen::addToGroup(const std::string& groupName) {
@@ -84,6 +91,8 @@ void Wesen::update(GLFWwindow* window, const float deltaTime, Transform& cameraT
 
     children.erase(std::remove_if(children.begin(), children.end(), [](Wesen* child) {
         if (child->isQueuedDestroyed) {
+            child->parent = nullptr;
+
             delete child;
             return true;
         }

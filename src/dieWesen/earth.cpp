@@ -8,6 +8,7 @@
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 #include "../werkzeuge/visual/tween.h"
+#include "werkzeuge/input.h"
 
 void Earth::init() {
     material.albedo = Kern::LoadTexture("assets/textures/RockTexture001_ao.png");
@@ -24,7 +25,7 @@ void Earth::init() {
 
     auto * moon = new Moon();
     addChild(moon);
-    TweenManager::getInstance().createTween()
+    createTween()
         ->tweenProperty(&transform.position.y, 2.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
         ->tweenCallback([this]() {
             std::cout << "Rock reached peak! Emitting bubble burst..." << std::endl;
@@ -34,7 +35,7 @@ void Earth::init() {
 }
 
 void Earth::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (glfwGetKey(window, GLFW_KEY_V) == GLFW_PRESS) {
+    if (Input::isKeyJustPressed(GLFW_KEY_V)) {
         queueDestroy();
     }
 }

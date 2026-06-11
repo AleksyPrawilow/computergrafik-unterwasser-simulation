@@ -25,8 +25,8 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/fadenkreuz.h
         src/werkzeuge/kamera.cpp
         src/werkzeuge/kamera.h
-        src/szenes/unterwasserszene.cpp
-        src/szenes/unterwasserszene.h
+        src/sceneManager.cpp
+        src/sceneManager.h
         src/werkzeuge/shaderManager.cpp
         src/werkzeuge/shaderManager.h
         src/werkzeuge/skyboxHelper.h
@@ -68,6 +68,8 @@ set(PROJECT_SOURCES
         src/werkzeuge/input.h
         src/werkzeuge/textureManager.cpp
         src/werkzeuge/textureManager.h
+        src/szenes/unterwasserszeneWesen.cpp
+        src/szenes/unterwasserszeneWesen.h
 )
 
 set(SOIL_SOURCES

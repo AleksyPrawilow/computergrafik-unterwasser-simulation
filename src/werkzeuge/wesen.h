@@ -11,6 +11,8 @@
 #include "renderWerkzeuge.h"
 #include "transform.h"
 
+class Tween;
+
 struct Material {
     GLuint shader = 0;
     GLuint albedo = 0;
@@ -42,6 +44,7 @@ public:
     virtual float getUIScaleFactor() const;
     void queueDestroy();
     [[nodiscard]] glm::mat4 getGlobalModelMatrix() const { return cachedGlobalModelMatrix; }
+    Tween* createTween();
     void addToGroup(const std::string& groupName);
     void removeFromGroup(const std::string& groupName);
     bool isInGroup(const std::string& groupName) const;

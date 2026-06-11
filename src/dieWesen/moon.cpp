@@ -4,6 +4,7 @@
 
 #include "moon.h"
 
+#include "werkzeuge/input.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 
@@ -19,7 +20,7 @@ void Moon::init() {
 }
 
 void Moon::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (glfwGetKey(window, GLFW_KEY_B) == GLFW_PRESS) {
+    if (Input::isKeyJustPressed(GLFW_KEY_B)) {
         queueDestroy();
     }
 

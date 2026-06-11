@@ -5,15 +5,18 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_CROSSHAIR_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_CROSSHAIR_H
 #include "glew.h"
-#include "glm.hpp"
-#include "werkzeuge/transform.h"
+#include "werkzeuge/ui/wesenUI.h"
 
-class Fadenkreuz {
+class Fadenkreuz: public UIElement {
 public:
     Fadenkreuz();
-    ~Fadenkreuz();
+    ~Fadenkreuz() override;
+
     void init(float aspectRatio);
-    void draw(const Transform& target, const glm::mat4& viewProj) const;
+
+    // --- ENGINES-LEVEL OVERRIDES ---
+    bool hasCustomRender() const override { return true; }
+    void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
 
 private:
     GLuint shaderProgram = 0;

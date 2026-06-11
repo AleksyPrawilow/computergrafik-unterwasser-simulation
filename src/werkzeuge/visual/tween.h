@@ -11,6 +11,8 @@
 #include <memory>
 #include <vector>
 
+class Wesen;
+
 enum class EaseType {
     LINEAR,
     EASE_IN,            // Quad In
@@ -204,6 +206,8 @@ public:
 
 class Tween {
 public:
+    Wesen * owner = nullptr;
+
     template<typename T>
     Tween* tweenProperty(T* target, const T& endVal, float duration, EaseType ease = EaseType::LINEAR) {
         auto prop = std::make_unique<TweenProperty<T>>(target, endVal, duration, ease);
@@ -217,6 +221,11 @@ public:
         }
 
         parallelMode = false;
+        return this;
+    }
+
+    Tween* setOwner(Wesen* ownerEntity) {
+        this->owner = ownerEntity;
         return this;
     }
 
@@ -244,6 +253,8 @@ public:
         static TweenManager instance;
         return instance;
     }
+
+    void killTweensOwnedBy(const Wesen* ownerEntity);
 
     Tween* createTween();
     void update(float deltaTime);
