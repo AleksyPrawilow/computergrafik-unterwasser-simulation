@@ -10,16 +10,14 @@
 void HudPanel::onInit() {
 	uboot = dynamic_cast<Uboot* >(getNodesInGroup("player")[0]);
 
-	GLuint fontTex = Kern::LoadTexture("assets/textures/font_atlas.png");
-    GLuint heartTex = Kern::LoadTexture("assets/textures/heart.png");
-    GLuint waveTex = Kern::LoadTexture("assets/textures/heart.png");
-    GLuint propTex = Kern::LoadTexture("assets/textures/heart.png");
+    const GLuint heartTex = Kern::LoadTexture("assets/textures/heart.png", true);
+    const GLuint waveTex = Kern::LoadTexture("assets/textures/heart.png", true);
+    const GLuint propTex = Kern::LoadTexture("assets/textures/heart.png", true);
 
-	setSpacing(12.0f);
+	spacing = 12.0f;
     transform.position = glm::vec3(80.0f, 20.0f, 0.0f);
 
     const auto healthRow = new HBoxUI();
-	healthRow->setSpacing(8.0f);
     healthRow->init();
     addChild(healthRow);
 
@@ -30,12 +28,11 @@ void HudPanel::onInit() {
     healthRow->addChild(hpIcon);
 
     hpLabel = new UILabel();
-	hpLabel->setText("100", 64.0f, fontTex);
+	hpLabel->setText("100", 64.0f);
     hpLabel->init();
     healthRow->addChild(hpLabel);
 
     const auto depthRow = new HBoxUI();
-	depthRow->setSpacing(8.0f);
     depthRow->init();
     addChild(depthRow);
 
@@ -46,13 +43,12 @@ void HudPanel::onInit() {
     depthRow->addChild(depthIcon);
 
     depthLabel = new UILabel();
-	depthLabel->setText("DEPTH: 0M", 64.0f, fontTex);
+	depthLabel->setText("DEPTH: 0M", 64.0f);
     depthLabel->init();
     depthRow->addChild(depthLabel);
 
 
     const auto speedRow = new HBoxUI();
-	speedRow->setSpacing(8.0f);
     speedRow->init();
     addChild(speedRow);
 
@@ -63,7 +59,7 @@ void HudPanel::onInit() {
     speedRow->addChild(speedIcon);
 
     speedLabel = new UILabel();
-	speedLabel->setText("SPEED: 0M", 64.0f, fontTex);
+	speedLabel->setText("SPEED: 0M", 64.0f);
     speedLabel->init();
     speedRow->addChild(speedLabel);
 }

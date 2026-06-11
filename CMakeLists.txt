@@ -64,6 +64,10 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/hudPanel.h
         src/werkzeuge/groupManager.cpp
         src/werkzeuge/groupManager.h
+        src/werkzeuge/input.cpp
+        src/werkzeuge/input.h
+        src/werkzeuge/textureManager.cpp
+        src/werkzeuge/textureManager.h
 )
 
 set(SOIL_SOURCES

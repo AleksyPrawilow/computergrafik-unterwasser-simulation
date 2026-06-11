@@ -8,19 +8,33 @@
 #include "wesenUI.h"
 
 
+enum class UIAlignment {
+    START,
+    CENTER,
+    END
+};
+
 class VBoxUI : public UIElement {
 public:
     float spacing = 8.0f;
+    UIAlignment alignment = UIAlignment::START;
 
-    void setSpacing(float newSpacing = 8.0f);
+    explicit VBoxUI(const float spacing = 8.0f) : spacing(spacing) {}
+
+    VBoxUI* setAlignment(UIAlignment align);
+
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 };
 
 class HBoxUI : public UIElement {
 public:
     float spacing = 8.0f;
+    UIAlignment alignment = UIAlignment::CENTER;
 
-    void setSpacing(float newSpacing = 8.0f);
+    explicit HBoxUI(const float spacing = 8.0f) : spacing(spacing) {}
+
+    HBoxUI* setAlignment(UIAlignment align);
+
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 };
 

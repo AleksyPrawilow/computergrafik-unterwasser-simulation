@@ -8,21 +8,33 @@
 #include "../shaderManager.h"
 #include "gtc/type_ptr.hpp"
 
+enum class UIExpansion {
+    RIGHT,
+    CENTER,
+    LEFT
+};
+
 class UIElement : public Wesen {
 public:
     bool visible = true;
-    GLuint vao = 0;
-    GLuint vbo = 0;
+    UIExpansion expansion = UIExpansion::RIGHT;
 
+    static GLuint sharedFontTexture;
+    static GLuint sharedVAO;
+    static GLuint sharedVBO;
+    static GLuint sharedShader;
+
+    static void initUISystem();
+    static void cleanupUISystem();
     void init() override;
     virtual void onInit();
 
-    ~UIElement() override {
-        glDeleteVertexArrays(1, &vao);
-        glDeleteBuffers(1, &vbo);
-    }
+    ~UIElement() override = default;
+
+    UIElement* setExpansion(UIExpansion exp);
 
     [[nodiscard]] bool hasCustomRender() const override { return true; }
+    Transform getGlobalTransform() const override;
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
 
 protected:

@@ -13,8 +13,15 @@ public:
     Wesen* targetEntity = nullptr;
     glm::vec3 worldOffset = glm::vec3(0.0f);
 
+    bool shouldScale = true;
+
     void setTarget(Wesen* target, const glm::vec3& offset = glm::vec3(0.0f));
-    void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
+    void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
+
+    float getUIScaleFactor() const override;
+
+private:
+    glm::vec2 baseScale = glm::vec2(0.0f);
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_WORLDSPACEUI_H

@@ -41,6 +41,10 @@ void Wesen::addChild(Wesen* wesen) {
     wesen->init();
 }
 
+float Wesen::getUIScaleFactor() const {
+    return (parent != nullptr) ? parent->getUIScaleFactor() : 1.0f;
+}
+
 void Wesen::queueDestroy() {
     isQueuedDestroyed = true;
 }

@@ -6,10 +6,14 @@
 
 #include "werkzeuge/textur.h"
 
-void UILabel::setText(const std::string& text, const float size, const GLuint fontTexture) {
+void UILabel::onInit() {
+    material.albedo = sharedFontTexture;
+}
+
+void UILabel::setText(const std::string& text, const float size) {
     this->text = text;
     this->fontSize = size;
-    this->material.albedo = fontTexture;
+    this->material.albedo = sharedFontTexture;
     this->transform.scale = glm::vec3(static_cast<float>(text.length()) * (fontSize * 0.6f), fontSize, 1.0f);
 }
 
@@ -30,10 +34,12 @@ void UILabel::customRender(const glm::mat4& view, const glm::mat4& projection) c
 
     Kern::SetActiveTexture(material.albedo, "uiTexture", material.shader, 0);
 
-    const float charSpacing = fontSize * 0.6f;
+    float currentScaleFactor = getUIScaleFactor();
+    float scaledFontSize = fontSize * currentScaleFactor;
+    float charSpacing = scaledFontSize * 0.6f;
     const Transform global = getGlobalTransform();
 
-    glBindVertexArray(vao);
+    glBindVertexArray(sharedVAO);
 
     for (size_t i = 0; i < text.length(); ++i) {
         const char c = text[i];
@@ -45,7 +51,7 @@ void UILabel::customRender(const glm::mat4& view, const glm::mat4& projection) c
         auto charPos = glm::vec2(global.position.x + static_cast<float>(i) * charSpacing, global.position.y);
 
         glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(charPos, 0.0f));
-        model = glm::scale(model, glm::vec3(fontSize, fontSize, 1.0f));
+        model = glm::scale(model, glm::vec3(scaledFontSize, scaledFontSize, 1.0f));
 
         glUniformMatrix4fv(glGetUniformLocation(material.shader, "ortho"), 1, GL_FALSE, glm::value_ptr(ortho));
         glUniformMatrix4fv(glGetUniformLocation(material.shader, "model"), 1, GL_FALSE, glm::value_ptr(model));

@@ -39,6 +39,7 @@ public:
     void loadModel( const char * filepath );
     void addChild( Wesen * wesen );
     [[nodiscard]] virtual Transform getGlobalTransform() const { return cachedGlobalTransform; }
+    virtual float getUIScaleFactor() const;
     void queueDestroy();
     [[nodiscard]] glm::mat4 getGlobalModelMatrix() const { return cachedGlobalModelMatrix; }
     void addToGroup(const std::string& groupName);

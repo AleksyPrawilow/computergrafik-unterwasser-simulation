@@ -3,41 +3,61 @@
 //
 
 #include "worldspaceUI.h"
+
+#include "werkzeuge/kamera.h"
 #include "werkzeuge/textur.h"
+
+extern Kamera kamera;
 
 void WorldspaceUI::setTarget(Wesen* target, const glm::vec3& offset) {
     targetEntity = target;
     worldOffset = offset;
 }
 
-void WorldspaceUI::customRender(const glm::mat4& view, const glm::mat4& projection) const {
-    if (targetEntity == nullptr || targetEntity->isQueuedDestroyed || !visible || material.albedo == 0) return;
+void WorldspaceUI::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (targetEntity == nullptr || targetEntity->isQueuedDestroyed) {
+        visible = false;
+        return;
+    }
+
+    if (baseScale.x == 0.0f) {
+        baseScale = glm::vec2(transform.scale.x, transform.scale.y);
+    }
 
     const glm::vec3 worldPos = targetEntity->getGlobalTransform().position + worldOffset;
 
     GLint viewport[4];
     glGetIntegerv(GL_VIEWPORT, viewport);
     const glm::vec4 vpVector(viewport[0], viewport[1], viewport[2], viewport[3]);
+
+    glm::mat4 view = kamera.getViewMatrix();
+    glm::mat4 projection = kamera.getProjectionMatrix();
     const glm::vec3 screenPos = glm::project(worldPos, view, projection, vpVector);
 
-    if (screenPos.z < 0.0f || screenPos.z > 1.0f) return;
+    if (screenPos.z < 0.0f || screenPos.z > 1.0f) {
+        visible = false;
+    } else {
+        visible = true;
 
-    const glm::vec2 size = transform.scale;
-    const auto screenPosition = glm::vec2(screenPos.x - size.x / 2.0f, (viewport[3] - screenPos.y) - size.y / 2.0f);
+        float scaleFactor = 1.0f;
+        if (shouldScale) {
+            float dist = glm::distance(worldPos, kamera.transform.position);
+            float referenceDist = 12.0f;
+            scaleFactor = referenceDist / dist;
+            scaleFactor = glm::clamp(scaleFactor, 0.4f, 1.4f);
+        }
 
-    glUseProgram(material.shader);
-    glm::mat4 ortho = Kern::GetOrthoProjection();
+        transform.scale = glm::vec3(baseScale * scaleFactor, 1.0f);
 
-    glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(screenPosition, 0.0f));
-    model = glm::scale(model, glm::vec3(size, 1.0f));
+        transform.position = glm::vec3(
+            screenPos.x,
+            viewport[3] - screenPos.y,
+            0.0f
+        );
+    }
+}
 
-    glUniformMatrix4fv(glGetUniformLocation(material.shader, "ortho"), 1, GL_FALSE, glm::value_ptr(ortho));
-    glUniformMatrix4fv(glGetUniformLocation(material.shader, "model"), 1, GL_FALSE, glm::value_ptr(model));
-
-    Kern::SetActiveTexture(material.albedo, "uiTexture", material.shader, 0);
-
-
-    Kern::DrawQuad(vao);
-
-    glUseProgram(0);
+float WorldspaceUI::getUIScaleFactor() const {
+    if (!shouldScale || baseScale.x == 0.0f) return 1.0f;
+    return transform.scale.x / baseScale.x;
 }

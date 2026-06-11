@@ -23,6 +23,9 @@
 #include "../werkzeuge/visual/lightManager.h"
 #include "../werkzeuge/visual/tween.h"
 #include "dieWesen/ui/hudPanel.h"
+#include "werkzeuge/input.h"
+#include "werkzeuge/textureManager.h"
+#include "werkzeuge/ui/worldspaceUI.h"
 
 GLuint programTex;
 GLuint cubemapTexture;
@@ -57,17 +60,32 @@ void init(GLFWwindow* window)
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	renderer.init();
+	UIElement::initUISystem();
+	Input::init(window);
 
 	initSkybox();
 	cubemapTexture = Kern::LoadCubemap(skyboxFaces);
 	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
 
+	auto * jellyfish = new Jellyfish();
 	diewesen.push_back(uboot);
 	diewesen.push_back(new Earth());
 	diewesen.push_back(new OceanFloor());
 	diewesen.push_back(new Wasser());
 	diewesen.push_back(new HudPanel());
-	diewesen.push_back(new Jellyfish());
+	diewesen.push_back(jellyfish);
+
+	// TEST
+	auto * worldspaceUI = new WorldspaceUI();
+	diewesen.push_back(worldspaceUI);
+	worldspaceUI->shouldScale = true;;
+	worldspaceUI->setTarget(jellyfish);
+
+	auto * label = new UILabel();
+	label->setExpansion(UIExpansion::CENTER);
+	label->setText("Hello world!", 64.0f);
+	worldspaceUI->addChild(label);
+	// TEST
 
 	for (Wesen * wesen: diewesen) {
 		wesen->init();
@@ -81,11 +99,14 @@ void shutdown(GLFWwindow* window) {
 	LightManager::getInstance().cleanup();
 	TweenManager::getInstance().cleanup();
 	GroupManager::getInstance().cleanup();
+	TextureManager::getInstance().cleanup();
+	UIElement::cleanupUISystem();
 }
 
 void processInput(GLFWwindow* window) {
-	if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+	if (Input::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
 		glfwSetWindowShouldClose(window, true);
+	}
 }
 
 void renderLoop(GLFWwindow* window) {
@@ -97,6 +118,7 @@ void renderLoop(GLFWwindow* window) {
 		lastFrame = currentFrame;
 		if (deltaTime > 0.1f) deltaTime = 0.1f;
 
+		Input::update();
 		processInput(window);
 
 		for (Wesen * wesen: diewesen) {
@@ -116,13 +138,15 @@ void renderLoop(GLFWwindow* window) {
 	    }
 
 	    renderer.drawOpaque(view, projection, kamera.transform.position);
+
 	    RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
+
 	    renderer.drawTransparent(view, projection, kamera.transform.position);
 		fadenkreuz.draw(uboot->transform, viewProj);
+
 		renderer.drawUI(view, projection);
 	    renderer.clearQueues();
 
 		glfwSwapBuffers(window);
-		glfwPollEvents();
 	}
 }
