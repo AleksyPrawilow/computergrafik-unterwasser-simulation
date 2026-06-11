@@ -18,6 +18,7 @@ struct Material {
     GLuint roughness = 0;
     GLuint metallic = 0;
     GLuint emission = 0;
+    GLuint opacity = 0;
     bool isTransparent = false;
     bool isUI = false;
 };

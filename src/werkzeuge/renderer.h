@@ -32,6 +32,7 @@ private:
 
     GLuint defaultNormal = 0;
     GLuint defaultEmission = 0;
+    GLuint defaultOpacity = 0;
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_RENDERER_H

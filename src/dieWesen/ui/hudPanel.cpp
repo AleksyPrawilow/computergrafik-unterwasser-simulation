@@ -8,7 +8,7 @@
 #include "werkzeuge/ui/uiLabel.h"
 
 void HudPanel::onInit() {
-	uboot = static_cast<Uboot* >(getNodesInGroup("player")[0]);
+	uboot = dynamic_cast<Uboot* >(getNodesInGroup("player")[0]);
 
 	GLuint fontTex = Kern::LoadTexture("assets/textures/font_atlas.png");
     GLuint heartTex = Kern::LoadTexture("assets/textures/heart.png");
@@ -32,7 +32,6 @@ void HudPanel::onInit() {
     hpLabel = new UILabel();
 	hpLabel->setText("100", 64.0f, fontTex);
     hpLabel->init();
-    hpLabel->color = glm::vec4(1.0f, 0.2f, 0.2f, 0.9f);
     healthRow->addChild(hpLabel);
 
     const auto depthRow = new HBoxUI();
@@ -49,7 +48,6 @@ void HudPanel::onInit() {
     depthLabel = new UILabel();
 	depthLabel->setText("DEPTH: 0M", 64.0f, fontTex);
     depthLabel->init();
-    depthLabel->color = glm::vec4(0.0f, 0.8f, 1.0f, 0.9f);
     depthRow->addChild(depthLabel);
 
 
@@ -67,7 +65,6 @@ void HudPanel::onInit() {
     speedLabel = new UILabel();
 	speedLabel->setText("SPEED: 0M", 64.0f, fontTex);
     speedLabel->init();
-    speedLabel->color = glm::vec4(0.0f, 1.0f, 0.4f, 0.9f);
     speedRow->addChild(speedLabel);
 }
 

@@ -16,6 +16,7 @@ extern GLuint cubemapTexture;
 void Renderer::init() {
     defaultNormal = Kern::LoadTexture("assets/textures/default_normal.png");
     defaultEmission = Kern::LoadTexture("assets/textures/default_emission.png");
+    defaultOpacity = Kern::LoadTexture("assets/textures/default_opacity.png");
 }
 
 void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
@@ -114,6 +115,12 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
         Kern::SetActiveTexture(m.emission, "emissionMap", m.shader, 5);
     } else {
         Kern::SetActiveTexture(defaultEmission, "emissionMap", m.shader, 5);
+    }
+
+    if (m.opacity != 0) {
+        Kern::SetActiveTexture(m.opacity, "opacityMap", m.shader, 7);
+    } else {
+        Kern::SetActiveTexture(defaultOpacity, "opacityMap", m.shader, 7);
     }
 
     const auto& pointLights = LightManager::getInstance().getPointLights();

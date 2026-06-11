@@ -103,6 +103,8 @@ void renderLoop(GLFWwindow* window) {
        		wesen->update(window, deltaTime, kamera.transform);
 		}
 
+		TweenManager::getInstance().update(deltaTime);
+
 	    glm::mat4 view = kamera.getViewMatrix();
 	    glm::mat4 projection = kamera.getProjectionMatrix();
 	    glm::mat4 viewProj = projection * view;

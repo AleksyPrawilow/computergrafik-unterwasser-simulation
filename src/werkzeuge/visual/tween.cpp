@@ -4,6 +4,8 @@
 
 #include "tween.h"
 
+#include <iostream>
+
 Tween* Tween::tweenInterval(float duration) {
     addProperty(std::make_unique<TweenDelay>(duration));
     return this;

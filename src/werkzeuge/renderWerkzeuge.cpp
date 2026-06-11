@@ -135,7 +135,6 @@ glm::vec2 Kern::GetViewportSize() {
 
 glm::mat4 Kern::GetOrthoProjection() {
 	const glm::vec2 size = GetViewportSize();
-	// Top-Left of screen is (0,0)
 	return glm::ortho(0.0f, size.x, size.y, 0.0f, -1.0f, 1.0f);
 }
 

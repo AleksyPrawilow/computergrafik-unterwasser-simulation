@@ -3,10 +3,14 @@
 #include "../werkzeuge/textur.h"
 
 void Jellyfish::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/jellyfish.png");
+    material.albedo = Kern::LoadTexture("assets/textures/jellyfish_albedo.png");
+    material.emission = Kern::LoadTexture("assets/textures/jellyfish_emission_map.png");
+    material.opacity = Kern::LoadTexture("assets/textures/jellyfish_opacity.png");
+    material.normal = Kern::LoadTexture("assets/textures/jellyfish_normal_map.png");
+    material.isTransparent = true;
 
     transform.position = glm::vec3(1.0f, 0.0f, 1.0f);
-    transform.scale = glm::vec3(1.0f);
+    transform.scale = glm::vec3(0.25f);
 
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
@@ -14,7 +18,14 @@ void Jellyfish::init() {
         "assets/shaders/default.frag"
     );
 
-    loadModel("assets/models/jellyfish.obj");
+    loadModel("assets/models/jellyfish_outer.obj");
+    auto * jellyfishInner = new Wesen();
+    jellyfishInner->loadModel("assets/models/jellyfish_inner.obj");
+    jellyfishInner->material.albedo = Kern::LoadTexture("assets/textures/jellyfish_inner_albedo.png");
+    jellyfishInner->material.opacity = material.opacity;
+    jellyfishInner->material.isTransparent = true;
+    jellyfishInner->material.shader = ShaderManager::getInstance().getShader("default");
+    addChild(jellyfishInner);
 }
 
 void Jellyfish::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
