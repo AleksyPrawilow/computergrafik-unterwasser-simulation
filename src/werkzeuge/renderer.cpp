@@ -11,6 +11,8 @@
 #include "gtc/type_ptr.inl"
 #include <algorithm>
 
+#include "visual/worldEnvironment.h"
+
 extern GLuint cubemapTexture;
 
 void Renderer::init() {
@@ -86,6 +88,37 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     glm::mat4 mvp = projection * view * model;
 
     e.prepareUniforms();
+
+    EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
+                        ? WorldEnvironment::activeEnv->params
+                        : EnvParameters();
+
+    // 1. Sun (Directional Light)
+    glUniform3fv(glGetUniformLocation(m.shader, "u_sunDirection"), 1, glm::value_ptr(env.sunDirection));
+    glUniform3fv(glGetUniformLocation(m.shader, "u_sunColor"), 1, glm::value_ptr(env.sunColor));
+    glUniform1f(glGetUniformLocation(m.shader, "u_sunEnergy"), env.sunEnergy);
+
+    // 2. Ambient Light
+    glUniform3fv(glGetUniformLocation(m.shader, "u_ambientColor"), 1, glm::value_ptr(env.ambientColor));
+    glUniform1f(glGetUniformLocation(m.shader, "u_ambientEnergy"), env.ambientEnergy);
+
+    // 3. Distance Fog
+    glUniform1i(glGetUniformLocation(m.shader, "u_fogEnabled"), env.fogEnabled);
+    glUniform3fv(glGetUniformLocation(m.shader, "u_fogColor"), 1, glm::value_ptr(env.fogColor));
+    glUniform1f(glGetUniformLocation(m.shader, "u_baseFogDensity"), env.fogDensity);
+
+    // 4. Height/Depth Fog
+    glUniform1i(glGetUniformLocation(m.shader, "u_heightFogEnabled"), env.heightFogEnabled);
+    glUniform3fv(glGetUniformLocation(m.shader, "u_heightFogColor"), 1, glm::value_ptr(env.heightFogColor));
+    glUniform1f(glGetUniformLocation(m.shader, "u_heightFogMin"), env.heightFogMin);
+    glUniform1f(glGetUniformLocation(m.shader, "u_heightFogMax"), env.heightFogMax);
+
+    // 5. Projected Caustics
+    glUniform1i(glGetUniformLocation(m.shader, "u_causticsEnabled"), env.causticsEnabled);
+    glUniform3fv(glGetUniformLocation(m.shader, "u_causticsColor"), 1, glm::value_ptr(env.causticsColor));
+    glUniform1f(glGetUniformLocation(m.shader, "u_causticsScale"), env.causticsScale);
+    glUniform1f(glGetUniformLocation(m.shader, "u_causticsIntensity"), env.causticsIntensity);
+    // -----------------------------------------------------------------
 
     glUniformMatrix4fv(glGetUniformLocation(m.shader, "transformation"), 1, GL_FALSE, &mvp[0][0]);
     glUniformMatrix4fv(glGetUniformLocation(m.shader, "modelMatrix"), 1, GL_FALSE, &model[0][0]);

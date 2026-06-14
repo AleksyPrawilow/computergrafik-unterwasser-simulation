@@ -8,6 +8,7 @@
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/input.h"
 #include "werkzeuge/shaderManager.h"
+#include "werkzeuge/audio/audioPlayer.h"
 
 void Uboot::init() {
     material.albedo = Kern::LoadTexture("assets/textures/sub_albedo.png");
@@ -46,6 +47,9 @@ void Uboot::init() {
     crosshair->init(16.0f / 9.0f);
     addChild(crosshair);
 
+    auto * audio = new AudioPlayer("assets/audio/submarine.mp3", true, 4, true);
+    addChild(audio);
+    audio->play();
     for (int i = 0; i < 2; i++) {
         auto * headlight = new UbootHeadlight();
         addChild(headlight);
