@@ -16,6 +16,7 @@ void Earth::init() {
     material.metallic = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
     boundingRadius = 4.0f;
     transform.scale = glm::vec3(40.0f);
+    transform.position = glm::vec3(0.0f, -40.0f, 0.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
         "assets/shaders/default.vert",
@@ -26,11 +27,11 @@ void Earth::init() {
     auto * moon = new Moon();
     addChild(moon);
     createTween()
-        ->tweenProperty(&transform.position.y, 2.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
+        ->tweenProperty(&transform.position.y, -42.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
         ->tweenCallback([this]() {
             std::cout << "Rock reached peak! Emitting bubble burst..." << std::endl;
         })
-        ->tweenProperty(&transform.position.y, 0.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
+        ->tweenProperty(&transform.position.y, -40.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
         ->setLoops(-1);
 }
 

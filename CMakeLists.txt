@@ -70,6 +70,12 @@ set(PROJECT_SOURCES
         src/werkzeuge/textureManager.h
         src/szenes/unterwasserszeneWesen.cpp
         src/szenes/unterwasserszeneWesen.h
+        src/werkzeuge/visual/worldEnvironment.cpp
+        src/werkzeuge/visual/worldEnvironment.h
+        src/werkzeuge/audio/audioManager.cpp
+        src/werkzeuge/audio/audioManager.h
+        src/werkzeuge/audio/audioPlayer.cpp
+        src/werkzeuge/audio/audioPlayer.h
 )
 
 set(SOIL_SOURCES

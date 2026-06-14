@@ -1,3 +1,4 @@
+// assets/shaders/common_pbr.glsl
 #include "pbr_lighting.glsl"
 
 in vec3 worldPos;
@@ -15,8 +16,33 @@ uniform sampler2D opacityMap;
 uniform vec3 cameraPos;
 uniform float time;
 
-float calculateCaustics(vec2 xz, float t) {
-    vec2 p = mod(xz * 0.12, 6.28) - 250.0;
+uniform float alphaCutoff = 0.0;
+
+// --- UNIVERSAL ENVIRONMENT UNIFORMS ---
+uniform vec3 u_sunDirection;
+uniform vec3 u_sunColor;
+uniform float u_sunEnergy;
+
+uniform vec3 u_ambientColor;
+uniform float u_ambientEnergy;
+
+uniform bool u_fogEnabled;
+uniform vec3 u_fogColor;
+uniform float u_baseFogDensity;
+
+uniform bool u_heightFogEnabled;
+uniform vec3 u_heightFogColor;
+uniform float u_heightFogMin;
+uniform float u_heightFogMax;
+
+uniform bool u_causticsEnabled;
+uniform vec3 u_causticsColor;
+uniform float u_causticsScale;
+uniform float u_causticsIntensity;
+
+// --- PROCEDURAL CAUSTICS GENERATOR ---
+float calculateCaustics(vec2 xz, float t, float scale) {
+    vec2 p = mod(xz * scale, 6.28) - 250.0;
     vec2 i = vec2(p);
     float c = 1.0;
     float inten = 0.005;
@@ -33,12 +59,19 @@ float calculateCaustics(vec2 xz, float t) {
 }
 
 vec4 calculatePBR() {
+    // Sample Textures
     vec3 albedo = texture(colorTexture, texCoord).rgb;
     float roughness = texture(roughnessMap, texCoord).g;
     float metallic  = texture(metallicMap, texCoord).b;
     vec3 emission = texture(emissionMap, texCoord).rgb;
     float alpha = texture(opacityMap, texCoord).r;
 
+    // Alpha Cutout
+    if (alpha < alphaCutoff) {
+        discard;
+    }
+
+    // Normals
     vec3 tangentNormal = texture(normalMap, texCoord).rgb;
     tangentNormal = normalize(tangentNormal * 2.0 - 1.0);
     vec3 N = normalize(TBN * tangentNormal);
@@ -46,25 +79,28 @@ vec4 calculatePBR() {
     vec3 V = normalize(cameraPos - worldPos);
     vec3 F0 = mix(vec3(0.04), albedo, metallic);
 
-    float ambientScale = mix(0.01, 0.12, smoothstep(-2.0, 0.0, cameraPos.y));
-
-    float depthFactor = 1.0;
-    if (worldPos.y < 0.0) {
-        depthFactor = clamp(exp(worldPos.y * 0.02), 0.0, 1.0);
+    // --- 1. DYNAMIC AMBIENT ---
+    float ambientScale = u_ambientEnergy;
+    if (u_heightFogEnabled) {
+        ambientScale = mix(u_ambientEnergy * 0.1, u_ambientEnergy, smoothstep(u_heightFogMin, u_heightFogMax, cameraPos.y));
     }
 
-    vec3 ambient = vec3(ambientScale) * albedo * depthFactor;
+    float depthFactor = 1.0;
+    if (u_heightFogEnabled && worldPos.y < u_heightFogMax) {
+        depthFactor = clamp(exp((worldPos.y - u_heightFogMax) * 0.08), 0.01, 1.0);
+    }
 
+    vec3 ambient = u_ambientColor * ambientScale * albedo * depthFactor;
+
+    // Accumulated outgoing light
     vec3 Lo = vec3(0.0);
 
-    vec3 sunDir = normalize(vec3(0.1, 1.0, 0.15));
-    vec3 sunColor = vec3(1.0, 0.95, 0.9);
-    float sunIntensity = 1.0;
+    // --- 2. DEFAULT SUN LIGHT ---
+    vec3 sunRadiance = u_sunColor * u_sunEnergy * depthFactor;
 
-    vec3 sunRadiance = sunColor * sunIntensity * depthFactor;
+    Lo += CalculateCookTorrance(N, V, u_sunDirection, sunRadiance, albedo, roughness, metallic, F0, worldPos);
 
-    Lo += CalculateCookTorrance(N, V, sunDir, sunRadiance, albedo, roughness, metallic, F0, worldPos);
-
+    // Point lights
     for (int i = 0; i < MAX_POINT_LIGHTS; ++i) {
         vec3 L = normalize(pointLights[i].position - worldPos);
         float distance = length(pointLights[i].position - worldPos);
@@ -74,6 +110,7 @@ vec4 calculatePBR() {
         Lo += CalculateCookTorrance(N, V, L, radiance, albedo, roughness, metallic, F0, worldPos);
     }
 
+    // Spotlights (headlights)
     for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
         vec3 L = normalize(spotLights[i].position - worldPos);
 
@@ -84,56 +121,61 @@ vec4 calculatePBR() {
         float distance = length(spotLights[i].position - worldPos);
         float attenuation = 1.0 / (distance * distance + 0.5);
 
-        float absorption = exp(-distance * 0.01);
+        float absorption = exp(-distance * 0.15);
 
         vec3 radiance = spotLights[i].color * spotLights[i].intensity * attenuation * intensity * absorption;
 
         Lo += CalculateCookTorrance(N, V, L, radiance, albedo, roughness, metallic, F0, worldPos);
     }
 
+    // Combine standard PBR lighting
     vec3 color = ambient + Lo;
 
+    // Add PBR Emission
     color += emission * 3.0;
 
-    if (worldPos.y < 0.0) {
-        float causticIntensity = calculateCaustics(worldPos.xz, time);
-        vec3 causticColor = vec3(0.5, 0.85, 1.0) * causticIntensity * 1.5;
-
+    // Projected Caustics
+    if (u_causticsEnabled && u_heightFogEnabled && worldPos.y < u_heightFogMax) {
+        float causticIntensity = calculateCaustics(worldPos.xz, time, u_causticsScale);
+        vec3 causticColor = u_causticsColor * causticIntensity * u_causticsIntensity;
         float projectionMask = clamp(N.y, 0.0, 1.0);
+
         causticColor *= depthFactor * projectionMask;
         color += causticColor * albedo;
     }
 
-    if (cameraPos.y < 0.0) {
+    // --- 3. UNDERWATER COLOR ABSORPTION FILTER (In Linear Space) ---
+    if (u_heightFogEnabled && cameraPos.y < u_heightFogMax) {
         vec3 absorptionFilter = vec3(0.35, 0.75, 1.0);
         color *= absorptionFilter;
     }
 
+    // --- 4. TONEMAPPING & GAMMA CORRECTION FOR OBJECT COLOR ---
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));
 
-    if (cameraPos.y < 0.0) {
+    if (u_fogEnabled && cameraPos.y < u_heightFogMax) {
         float dist = length(cameraPos - worldPos);
 
         float currentDrift = sin(worldPos.x * 0.08 + time * 0.3)
         * cos(worldPos.z * 0.08 - time * 0.2)
         * sin(worldPos.y * 0.04);
 
-        float baseFogDensity = 0.035;
+        float baseFogDensity = u_baseFogDensity;
         float dynamicDensity = baseFogDensity + (currentDrift * 0.008);
         float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
 
-        vec3 surfaceFogColor = vec3(0.02, 0.22, 0.28);
-        vec3 deepAbyssalColor = vec3(0.002, 0.015, 0.06);
-        float depthBlend = clamp((worldPos.y + 45.0) / 45.0, 0.0, 1.0);
-        vec3 baseWaterColor = mix(deepAbyssalColor, surfaceFogColor, depthBlend);
+        // Calculate height-blended base fog color
+        float depthBlend = clamp((-V.y - (-0.2)) / 1.0, 0.0, 1.0);
+        vec3 baseWaterColor = mix(u_fogColor, u_heightFogColor, depthBlend);
 
-        vec3 sunDirection = normalize(vec3(0.1, 1.0, 0.15));
+        vec3 sunDirection = normalize(u_sunDirection);
         float viewSunAngle = max(dot(-V, sunDirection), 0.0);
-        vec3 sunHazeColor = vec3(0.4, 0.75, 0.9) * pow(viewSunAngle, 6.0) * 0.3;
+        vec3 sunHazeColor = u_sunColor * pow(viewSunAngle, 6.0) * 0.3;
 
         vec3 finalFogColor = baseWaterColor + sunHazeColor;
 
+        // Headlight fog scattering
         for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
             if (spotLights[i].intensity > 0.0) {
                 vec3 L = normalize(spotLights[i].position - worldPos);
@@ -143,13 +185,25 @@ vec4 calculatePBR() {
 
                 float distanceToLight = length(spotLights[i].position - worldPos);
                 float attenuation = 1.0 / (distanceToLight * distanceToLight + 0.5);
-                float absorption = exp(-distanceToLight * 0.01);
+                float absorption = exp(-distanceToLight * 0.15);
 
                 vec3 fogGlow = spotLights[i].color * spotLights[i].intensity * attenuation * spotIntensity * 0.15 * absorption;
                 finalFogColor += fogGlow;
             }
         }
 
+        // --- FIXED: DIM THE FOG COLOR BY THE CAMERA'S DEPTH ---
+        // As the camera goes deeper, the fog color between the camera and the object
+        // must also fade to complete blackness!
+        float cameraDepthFactor = clamp(exp(cameraPos.y * 0.08), 0.0, 1.0);
+        finalFogColor *= cameraDepthFactor;
+        // ------------------------------------------------------
+
+        // Tonemap and Gamma Correct the fog color independently
+        finalFogColor = finalFogColor / (finalFogColor + vec3(1.0));
+        finalFogColor = pow(finalFogColor, vec3(1.0 / 2.2));
+
+        // Blend them
         color = mix(finalFogColor, color, fogFactor);
     }
 

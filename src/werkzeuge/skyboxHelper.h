@@ -7,6 +7,8 @@
 #include "glew.h"
 #include <glm.hpp>
 
+#include "visual/worldEnvironment.h"
+
 inline float skyboxVertices[] = {
     // Positions
     -1.0f,  1.0f, -1.0f,
@@ -78,6 +80,17 @@ inline void RenderSkybox(GLuint skyboxShader, GLuint skyboxCubemapTexture, GLuin
 
     // --- 2. SEND time TO SKYBOX FRAGMENT SHADER ---
     glUniform1f(glGetUniformLocation(skyboxShader, "time"), time);
+
+    EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
+                        ? WorldEnvironment::activeEnv->params
+                        : EnvParameters();
+
+    glUniform3fv(glGetUniformLocation(skyboxShader, "u_fogColor"), 1, glm::value_ptr(env.fogColor));
+    glUniform3fv(glGetUniformLocation(skyboxShader, "u_sunDirection"), 1, glm::value_ptr(env.sunDirection));
+    glUniform3fv(glGetUniformLocation(skyboxShader, "u_heightFogColor"), 1, glm::value_ptr(env.heightFogColor));
+    glUniform1f(glGetUniformLocation(skyboxShader, "u_heightFogMin"), env.heightFogMin);
+    glUniform1f(glGetUniformLocation(skyboxShader, "u_heightFogMax"), env.heightFogMax);
+    glUniform1f(glGetUniformLocation(skyboxShader, "u_baseFogDensity"), env.fogDensity);
 
     // Bind texture
     glActiveTexture(GL_TEXTURE0);
