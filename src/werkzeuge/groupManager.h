@@ -6,6 +6,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_GROUPMANAGER_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_GROUPMANAGER_H
 #include "wesen.h"
+#include <string>
 #include <vector>
 #include <unordered_map>
 

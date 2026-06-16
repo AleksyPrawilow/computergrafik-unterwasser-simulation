@@ -19,12 +19,21 @@ void Jellyfish::init() {
     );
 
     loadModel("assets/models/jellyfish_outer.obj");
+
     auto * jellyfishInner = new Wesen();
-    jellyfishInner->loadModel("assets/models/jellyfish_inner.obj");
-    jellyfishInner->material.albedo = Kern::LoadTexture("assets/textures/jellyfish_inner_albedo.png");
-    jellyfishInner->material.opacity = material.opacity;
+
+    jellyfishInner->loadModel("assets/models/cube.obj");
+
+    jellyfishInner->transform.scale = glm::vec3(4.0f);
+
     jellyfishInner->material.isTransparent = true;
-    jellyfishInner->material.shader = ShaderManager::getInstance().getShader("default");
+
+    jellyfishInner->material.shader = ShaderManager::getInstance().loadShader(
+        "raymarch",
+        "assets/shaders/default.vert",
+        "assets/shaders/raymarch.frag"
+    );
+
     addChild(jellyfishInner);
 }
 
