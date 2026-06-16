@@ -50,6 +50,9 @@ private:
     float rotorSpeed = 6.0f;
     float rotorSpeedBackward = -2.5f;
     float targetRollVelocity = 0.0f;
+    float targetWaveInfluence = 0.0f;
+    float actualWaveInfluence = 0.0f;
+    bool isSubmerging = false;
 
     // Mouse state tracking
     double lastX = 0.0;
