@@ -98,13 +98,20 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     const auto time = static_cast<float>(glfwGetTime());
     const float waveHeight = getWaterHeight(transform.position.x, transform.position.z, time);
     constexpr float floatOffset = 0.1f;
+    constexpr float waveInfluenceAccelerationSpeed = 4.f;
+    const float waveTSpeed = 1.0f - glm::exp(-waveInfluenceAccelerationSpeed * deltaTime);
+    actualWaveInfluence = glm::mix(actualWaveInfluence, targetWaveInfluence * static_cast<float>(!isSubmerging), waveTSpeed);
 
     if (const float maxSurfaceY = waveHeight + floatOffset; transform.position.y >= maxSurfaceY - 0.15f) {
-        transform.position.y = maxSurfaceY;
+        targetWaveInfluence = 1.0f;
+        std::cout << actualWaveInfluence << std::endl;
+        transform.position.y = glm::mix(transform.position.y, maxSurfaceY, actualWaveInfluence);
 
         if (pitchVelocity > 0.0f) {
             pitchVelocity = 0.0f;
         }
+    } else {
+        targetWaveInfluence = 0.0f;
     }
 
     updateCameraTransform(cameraTransform, deltaTime);
@@ -165,6 +172,18 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
         targetRotorSpeed = rotorSpeedBackward;
         targetRollVelocity = angleSpeed;
         transform.position += transform.right() * actualMoveSpeed / 2.0f * deltaTime;
+    }
+
+    if (Input::isKeyPressed(GLFW_KEY_Z)) {
+        transform.position += transform.up() * 2.f * deltaTime;
+    }
+
+    if (Input::isKeyPressed(GLFW_KEY_X)) {
+        transform.position -= transform.up() * 2.f * deltaTime;
+        isSubmerging = true;
+        targetWaveInfluence = 0.0f;
+    } else {
+        isSubmerging = false;
     }
 }
 
