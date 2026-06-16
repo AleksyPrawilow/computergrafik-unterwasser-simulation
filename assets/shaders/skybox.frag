@@ -13,6 +13,8 @@ uniform vec3 u_heightFogColor;
 uniform float u_heightFogMin;
 uniform float u_heightFogMax;
 uniform float u_baseFogDensity;
+uniform bool u_depthDimmingEnabled = true;
+uniform float u_depthDimmingCoefficient = 0.08f;
 
 void main()
 {
@@ -63,9 +65,11 @@ void main()
         vec4 finalColor = mix(waterColor, baseColor, skyboxFog);
         finalColor += vec4(sunHaze, 0.0);
 
-        // Apply light dimming
-        float depthFactor = clamp(exp(cameraPos.y * 0.08), 0.0, 1.0);
-        vec3 finalOutputColor = finalColor.rgb * depthFactor;
+        vec3 finalOutputColor = finalColor.rgb;
+        if (u_depthDimmingEnabled) {
+            float depthFactor = clamp(exp(cameraPos.y * u_depthDimmingCoefficient), 0.0, 1.0);
+            finalOutputColor *= depthFactor;
+        }
 
         // Apply Tonemapping & Gamma Correction
         finalOutputColor = finalOutputColor / (finalOutputColor + vec3(1.0));

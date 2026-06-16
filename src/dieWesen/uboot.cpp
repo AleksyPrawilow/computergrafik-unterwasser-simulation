@@ -130,16 +130,6 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     // }
 }
 
-void Uboot::prepareUniforms() const {
-    if (const GLint timeLocation = glGetUniformLocation(material.shader, "time"); timeLocation != -1) {
-        glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
-    }
-
-    if (const GLint deformationLocation = glGetUniformLocation(material.shader, "deformationThreshold"); deformationLocation != -1) {
-        glUniform1f(deformationLocation, static_cast<float>(2));
-    }
-}
-
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
     if (Input::isKeyJustPressed(GLFW_KEY_1)) {
         viewMode = ViewMode::FIRST_PERSON;

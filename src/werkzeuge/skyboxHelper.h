@@ -10,7 +10,6 @@
 #include "visual/worldEnvironment.h"
 
 inline float skyboxVertices[] = {
-    // Positions
     -1.0f,  1.0f, -1.0f,
     -1.0f, -1.0f, -1.0f,
      1.0f, -1.0f, -1.0f,
@@ -56,7 +55,6 @@ inline float skyboxVertices[] = {
 
 inline GLuint skyboxVAO, skyboxVBO;
 
-// Generate and bind VAO/VBO inside your initialization code
 inline void initSkybox() {
     glGenVertexArrays(1, &skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
@@ -67,36 +65,32 @@ inline void initSkybox() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 }
 
-inline void RenderSkybox(GLuint skyboxShader, GLuint skyboxCubemapTexture, GLuint skyboxVAO, const Kamera& kamera, float time) {
+inline void RenderSkybox(const GLuint skyboxShader, const GLuint skyboxCubemapTexture, GLuint skyboxVAO, const Kamera& kamera, float time) {
     glDepthFunc(GL_LEQUAL);
     glUseProgram(skyboxShader);
 
-    // Pass matrices
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projection"), 1, GL_FALSE, glm::value_ptr(kamera.getProjectionMatrix()));
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "view"), 1, GL_FALSE, glm::value_ptr(kamera.getViewMatrix()));
+    Kern::setUniform(skyboxShader, "projection", kamera.getProjectionMatrix());
+    Kern::setUniform(skyboxShader, "view", kamera.getViewMatrix());
+    Kern::setUniform(skyboxShader, "cameraPos", kamera.transform.position);
+    Kern::setUniform(skyboxShader, "time", time);
 
-    // --- 1. SEND cameraPos TO SKYBOX FRAGMENT SHADER ---
-    glUniform3fv(glGetUniformLocation(skyboxShader, "cameraPos"), 1, glm::value_ptr(kamera.transform.position));
-
-    // --- 2. SEND time TO SKYBOX FRAGMENT SHADER ---
-    glUniform1f(glGetUniformLocation(skyboxShader, "time"), time);
-
-    EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
+    const EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
                         ? WorldEnvironment::activeEnv->params
                         : EnvParameters();
 
-    glUniform3fv(glGetUniformLocation(skyboxShader, "u_fogColor"), 1, glm::value_ptr(env.fogColor));
-    glUniform3fv(glGetUniformLocation(skyboxShader, "u_sunDirection"), 1, glm::value_ptr(env.sunDirection));
-    glUniform3fv(glGetUniformLocation(skyboxShader, "u_heightFogColor"), 1, glm::value_ptr(env.heightFogColor));
-    glUniform1f(glGetUniformLocation(skyboxShader, "u_heightFogMin"), env.heightFogMin);
-    glUniform1f(glGetUniformLocation(skyboxShader, "u_heightFogMax"), env.heightFogMax);
-    glUniform1f(glGetUniformLocation(skyboxShader, "u_baseFogDensity"), env.fogDensity);
+    Kern::setUniform(skyboxShader, "u_fogColor", env.fogColor);
+    Kern::setUniform(skyboxShader, "u_sunDirection", env.sunDirection);
+    Kern::setUniform(skyboxShader, "u_heightFogColor", env.heightFogColor);
+    Kern::setUniform(skyboxShader, "u_heightFogMin", env.heightFogMin);
+    Kern::setUniform(skyboxShader, "u_heightFogMax", env.heightFogMax);
+    Kern::setUniform(skyboxShader, "u_baseFogDensity", env.fogDensity);
 
-    // Bind texture
+    Kern::setUniform(skyboxShader, "u_depthDimmingEnabled", env.depthDimmingEnabled);
+    Kern::setUniform(skyboxShader, "u_depthDimmingCoefficient", env.depthDimmingCoefficient);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapTexture);
-    glUniform1i(glGetUniformLocation(skyboxShader, "skybox"), 0);
-
+    Kern::setUniform(skyboxShader, "skybox", 0);
     glBindVertexArray(skyboxVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 

@@ -15,7 +15,7 @@ namespace Kern
 		GLuint vertexBuffer{};
 		GLuint vertexIndexBuffer{};
 		int size = 0;
-		void initFromAssimpMesh(aiMesh* mesh);
+		void initFromAssimpMesh(const aiMesh* mesh);
 	};
 
 	struct VertexAttribute {
@@ -30,6 +30,8 @@ namespace Kern
 		int NumVertices;
 	};
 
+	static std::unordered_map<GLuint, std::unordered_map<std::string, GLint>> uniformCache;
+
 	void DrawVertexArray(const float * vertexArray, int numVertices, int elementSize);
 	void DrawVertexArrayIndexed(const float * vertexArray, const int * indexArray, int numIndexes, int elementSize);
 	void DrawVertexArray(const VertexData & data);
@@ -43,4 +45,25 @@ namespace Kern
 	void SetBlendState(bool enable);
 	void SetDepthWriteState(bool enable);
 	void SetCullState(bool enable);
+
+	GLint getUniformLocation(GLuint program, const char * name);
+	void clearUniformCache();
+
+	void setUniform(GLint location, int value);
+	void setUniform(GLint location, bool value);
+	void setUniform(GLint location, float value);
+	void setUniform(GLint location, const glm::vec2& value);
+	void setUniform(GLint location, const glm::vec3& value);
+	void setUniform(GLint location, const glm::vec4& value);
+	void setUniform(GLint location, const glm::mat3& value);
+	void setUniform(GLint location, const glm::mat4& value);
+
+	void setUniform(GLuint program, const char* name, int value);
+	void setUniform(GLuint program, const char* name, bool value);
+	void setUniform(GLuint program, const char* name, float value);
+	void setUniform(GLuint program, const char* name, const glm::vec2& value);
+	void setUniform(GLuint program, const char* name, const glm::vec3& value);
+	void setUniform(GLuint program, const char* name, const glm::vec4& value);
+	void setUniform(GLuint program, const char* name, const glm::mat3& value);
+	void setUniform(GLuint program, const char* name, const glm::mat4& value);
 }

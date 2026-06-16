@@ -9,6 +9,7 @@
 #include "dieWesen/oceanFloor.h"
 #include "dieWesen/wasser.h"
 #include "dieWesen/ui/hudPanel.h"
+#include "werkzeuge/textur.h"
 #include "werkzeuge/audio/audioManager.h"
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
@@ -46,6 +47,24 @@ void UnterwasserszeneWesen::init() {
     label->setText("Hello world!", 64.0f);
     worldspaceUI->addChild(label);
     // TEST
+
+    Wesen* island = new Wesen();
+    island->init();
+    island->loadModel("assets/models/island.obj");
+    island->material.albedo = Kern::LoadTexture("assets/textures/Ground_baseColor.png");
+    island->material.normal = Kern::LoadTexture("assets/textures/Ground_normal.png");
+    island->material.metallic = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
+    island->material.roughness = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
+
+    island->material.shader = ShaderManager::getInstance().loadShader(
+        "default",
+        "assets/shaders/default.vert",
+        "assets/shaders/default.frag"
+    );
+
+    island->transform.position = glm::vec3(0.0f, 0.5f, 0.0f);
+    island->transform.scale = glm::vec3(4.0f, 4.0f, 4.0f);
+    addChild(island);
 
     AudioManager::getInstance().play2D("assets/audio/abyss.mp3", true, true);
 }

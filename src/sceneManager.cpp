@@ -88,6 +88,7 @@ void Scene::shutdown(GLFWwindow* window) {
 	GroupManager::getInstance().cleanup();
 	TextureManager::getInstance().cleanup();
 	UIElement::cleanupUISystem();
+	Kern::clearUniformCache();
 }
 
 void Scene::processInput(GLFWwindow* window) {
@@ -159,6 +160,11 @@ void Scene::renderLoop(GLFWwindow* window) {
                 ImGui::ColorEdit3("Ambient Color", &params.ambientColor[0]);
                 ImGui::SliderFloat("Ambient Energy", &params.ambientEnergy, 0.0f, 1.0f);
             }
+
+			if (ImGui::CollapsingHeader("Depth dimming", ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::Checkbox("Dimming enabled", &params.depthDimmingEnabled);
+				ImGui::SliderFloat("Dimming coefficient", &params.depthDimmingCoefficient, 0.0f, 1.0f);
+			}
 
             if (ImGui::CollapsingHeader("Distance Fog", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::Checkbox("Distance Fog Active", &params.fogEnabled);

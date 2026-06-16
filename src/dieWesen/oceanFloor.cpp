@@ -12,7 +12,7 @@ void OceanFloor::init() {
     material.normal = Kern::LoadTexture("assets/textures/Ground_normal.png");
     material.metallic = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
     material.roughness = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
-    transform.position = glm::vec3(0.0f, -100.0f, 0.0f);
+    transform.position = glm::vec3(0.0f, -170.0f, 0.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
         "assets/shaders/default.vert",

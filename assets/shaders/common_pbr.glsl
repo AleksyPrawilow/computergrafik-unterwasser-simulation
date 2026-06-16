@@ -39,6 +39,8 @@ uniform bool u_causticsEnabled;
 uniform vec3 u_causticsColor;
 uniform float u_causticsScale;
 uniform float u_causticsIntensity;
+uniform bool u_depthDimmingEnabled = true;
+uniform float u_depthDimmingCoefficient = 0.08f;
 
 // --- PROCEDURAL CAUSTICS GENERATOR ---
 float calculateCaustics(vec2 xz, float t, float scale) {
@@ -86,8 +88,8 @@ vec4 calculatePBR() {
     }
 
     float depthFactor = 1.0;
-    if (u_heightFogEnabled && worldPos.y < u_heightFogMax) {
-        depthFactor = clamp(exp((worldPos.y - u_heightFogMax) * 0.08), 0.01, 1.0);
+    if (u_heightFogEnabled && worldPos.y < u_heightFogMax && u_depthDimmingEnabled) {
+        depthFactor = clamp(exp((worldPos.y - u_heightFogMax) * u_depthDimmingCoefficient), 0.01, 1.0);
     }
 
     vec3 ambient = u_ambientColor * ambientScale * albedo * depthFactor;
@@ -195,8 +197,10 @@ vec4 calculatePBR() {
         // --- FIXED: DIM THE FOG COLOR BY THE CAMERA'S DEPTH ---
         // As the camera goes deeper, the fog color between the camera and the object
         // must also fade to complete blackness!
-        float cameraDepthFactor = clamp(exp(cameraPos.y * 0.08), 0.0, 1.0);
-        finalFogColor *= cameraDepthFactor;
+        if (u_depthDimmingEnabled) {
+            float cameraDepthFactor = clamp(exp(cameraPos.y * u_depthDimmingCoefficient), 0.0, 1.0);
+            finalFogColor *= cameraDepthFactor;
+        }
         // ------------------------------------------------------
 
         // Tonemap and Gamma Correct the fog color independently

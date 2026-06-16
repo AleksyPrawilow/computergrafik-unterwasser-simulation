@@ -29,8 +29,7 @@ class Uboot: public Wesen {
 public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
-    void prepareUniforms() const override;
-    float getSpeed() const {
+    [[nodiscard]] float getSpeed() const {
         return actualMoveSpeed;
     }
 private:

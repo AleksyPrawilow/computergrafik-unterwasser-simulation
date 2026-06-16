@@ -22,6 +22,7 @@ void Earth::init() {
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
+
     loadModel("assets/models/Rock001.obj");
 
     auto * moon = new Moon();

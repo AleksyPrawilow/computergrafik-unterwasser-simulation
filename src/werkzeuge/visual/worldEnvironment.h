@@ -31,6 +31,9 @@ struct EnvParameters {
     glm::vec3 causticsColor  = glm::vec3(0.5f, 0.85f, 1.0f);
     float causticsScale      = 0.12f;
     float causticsIntensity  = 1.5f;
+
+    bool depthDimmingEnabled = true;
+    float depthDimmingCoefficient = 0.08f;
 };
 
 class WorldEnvironment : public Wesen {

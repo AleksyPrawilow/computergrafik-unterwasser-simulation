@@ -107,14 +107,14 @@ void UIElement::customRender(const glm::mat4& view, const glm::mat4& projection)
 
     glUseProgram(material.shader);
 
-    glm::mat4 ortho = Kern::GetOrthoProjection();
+    const glm::mat4 ortho = Kern::GetOrthoProjection();
 
     const Transform global = getGlobalTransform();
     glm::mat4 model = glm::translate(glm::mat4(1.0f), glm::vec3(global.position.x, global.position.y, 0.0f));
     model = glm::scale(model, glm::vec3(global.scale.x, global.scale.y, 1.0f));
 
-    glUniformMatrix4fv(glGetUniformLocation(material.shader, "ortho"), 1, GL_FALSE, glm::value_ptr(ortho));
-    glUniformMatrix4fv(glGetUniformLocation(material.shader, "model"), 1, GL_FALSE, glm::value_ptr(model));
+    Kern::setUniform(material.shader, "ortho", ortho);
+    Kern::setUniform(material.shader, "model", model);
 
     Kern::SetActiveTexture(material.albedo, "uiTexture", material.shader, 0);
 

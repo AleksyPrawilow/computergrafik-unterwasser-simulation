@@ -89,50 +89,74 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
 
     e.prepareUniforms();
 
-    GLint invModelLoc = glGetUniformLocation(m.shader, "inverseModelMatrix");
-    if (invModelLoc != -1) {
+    if (const GLint invModelLoc = Kern::getUniformLocation(m.shader, "inverseModelMatrix"); invModelLoc != -1) {
         glm::mat4 invModel = glm::inverse(model);
         glUniformMatrix4fv(invModelLoc, 1, GL_FALSE, glm::value_ptr(invModel));
     }
 
-    EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
+    auto [
+        sunDirection,
+        sunColor,
+        sunEnergy,
+        ambientColor,
+        ambientEnergy,
+        fogEnabled,
+        fogColor,
+        fogDensity,
+        heightFogEnabled,
+        heightFogColor,
+        heightFogMin,
+        heightFogMax,
+        causticsEnabled,
+        causticsColor,
+        causticsScale,
+        causticsIntensity,
+        depthDimmingEnabled,
+        depthDimmingCoefficient
+        ] = (WorldEnvironment::activeEnv != nullptr)
                         ? WorldEnvironment::activeEnv->params
                         : EnvParameters();
 
     // 1. Sun (Directional Light)
-    glUniform3fv(glGetUniformLocation(m.shader, "u_sunDirection"), 1, glm::value_ptr(env.sunDirection));
-    glUniform3fv(glGetUniformLocation(m.shader, "u_sunColor"), 1, glm::value_ptr(env.sunColor));
-    glUniform1f(glGetUniformLocation(m.shader, "u_sunEnergy"), env.sunEnergy);
+    Kern::setUniform(m.shader, "u_sunDirection",  sunDirection);
+    Kern::setUniform(m.shader, "u_sunColor",      sunColor);
+    Kern::setUniform(m.shader, "u_sunEnergy",     sunEnergy);
 
     // 2. Ambient Light
-    glUniform3fv(glGetUniformLocation(m.shader, "u_ambientColor"), 1, glm::value_ptr(env.ambientColor));
-    glUniform1f(glGetUniformLocation(m.shader, "u_ambientEnergy"), env.ambientEnergy);
+    Kern::setUniform(m.shader, "u_ambientColor",  ambientColor);
+    Kern::setUniform(m.shader, "u_ambientEnergy", ambientEnergy);
 
     // 3. Distance Fog
-    glUniform1i(glGetUniformLocation(m.shader, "u_fogEnabled"), env.fogEnabled);
-    glUniform3fv(glGetUniformLocation(m.shader, "u_fogColor"), 1, glm::value_ptr(env.fogColor));
-    glUniform1f(glGetUniformLocation(m.shader, "u_baseFogDensity"), env.fogDensity);
+    Kern::setUniform(m.shader, "u_fogEnabled",     fogEnabled);
+    Kern::setUniform(m.shader, "u_fogColor",       fogColor);
+    Kern::setUniform(m.shader, "u_baseFogDensity", fogDensity);
 
     // 4. Height/Depth Fog
-    glUniform1i(glGetUniformLocation(m.shader, "u_heightFogEnabled"), env.heightFogEnabled);
-    glUniform3fv(glGetUniformLocation(m.shader, "u_heightFogColor"), 1, glm::value_ptr(env.heightFogColor));
-    glUniform1f(glGetUniformLocation(m.shader, "u_heightFogMin"), env.heightFogMin);
-    glUniform1f(glGetUniformLocation(m.shader, "u_heightFogMax"), env.heightFogMax);
+    Kern::setUniform(m.shader, "u_heightFogEnabled", heightFogEnabled);
+    Kern::setUniform(m.shader, "u_heightFogColor",   heightFogColor);
+    Kern::setUniform(m.shader, "u_heightFogMin",     heightFogMin);
+    Kern::setUniform(m.shader, "u_heightFogMax",     heightFogMax);
 
     // 5. Projected Caustics
-    glUniform1i(glGetUniformLocation(m.shader, "u_causticsEnabled"), env.causticsEnabled);
-    glUniform3fv(glGetUniformLocation(m.shader, "u_causticsColor"), 1, glm::value_ptr(env.causticsColor));
-    glUniform1f(glGetUniformLocation(m.shader, "u_causticsScale"), env.causticsScale);
-    glUniform1f(glGetUniformLocation(m.shader, "u_causticsIntensity"), env.causticsIntensity);
-    // -----------------------------------------------------------------
+    Kern::setUniform(m.shader, "u_causticsEnabled",   causticsEnabled);
+    Kern::setUniform(m.shader, "u_causticsColor",     causticsColor);
+    Kern::setUniform(m.shader, "u_causticsScale",     causticsScale);
+    Kern::setUniform(m.shader, "u_causticsIntensity", causticsIntensity);
 
-    glUniformMatrix4fv(glGetUniformLocation(m.shader, "transformation"), 1, GL_FALSE, &mvp[0][0]);
-    glUniformMatrix4fv(glGetUniformLocation(m.shader, "modelMatrix"), 1, GL_FALSE, &model[0][0]);
-    glUniform3fv(glGetUniformLocation(m.shader, "cameraPos"), 1, glm::value_ptr(cameraPos));
+    // 6. Global Matrices & Camera Position
+    Kern::setUniform(m.shader, "transformation", mvp);
+    Kern::setUniform(m.shader, "modelMatrix",    model);
+    Kern::setUniform(m.shader, "cameraPos",      cameraPos);
 
-    if (const GLint timeLocation = glGetUniformLocation(m.shader, "time"); timeLocation != -1) {
-        glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
-    }
+    // 7. Depth dimming
+    Kern::setUniform(m.shader, "u_depthDimmingEnabled", depthDimmingEnabled);
+    Kern::setUniform(m.shader, "u_depthDimmingCoefficient", depthDimmingCoefficient);
+
+    Kern::setUniform(m.shader, "transformation", mvp);
+    Kern::setUniform(m.shader, "modelMatrix",    model);
+    Kern::setUniform(m.shader, "cameraPos",      cameraPos);
+
+    Kern::setUniform(m.shader, "time", static_cast<float>(glfwGetTime()));
 
     Kern::SetActiveTexture(m.albedo, "colorTexture", m.shader, 0);
 
@@ -166,11 +190,11 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     for (int i = 0; i < 4; ++i) {
         std::string base = "pointLights[" + std::to_string(i) + "].";
         if (i < pointLights.size()) {
-            glUniform3fv(glGetUniformLocation(m.shader, (base + "position").c_str()), 1, glm::value_ptr(pointLights[i]->position));
-            glUniform3fv(glGetUniformLocation(m.shader, (base + "color").c_str()), 1, glm::value_ptr(pointLights[i]->color));
-            glUniform1f(glGetUniformLocation(m.shader, (base + "intensity").c_str()), pointLights[i]->intensity);
+            Kern::setUniform(m.shader, (base + "position").c_str(), pointLights[i]->position);
+            Kern::setUniform(m.shader, (base + "color").c_str(), pointLights[i]->color);
+            Kern::setUniform(m.shader, (base + "intensity").c_str(), pointLights[i]->intensity);
         } else {
-            glUniform1f(glGetUniformLocation(m.shader, (base + "intensity").c_str()), 0.0f);
+            Kern::setUniform(m.shader, (base + "intensity").c_str(), 0.0f);
         }
     }
 
@@ -178,19 +202,18 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     for (int i = 0; i < 2; ++i) {
         std::string base = "spotLights[" + std::to_string(i) + "].";
         if (i < spotLights.size()) {
-            glUniform3fv(glGetUniformLocation(m.shader, (base + "position").c_str()), 1, glm::value_ptr(spotLights[i]->position));
-            glUniform3fv(glGetUniformLocation(m.shader, (base + "direction").c_str()), 1, glm::value_ptr(spotLights[i]->direction));
-            glUniform3fv(glGetUniformLocation(m.shader, (base + "color").c_str()), 1, glm::value_ptr(spotLights[i]->color));
-            glUniform1f(glGetUniformLocation(m.shader, (base + "intensity").c_str()), spotLights[i]->intensity);
-            glUniform1f(glGetUniformLocation(m.shader, (base + "cutOff").c_str()), spotLights[i]->cutOff);
-            glUniform1f(glGetUniformLocation(m.shader, (base + "outerCutOff").c_str()), spotLights[i]->outerCutOff);
+            Kern::setUniform(m.shader, (base + "position").c_str(), spotLights[i]->position);
+            Kern::setUniform(m.shader, (base + "color").c_str(), spotLights[i]->color);
+            Kern::setUniform(m.shader, (base + "intensity").c_str(), spotLights[i]->intensity);
+            Kern::setUniform(m.shader, (base + "direction").c_str(), spotLights[i]->direction);
+            Kern::setUniform(m.shader, (base + "cutOff").c_str(), spotLights[i]->cutOff);
+            Kern::setUniform(m.shader, (base + "outerCutOff").c_str(), spotLights[i]->outerCutOff);
         } else {
-            glUniform1f(glGetUniformLocation(m.shader, (base + "intensity").c_str()), 0.0f);
+            Kern::setUniform(m.shader, (base + "intensity").c_str(), 0.0f);
         }
     }
 
-    GLint skyboxLocation = glGetUniformLocation(m.shader, "skybox");
-    if (skyboxLocation != -1) {
+    if (const GLint skyboxLocation = Kern::getUniformLocation(m.shader, "skybox"); skyboxLocation != -1) {
         glUniform1i(skyboxLocation, 4);
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);

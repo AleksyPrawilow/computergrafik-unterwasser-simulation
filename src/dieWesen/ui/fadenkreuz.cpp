@@ -64,19 +64,14 @@ void Fadenkreuz::customRender(const glm::mat4& view, const glm::mat4& projection
 
     if (screenPos.z < 0.0f || screenPos.z > 1.0f) return;
 
-    // Convert screen pixels back to NDC [-1.0, 1.0]
     glm::vec2 ndcOffset;
     ndcOffset.x = (2.0f * screenPos.x) / vpVector[2] - 1.0f;
-
-    // --- FIXED: Removed the vertical flip. NDC and glm::project already match! ---
     ndcOffset.y = (2.0f * screenPos.y) / vpVector[3] - 1.0f;
 
     glUseProgram(shaderProgram);
-    glUniform2f(glGetUniformLocation(shaderProgram, "u_Offset"), ndcOffset.x, ndcOffset.y);
+    Kern::setUniform(shaderProgram, "u_Offset", ndcOffset);
 
     glBindVertexArray(VAO);
-
-    // --- CLEANED UP: No raw depth testing modifications here anymore ---
     glLineWidth(2.0f);
     glDrawArrays(GL_LINES, 0, 8);
 

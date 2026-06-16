@@ -30,11 +30,10 @@ void WorldspaceUI::onUpdate(GLFWwindow* window, float deltaTime, Transform& came
     glGetIntegerv(GL_VIEWPORT, viewport);
     const glm::vec4 vpVector(viewport[0], viewport[1], viewport[2], viewport[3]);
 
-    glm::mat4 view = kamera.getViewMatrix();
-    glm::mat4 projection = kamera.getProjectionMatrix();
-    const glm::vec3 screenPos = glm::project(worldPos, view, projection, vpVector);
+    const glm::mat4 view = kamera.getViewMatrix();
+    const glm::mat4 projection = kamera.getProjectionMatrix();
 
-    if (screenPos.z < 0.0f || screenPos.z > 1.0f) {
+    if (const glm::vec3 screenPos = glm::project(worldPos, view, projection, vpVector); screenPos.z < 0.0f || screenPos.z > 1.0f) {
         visible = false;
     } else {
         visible = true;
@@ -51,7 +50,7 @@ void WorldspaceUI::onUpdate(GLFWwindow* window, float deltaTime, Transform& came
 
         transform.position = glm::vec3(
             screenPos.x,
-            viewport[3] - screenPos.y,
+            static_cast<float>(viewport[3]) - screenPos.y,
             0.0f
         );
     }
