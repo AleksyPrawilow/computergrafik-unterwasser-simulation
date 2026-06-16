@@ -129,12 +129,15 @@ void main() {
     vec3 localCamPos = (inverseModelMatrix * vec4(cameraPos, 1.0)).xyz;
     vec3 localWorldPos = (inverseModelMatrix * vec4(worldPos, 1.0)).xyz;
 
-    vec3 rayOrigin = localCamPos;
+    bool cameraInside = true;
+    cameraInside = abs(localCamPos.x) < 0.5 && abs(localCamPos.y) < 0.5 && abs(localCamPos.z) < 0.5;
+
+    vec3 rayOrigin = cameraInside ? localCamPos : localWorldPos;
     vec3 rayDir = normalize(localWorldPos - localCamPos);
 
     float distanceTraveled = 0.0;
-    const int MAX_STEPS = 80;
-    const float MAX_DIST = 1000.0;
+    const int MAX_STEPS = 32;
+    const float MAX_DIST = 2.0;
     const float SURF_DIST = 0.002;
 
     vec3 hitPoint;
