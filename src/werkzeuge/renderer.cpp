@@ -89,6 +89,12 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
 
     e.prepareUniforms();
 
+    GLint invModelLoc = glGetUniformLocation(m.shader, "inverseModelMatrix");
+    if (invModelLoc != -1) {
+        glm::mat4 invModel = glm::inverse(model);
+        glUniformMatrix4fv(invModelLoc, 1, GL_FALSE, glm::value_ptr(invModel));
+    }
+
     EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
                         ? WorldEnvironment::activeEnv->params
                         : EnvParameters();
