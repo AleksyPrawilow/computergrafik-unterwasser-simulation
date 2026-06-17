@@ -39,7 +39,7 @@ void WeltraumszeneWesen::init() {
             Random::range(0.01f, 0.05f),
             Random::range(0.5f, 2.0f)
         );
-        ast->transform.scale = glm::vec3(Random::range(1.0f, 5.0f));
+        ast->transform.scale = glm::vec3(Random::range(10.0f, 25.0f));
         ast->transform.position.y = Random::range(-20.0f, 20.0f);
         addChild(ast);
     }
@@ -63,4 +63,6 @@ void WeltraumszeneWesen::init() {
         }
         addChild(feind);
     }
+
+    AudioManager::getInstance().play2D("assets/audio/beatit.mp3", true, true);
 }

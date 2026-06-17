@@ -6,7 +6,7 @@
 
 void Torpedo::init() {
     loadModel("assets/models/cube.obj");
-    transform.scale = glm::vec3(0.06f, 0.06f, 1.2f);
+    transform.scale = glm::vec3(0.36f, 0.36f, 1.2f);
     material.albedo = Kern::LoadTexture("assets/textures/torpedo_blau.png");
     material.emission = Kern::LoadTexture("assets/textures/torpedo_blau.png");
     material.shader = ShaderManager::getInstance().loadShader(
@@ -14,7 +14,7 @@ void Torpedo::init() {
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
-    boundingRadius = 0.5f;
+    boundingRadius = 0.25f;
     addToGroup("torpedos");
     name = "torpedo";
     visible = false;

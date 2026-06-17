@@ -12,7 +12,7 @@ public:
     void abfeuern(const glm::vec3& position, const glm::quat& rotation);
 
 private:
-    float geschwindigkeit = 50.0f;
+    float geschwindigkeit = 500.0f;
     float lebensdauer = 3.0f;
     bool istAbgefeuert = false;
     Timer * selbstzerstoerungsTimer = nullptr;

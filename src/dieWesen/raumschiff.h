@@ -3,9 +3,11 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_RAUMSCHIFF_H
 
 #include "particleEmitter.h"
+#include "timer.h"
 #include "../werkzeuge/wesen.h"
 #include "../werkzeuge/transform.h"
 #include "ui/fadenkreuz.h"
+#include "werkzeuge/audio/audioPlayer.h"
 
 enum class AnsichtModus {
     ERSTE_PERSON,
@@ -24,15 +26,18 @@ private:
     Fadenkreuz * fadenkreuz = nullptr;
     AnsichtModus ansichtModus = AnsichtModus::DRITTE_PERSON;
     ParticleEmitter * triebwerke[2] = {nullptr};
+    Timer * canShootTimer = nullptr;
+    AudioPlayer * shootSound = nullptr;
 
     float tatsaechlicheGeschwindigkeit = 0.0f;
     float winkelGeschwindigkeit = 2.0f;
-    float bewegungsGeschwindigkeit = 15.0f;
+    float bewegungsGeschwindigkeit = 60.0f;
     float rueckwaertsGeschwindigkeit = 7.0f;
     float zielGeschwindigkeit = 0.0f;
     float zielRollGeschwindigkeit = 0.0f;
     float leben = 100.0f;
     bool istAktiv = true;
+    bool canShoot = true;
 
     double letzteX = 0.0;
     double letzteY = 0.0;

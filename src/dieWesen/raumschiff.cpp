@@ -4,7 +4,10 @@
 #include "../werkzeuge/textur.h"
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
+
+extern Kamera kamera;
 
 void Raumschiff::init() {
     material.albedo = Kern::LoadTexture("assets/textures/raumschiff_albedo.png");
@@ -35,6 +38,12 @@ void Raumschiff::init() {
         triebwerk->aufstiegZiel = 0.0f;
         triebwerke[i] = triebwerk;
     }
+
+    shootSound = new AudioPlayer("assets/audio/shoot.mp3", false, 10, false);
+    addChild(shootSound);
+
+    canShootTimer = new Timer();
+    addChild(canShootTimer);
 }
 
 void Raumschiff::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
@@ -90,7 +99,10 @@ void Raumschiff::eingabeVerarbeiten(GLFWwindow* window, const float deltaTime) {
         transform.position -= transform.up() * 5.f * deltaTime;
     }
 
-    if (Input::isKeyJustPressed(GLFW_KEY_SPACE) && parent != nullptr) {
+    if (Input::isKeyPressed(GLFW_KEY_SPACE) && parent != nullptr && canShoot) {
+        canShoot = false;
+        canShootTimer->startTimer(0.1f, [this]() { canShoot = true; });
+        shootSound->play();
         auto * torpedo = new Torpedo();
         parent->addChild(torpedo);
         torpedo->abfeuern(
@@ -136,11 +148,6 @@ void Raumschiff::kameraAktualisieren(Transform& cameraTransform, float deltaTime
 }
 
 void Raumschiff::rollsBehandeln(GLFWwindow* window, const float deltaTime) {
-    const glm::vec3 rechts = glm::cross(transform.forward(), transform.up());
-    const float rollFehler = glm::dot(rechts, glm::vec3(0.0f, 1.0f, 0.0f));
-    constexpr float stabilisierungsGeschwindigkeit = 6.0f;
-    zielRollGeschwindigkeit += rollFehler * stabilisierungsGeschwindigkeit;
-
     const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
     rollGeschwindigkeit = glm::mix(rollGeschwindigkeit, zielRollGeschwindigkeit, tRoll);
     transform.roll(rollGeschwindigkeit * deltaTime);
@@ -176,6 +183,7 @@ void Raumschiff::rollsBehandeln(GLFWwindow* window, const float deltaTime) {
 }
 
 void Raumschiff::schadenNehmen(float schaden) {
+    kamera.addShake(0.4f, 0.25f);
     leben -= schaden;
     if (leben <= 0.0f) {
         leben = 100.0f;

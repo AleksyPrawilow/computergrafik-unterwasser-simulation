@@ -9,6 +9,7 @@ public:
     explicit Explosion(const glm::vec3& position, float groesse = 3.0f);
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
+    void prepareUniforms() const override;
 
 private:
     glm::vec3 startPosition;
