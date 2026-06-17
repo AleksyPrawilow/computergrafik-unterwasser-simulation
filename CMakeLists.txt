@@ -8,8 +8,8 @@ set(PROJECT_SOURCES
         src/haupt.cpp
         src/werkzeuge/renderWerkzeuge.cpp
         src/werkzeuge/renderWerkzeuge.h
-        src/werkzeuge/ShaderLoader.cpp
-        src/werkzeuge/ShaderLoader.h
+        src/werkzeuge/shaderLoader.cpp
+        src/werkzeuge/shaderLoader.h
         src/werkzeuge/textur.cpp
         src/werkzeuge/textur.h
         src/werkzeuge/objload.h
@@ -21,17 +21,91 @@ set(PROJECT_SOURCES
         src/werkzeuge/renderer.h
         src/dieWesen/uboot.cpp
         src/dieWesen/uboot.h
-        src/dieWesen/fadenkreuz.cpp
-        src/dieWesen/fadenkreuz.h
+        src/dieWesen/ui/fadenkreuz.cpp
+        src/dieWesen/ui/fadenkreuz.h
         src/werkzeuge/kamera.cpp
         src/werkzeuge/kamera.h
-        src/szenes/unterwasserszene.cpp
-        src/szenes/unterwasserszene.h
+        src/sceneManager.cpp
+        src/sceneManager.h
         src/werkzeuge/shaderManager.cpp
         src/werkzeuge/shaderManager.h
         src/werkzeuge/skyboxHelper.h
         src/dieWesen/wasser.cpp
         src/dieWesen/wasser.h
+        src/dieWesen/earth.cpp
+        src/dieWesen/earth.h
+        src/dieWesen/moon.cpp
+        src/dieWesen/moon.h
+        src/werkzeuge/visual/lightManager.cpp
+        src/werkzeuge/visual/lightManager.h
+        src/dieWesen/ubootRotor.cpp
+        src/dieWesen/ubootRotor.h
+        src/dieWesen/particleEmitter.cpp
+        src/dieWesen/particleEmitter.h
+        src/dieWesen/timer.cpp
+        src/dieWesen/timer.h
+        src/dieWesen/oceanFloor.cpp
+        src/dieWesen/oceanFloor.h
+        src/dieWesen/ubootHeadlight.cpp
+        src/dieWesen/ubootHeadlight.h
+        src/werkzeuge/visual/tween.cpp
+        src/werkzeuge/visual/tween.h
+        src/werkzeuge/physics/raycast.cpp
+        src/werkzeuge/physics/raycast.h
+        src/werkzeuge/ui/wesenUI.cpp
+        src/werkzeuge/ui/wesenUI.h
+        src/werkzeuge/ui/uiLabel.cpp
+        src/werkzeuge/ui/uiLabel.h
+        src/werkzeuge/ui/worldspaceUI.cpp
+        src/werkzeuge/ui/worldspaceUI.h
+        src/werkzeuge/ui/uiContainers.cpp
+        src/werkzeuge/ui/uiContainers.h
+        src/dieWesen/ui/hudPanel.cpp
+        src/dieWesen/ui/hudPanel.h
+        src/werkzeuge/groupManager.cpp
+        src/werkzeuge/groupManager.h
+        src/werkzeuge/input.cpp
+        src/werkzeuge/input.h
+        src/werkzeuge/textureManager.cpp
+        src/werkzeuge/textureManager.h
+        src/szenes/unterwasserszeneWesen.cpp
+        src/szenes/unterwasserszeneWesen.h
+        src/werkzeuge/visual/worldEnvironment.cpp
+        src/werkzeuge/visual/worldEnvironment.h
+        src/werkzeuge/audio/audioManager.cpp
+        src/werkzeuge/audio/audioManager.h
+        src/werkzeuge/audio/audioPlayer.cpp
+        src/werkzeuge/audio/audioPlayer.h
+        src/dieWesen/island.cpp
+        src/dieWesen/island.h
+        src/dieWesen/player.cpp
+        src/dieWesen/player.h
+        src/dieWesen/raft.cpp
+        src/dieWesen/raft.h
+        src/dieWesen/tree.cpp
+        src/dieWesen/tree.h
+        src/dieWesen/axe.cpp
+        src/dieWesen/axe.h
+        src/werkzeuge/random.cpp
+        src/werkzeuge/random.h
+        src/werkzeuge/himmelsboxWesen.cpp
+        src/werkzeuge/himmelsboxWesen.h
+        src/szenes/weltraumszeneWesen.cpp
+        src/szenes/weltraumszeneWesen.h
+        src/dieWesen/raumschiff.cpp
+        src/dieWesen/raumschiff.h
+        src/dieWesen/asteroid.cpp
+        src/dieWesen/asteroid.h
+        src/dieWesen/torpedo.cpp
+        src/dieWesen/torpedo.h
+        src/dieWesen/feindschiff.cpp
+        src/dieWesen/feindschiff.h
+        src/dieWesen/laser.cpp
+        src/dieWesen/laser.h
+        src/dieWesen/explosion.cpp
+        src/dieWesen/explosion.h
+        src/dieWesen/ui/weltraumHudPanel.cpp
+        src/dieWesen/ui/weltraumHudPanel.h
 )
 
 set(SOIL_SOURCES
@@ -63,6 +137,8 @@ set(IMGUI_SOURCES
         external/imgui/backends/imgui_impl_glfw.h
         external/imgui/backends/imgui_impl_opengl3.cpp
         external/imgui/backends/imgui_impl_opengl3.h
+        src/dieWesen/jellyfish.h
+        src/dieWesen/jellyfish.cpp
 )
 
 add_executable(${PROJECT_NAME}
@@ -172,8 +248,10 @@ else()
     endif()
 endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+add_custom_target(kopiere_assets ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        "${CMAKE_CURRENT_BINARY_DIR}/assets"
+        COMMENT "Kopiere Assets..."
 )
+add_dependencies(${PROJECT_NAME} kopiere_assets)

@@ -5,9 +5,11 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SKYBOXHELPER_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SKYBOXHELPER_H
 #include "glew.h"
+#include <glm.hpp>
+
+#include "visual/worldEnvironment.h"
 
 inline float skyboxVertices[] = {
-    // Positions
     -1.0f,  1.0f, -1.0f,
     -1.0f, -1.0f, -1.0f,
      1.0f, -1.0f, -1.0f,
@@ -53,7 +55,6 @@ inline float skyboxVertices[] = {
 
 inline GLuint skyboxVAO, skyboxVBO;
 
-// Generate and bind VAO/VBO inside your initialization code
 inline void initSkybox() {
     glGenVertexArrays(1, &skyboxVAO);
     glGenBuffers(1, &skyboxVBO);
@@ -64,32 +65,35 @@ inline void initSkybox() {
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 }
 
-inline void RenderSkybox(const GLuint skyboxShader, const GLuint skyboxCubemapTexture, const GLuint VAO, const Kamera& kamera) {
-    // 1. Change depth function to GL_LEQUAL (less-than-or-equal)
-    // By default, OpenGL uses GL_LESS. Because our skybox depth is exactly 1.0 (furthest),
-    // we need LEQUAL so it can pass the depth test against a cleared depth buffer (which is also 1.0).
+inline void RenderSkybox(const GLuint skyboxShader, const GLuint skyboxCubemapTexture, GLuint skyboxVAO, const Kamera& kamera, float time) {
     glDepthFunc(GL_LEQUAL);
-
     glUseProgram(skyboxShader);
 
-    // Pass view and projection matrices
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "projection"), 1, GL_FALSE, glm::value_ptr(kamera.getProjectionMatrix()));
-    glUniformMatrix4fv(glGetUniformLocation(skyboxShader, "view"), 1, GL_FALSE, glm::value_ptr(kamera.getViewMatrix()));
+    Kern::setUniform(skyboxShader, "projection", kamera.getProjectionMatrix());
+    Kern::setUniform(skyboxShader, "view", kamera.getViewMatrix());
+    Kern::setUniform(skyboxShader, "cameraPos", kamera.transform.position);
+    Kern::setUniform(skyboxShader, "time", time);
 
-    if (const GLint timeLocation = glGetUniformLocation(skyboxShader, "time"); timeLocation != -1) {
-     glUniform1f(timeLocation, static_cast<GLfloat>(glfwGetTime()));
-    }
+    const EnvParameters env = (WorldEnvironment::activeEnv != nullptr)
+                        ? WorldEnvironment::activeEnv->params
+                        : EnvParameters();
 
-    // Bind Cubemap Texture
+    Kern::setUniform(skyboxShader, "u_fogColor", env.fogColor);
+    Kern::setUniform(skyboxShader, "u_sunDirection", env.sunDirection);
+    Kern::setUniform(skyboxShader, "u_heightFogColor", env.heightFogColor);
+    Kern::setUniform(skyboxShader, "u_heightFogMin", env.heightFogMin);
+    Kern::setUniform(skyboxShader, "u_heightFogMax", env.heightFogMax);
+    Kern::setUniform(skyboxShader, "u_baseFogDensity", env.fogDensity);
+
+    Kern::setUniform(skyboxShader, "u_depthDimmingEnabled", env.depthDimmingEnabled);
+    Kern::setUniform(skyboxShader, "u_depthDimmingCoefficient", env.depthDimmingCoefficient);
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, skyboxCubemapTexture);
-    glUniform1i(glGetUniformLocation(skyboxShader, "skybox"), 0);
-
-    // Draw the cube
-    glBindVertexArray(VAO);
+    Kern::setUniform(skyboxShader, "skybox", 0);
+    glBindVertexArray(skyboxVAO);
     glDrawArrays(GL_TRIANGLES, 0, 36);
 
-    // Reset the depth function back to normal
     glDepthFunc(GL_LESS);
 }
 

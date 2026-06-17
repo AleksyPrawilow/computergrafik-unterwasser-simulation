@@ -12,15 +12,33 @@ std::string shaderLoader::ReadShader(const char *filename) {
 	std::string shaderCode;
 	std::ifstream file(filename, std::ios::in);
 
-	if (!file.good()) {
+	if (!file.is_open() || !file.good()) {
 		std::cout << "Can't read file " << filename << std::endl;
 		std::terminate();
 	}
 
-	file.seekg(0, std::ios::end);
-	shaderCode.resize((unsigned int)file.tellg());
-	file.seekg(0, std::ios::beg);
-	file.read(&shaderCode[0], shaderCode.size());
+	std::string filepathStr(filename);
+	size_t lastSlash = filepathStr.find_last_of("/\\");
+	std::string directory = (lastSlash != std::string::npos) ? filepathStr.substr(0, lastSlash + 1) : "";
+
+	std::string line;
+	while (std::getline(file, line)) {
+		if (line.rfind("#include \"", 0) == 0) {
+			size_t firstQuote = line.find('\"');
+			size_t lastQuote = line.find('\"', firstQuote + 1);
+
+			if (firstQuote != std::string::npos && lastQuote != std::string::npos) {
+				std::string includeFileName = line.substr(firstQuote + 1, lastQuote - firstQuote - 1);
+				std::string includePath = directory + includeFileName;
+
+				// Recursively read the included file's code and append it
+				shaderCode += ReadShader(includePath.c_str()) + "\n";
+			}
+		} else {
+			shaderCode += line + "\n";
+		}
+	}
+
 	file.close();
 	return shaderCode;
 }

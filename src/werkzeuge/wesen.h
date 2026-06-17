@@ -6,8 +6,13 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #include "glew.h"
+#include "groupManager.h"
+#include "string"
+#include "renderer.h"
 #include "renderWerkzeuge.h"
 #include "transform.h"
+
+class Tween;
 
 struct Material {
     GLuint shader = 0;
@@ -15,26 +20,55 @@ struct Material {
     GLuint normal = 0;
     GLuint roughness = 0;
     GLuint metallic = 0;
+    GLuint emission = 0;
+    GLuint opacity = 0;
+    bool isTransparent = false;
+    bool isUI = false;
 };
+
+class Renderer;
 
 class Wesen {
 public:
-    virtual ~Wesen() = default;
+    virtual ~Wesen();
     Transform transform;
     Kern::RenderContext mesh;
     Material material;
+    Wesen * parent = nullptr;
+    std::vector<Wesen *> children;
+    std::string name = "wesen";
+    float boundingRadius = 0.0f;
+    bool visible = true;
+    bool isQueuedDestroyed = false;
 
-    void loadTexture( const char * filepath );
-    void loadNormalMap( const char * filepath );
-    void loadRoughnessMap( const char * filepath );
-    void loadMetallicMap( const char * filepath );
-    void loadModel( const char * filepath );
-    void loadShader( const char * filepath );
+    void loadModel(const char* filepath, std::vector<glm::vec3> * vertices = nullptr);
+    void addChild( Wesen * wesen );
+    [[nodiscard]] virtual Transform getGlobalTransform() const { return cachedGlobalTransform; }
+    virtual float getUIScaleFactor() const;
+    void queueDestroy();
+    [[nodiscard]] glm::mat4 getGlobalModelMatrix() const { return cachedGlobalModelMatrix; }
+    Tween* createTween();
+    void addToGroup(const std::string& groupName);
+    void removeFromGroup(const std::string& groupName);
+    bool isInGroup(const std::string& groupName) const;
+    static const std::vector<Wesen*>& getNodesInGroup(const std::string& groupName);
 
     virtual void init();
-    virtual void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
+    void update(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
+    virtual void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform);
     virtual void prepareUniforms() const {}
+    void postRender(Renderer * renderer, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const;
+    [[nodiscard]] virtual bool hasCustomRender() const { return false; }
+    virtual void customRender(const glm::mat4& view, const glm::mat4& projection) const {}
+
+protected:
+    virtual void updateGlobalTransforms();
+
+    glm::mat4 cachedGlobalModelMatrix = glm::mat4(1.0f);
+    Transform cachedGlobalTransform;
+
 private:
+    std::vector<std::string> myGroups;
 };
 
 

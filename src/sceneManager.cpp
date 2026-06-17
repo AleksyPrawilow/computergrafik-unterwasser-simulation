@@ -1,0 +1,211 @@
+//
+// Created by Alexey Pravilov on 02/06/2026.
+//
+
+#include "sceneManager.h"
+#include "glew.h"
+#include <GLFW/glfw3.h>
+#include "ext.hpp"
+#include <vector>
+
+#include "imgui_impl_glfw.h"
+#include "imgui_impl_opengl3.h"
+#include "szenes/unterwasserszeneWesen.h"
+#include "szenes/weltraumszeneWesen.h"
+#include "werkzeuge/textur.h"
+#include "werkzeuge/transform.h"
+#include "werkzeuge/renderer.h"
+#include "werkzeuge/wesen.h"
+#include "werkzeuge/kamera.h"
+#include "werkzeuge/shaderManager.h"
+#include "werkzeuge/visual/lightManager.h"
+#include "werkzeuge/visual/tween.h"
+#include "werkzeuge/input.h"
+#include "werkzeuge/textureManager.h"
+#include "werkzeuge/audio/audioManager.h"
+#include "werkzeuge/ui/worldspaceUI.h"
+#include "werkzeuge/visual/worldEnvironment.h"
+#include "werkzeuge/groupManager.h"
+
+Renderer renderer;
+Kamera kamera;
+WorldEnvironment * WorldEnvironment::activeEnv = nullptr;
+Wesen * scene = nullptr;
+int aktuelleSzene = 0;
+bool cursorDisabled = true;
+
+void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
+{
+	kamera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
+	glViewport(0, 0, width, height);
+}
+
+void Scene::szeneWechseln(int index) {
+	if (scene != nullptr) {
+		AudioManager::getInstance().allesStoppen();
+		delete scene;
+		scene = nullptr;
+		WorldEnvironment::activeEnv = nullptr;
+		LightManager::getInstance().cleanup();
+	}
+
+	aktuelleSzene = index;
+
+	if (index == 0) {
+		scene = new UnterwasserszeneWesen();
+	} else {
+		scene = new WeltraumszeneWesen();
+	}
+	scene->init();
+}
+
+void Scene::init(GLFWwindow* window)
+{
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glEnable(GL_DEPTH_TEST);
+
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (glfwRawMouseMotionSupported()) {
+		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+	}
+
+	renderer.init();
+	UIElement::initUISystem();
+	AudioManager::getInstance().init();
+	Input::init(window);
+
+	szeneWechseln(0);
+
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	const ImGuiIO& io = ImGui::GetIO(); (void)io;
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 410");
+}
+
+void Scene::shutdown(GLFWwindow* window) {
+	ImGui_ImplOpenGL3_Shutdown();
+	ImGui_ImplGlfw_Shutdown();
+	ImGui::DestroyContext();
+
+	ShaderManager::getInstance().cleanup();
+	LightManager::getInstance().cleanup();
+	TweenManager::getInstance().cleanup();
+	GroupManager::getInstance().cleanup();
+	TextureManager::getInstance().cleanup();
+	UIElement::cleanupUISystem();
+	Kern::clearUniformCache();
+}
+
+void Scene::processInput(GLFWwindow* window) {
+	if (Input::isKeyJustPressed(GLFW_KEY_ESCAPE)) {
+		glfwSetWindowShouldClose(window, true);
+	}
+
+	if (Input::isKeyJustPressed(GLFW_KEY_TAB)) {
+		cursorDisabled = !cursorDisabled;
+		glfwSetInputMode(window, GLFW_CURSOR, cursorDisabled ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	}
+
+	if (Input::isKeyJustPressed(GLFW_KEY_F1) && aktuelleSzene != 0) {
+		szeneWechseln(0);
+	}
+	if (Input::isKeyJustPressed(GLFW_KEY_F2) && aktuelleSzene != 1) {
+		szeneWechseln(1);
+	}
+}
+
+void Scene::renderLoop(GLFWwindow* window) {
+	float lastFrame = 0.0f;
+
+	while (!glfwWindowShouldClose(window)) {
+		const auto currentFrame = static_cast<float>(glfwGetTime());
+		float deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
+		if (deltaTime > 0.1f) deltaTime = 0.1f;
+
+		Input::update();
+		kamera.updateShake(deltaTime);
+		processInput(window);
+
+		if (cursorDisabled) {
+			scene->update(window, deltaTime, kamera.transform);
+		} else {
+			scene->update(window, 0.0f, kamera.transform);
+		}
+
+		AudioManager::getInstance().updateListener(kamera.transform.position, kamera.transform.forward(), kamera.transform.up());
+		TweenManager::getInstance().update(deltaTime);
+
+	    glm::mat4 view = kamera.getViewMatrix();
+	    glm::mat4 projection = kamera.getProjectionMatrix();
+
+	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		renderer.render(*scene, view, projection, kamera.transform.position);
+	    renderer.drawOpaque(view, projection, kamera.transform.position);
+	    renderer.drawHimmelsbox(view, projection);
+	    renderer.drawTransparent(view, projection, kamera.transform.position);
+		renderer.drawUI(view, projection);
+	    renderer.clearQueues();
+
+		ImGui_ImplOpenGL3_NewFrame();
+		ImGui_ImplGlfw_NewFrame();
+		ImGui::NewFrame();
+
+		if (WorldEnvironment::activeEnv != nullptr && !cursorDisabled) {
+            ImGui::Begin("World Environment Tweaker");
+
+            EnvParameters& params = WorldEnvironment::activeEnv->params;
+
+            ImGui::Separator();
+
+            if (ImGui::CollapsingHeader("Sun / Star Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::SliderFloat3("Sun Direction", &params.sunDirection[0], -1.0f, 1.0f);
+                if (glm::length(params.sunDirection) > 0.001f) {
+                    params.sunDirection = glm::normalize(params.sunDirection);
+                }
+                ImGui::ColorEdit3("Sun Color", &params.sunColor[0]);
+                ImGui::SliderFloat("Sun Energy", &params.sunEnergy, 0.0f, 5.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Ambient Light", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::ColorEdit3("Ambient Color", &params.ambientColor[0]);
+                ImGui::SliderFloat("Ambient Energy", &params.ambientEnergy, 0.0f, 1.0f);
+            }
+
+			if (ImGui::CollapsingHeader("Depth dimming", ImGuiTreeNodeFlags_DefaultOpen)) {
+				ImGui::Checkbox("Dimming enabled", &params.depthDimmingEnabled);
+				ImGui::SliderFloat("Dimming coefficient", &params.depthDimmingCoefficient, 0.0f, 1.0f);
+			}
+
+            if (ImGui::CollapsingHeader("Distance Fog", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::Checkbox("Distance Fog Active", &params.fogEnabled);
+                ImGui::ColorEdit3("Fog Color", &params.fogColor[0]);
+                ImGui::SliderFloat("Fog Density", &params.fogDensity, 0.0f, 0.1f, "%.4f");
+            }
+
+            if (ImGui::CollapsingHeader("Height / Depth Fog", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::Checkbox("Height Fog Active", &params.heightFogEnabled);
+                ImGui::ColorEdit3("Height Fog Color", &params.heightFogColor[0]);
+                ImGui::SliderFloat("Ceiling height (Max Y)", &params.heightFogMax, -50.0f, 50.0f);
+                ImGui::SliderFloat("Floor height (Min Y)", &params.heightFogMin, -150.0f, 0.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Water Caustics")) {
+                ImGui::Checkbox("Caustics Active", &params.causticsEnabled);
+                ImGui::ColorEdit3("Caustics Color", &params.causticsColor[0]);
+                ImGui::SliderFloat("Caustics Scale", &params.causticsScale, 0.01f, 0.3f, "%.3f");
+                ImGui::SliderFloat("Caustics Intensity", &params.causticsIntensity, 0.0f, 5.0f);
+            }
+
+            ImGui::End();
+        }
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		glfwSwapBuffers(window);
+	}
+}

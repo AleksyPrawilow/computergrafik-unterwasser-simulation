@@ -1,14 +1,14 @@
 #include "renderWerkzeuge.h"
 #include <algorithm>
 #include "GL/glew.h"
-#include "freeglut.h"
-#include <assimp/Importer.hpp>
 #include <assimp/scene.h>
-#include <assimp/postprocess.h>
+#include "gtc/matrix_transform.hpp"
+#include "gtc/type_ptr.hpp"
 
 const int Kern::VertexData::MAX_ATTRIBS;
+static std::unordered_map<GLuint, std::unordered_map<std::string, GLint>> uniformCache;
 
-void Kern::RenderContext::initFromAssimpMesh(aiMesh* mesh) {
+void Kern::RenderContext::initFromAssimpMesh(const aiMesh* mesh) {
     vertexArray = 0;
     vertexBuffer = 0;
     vertexIndexBuffer = 0;
@@ -123,4 +123,120 @@ void Kern::DrawContext(const Kern::RenderContext& context)
 		(void*)0           // element array buffer offset
 	);
 	glBindVertexArray(0);
+}
+
+glm::vec2 Kern::GetViewportSize() {
+	GLint viewport[4];
+	glGetIntegerv(GL_VIEWPORT, viewport);
+	return glm::vec2(static_cast<float>(viewport[2]), static_cast<float>(viewport[3]));
+}
+
+glm::mat4 Kern::GetOrthoProjection() {
+	const glm::vec2 size = GetViewportSize();
+	return glm::ortho(0.0f, size.x, size.y, 0.0f, -1.0f, 1.0f);
+}
+
+void Kern::Set2DRenderState(const bool enable) {
+	if (enable) {
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glEnable(GL_DEPTH_TEST);
+		glDisable(GL_BLEND);
+	}
+}
+
+void Kern::DrawQuad(const GLuint vao) {
+	glBindVertexArray(vao);
+	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+	glBindVertexArray(0);
+}
+
+void Kern::SetBlendState(const bool enable) {
+	if (enable) {
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	} else {
+		glDisable(GL_BLEND);
+	}
+}
+
+void Kern::SetDepthWriteState(const bool enable) {
+	glDepthMask(enable ? GL_TRUE : GL_FALSE);
+}
+
+void Kern::SetCullState(const bool enable) {
+	if (enable) {
+		glEnable(GL_CULL_FACE);
+	} else {
+		glDisable(GL_CULL_FACE);
+	}
+}
+
+GLint Kern::getUniformLocation(const GLuint program, const char* name) {
+	auto& progCache = uniformCache[program];
+	const std::string nameStr(name);
+
+	if (const auto it = progCache.find(nameStr); it != progCache.end()) {
+		return it->second;
+	}
+
+	const GLint location = glGetUniformLocation(program, name);
+	progCache[nameStr] = location;
+	return location;
+}
+
+void Kern::clearUniformCache() {
+	uniformCache.clear();
+}
+
+void Kern::setUniform(const GLint location, const int value) {
+	if (location != -1) glUniform1i(location, value);
+}
+void Kern::setUniform(const GLint location, const bool value) {
+	if (location != -1) glUniform1i(location, value ? 1 : 0);
+}
+void Kern::setUniform(const GLint location, const float value) {
+	if (location != -1) glUniform1f(location, value);
+}
+void Kern::setUniform(const GLint location, const glm::vec2& value) {
+	if (location != -1) glUniform2fv(location, 1, glm::value_ptr(value));
+}
+void Kern::setUniform(const GLint location, const glm::vec3& value) {
+	if (location != -1) glUniform3fv(location, 1, glm::value_ptr(value));
+}
+void Kern::setUniform(const GLint location, const glm::vec4& value) {
+	if (location != -1) glUniform4fv(location, 1, glm::value_ptr(value));
+}
+void Kern::setUniform(const GLint location, const glm::mat3& value) {
+	if (location != -1) glUniformMatrix3fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+void Kern::setUniform(const GLint location, const glm::mat4& value) {
+	if (location != -1) glUniformMatrix4fv(location, 1, GL_FALSE, glm::value_ptr(value));
+}
+
+void Kern::setUniform(const GLuint program, const char* name, const int value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const bool value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const float value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const glm::vec2& value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const glm::vec3& value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const glm::vec4& value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const glm::mat3& value) {
+	setUniform(getUniformLocation(program, name), value);
+}
+void Kern::setUniform(const GLuint program, const char* name, const glm::mat4& value) {
+	setUniform(getUniformLocation(program, name), value);
 }

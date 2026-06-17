@@ -2,45 +2,229 @@
 // Created by Alexey Pravilov on 02/06/2026.
 //
 #include "uboot.h"
+
+#include "ubootRotor.h"
 #include "../werkzeuge/textur.h"
+#include "ui/fadenkreuz.h"
+#include "werkzeuge/input.h"
 #include "werkzeuge/shaderManager.h"
+#include "werkzeuge/audio/audioPlayer.h"
 
 void Uboot::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/albedo.png");
-    material.roughness = Kern::LoadTexture("assets/textures/roughness.png");
-    material.metallic = Kern::LoadTexture("assets/textures/metallness.png");
-    material.normal = Kern::LoadTexture("assets/textures/normal.png");
+    material.albedo = Kern::LoadTexture("assets/textures/sub_albedo.png");
+    material.roughness = Kern::LoadTexture("assets/textures/sub_metallic.png");
+    material.metallic = Kern::LoadTexture("assets/textures/sub_metallic.png");
+    material.normal = Kern::LoadTexture("assets/textures/sub_normal.png");
     material.shader = ShaderManager::getInstance().loadShader(
-        "uboot",
-        "assets/shaders/shader_5_1_ship.vert",
-        "assets/shaders/shader_5_1_ship.frag"
+        "default",
+        "assets/shaders/default.vert",
+        "assets/shaders/default.frag"
         );
-    loadModel("assets/models/11097_squid_v1.obj");
+    loadModel("assets/models/uboot.obj");
+    transform.position = glm::vec3(-12.f, -1.f, 0.f);
+    transform.scale = glm::vec3(3.0f);
+
+    addToGroup("player");
+
+    auto * windshield = new Wesen();
+    windshield->init();
+    windshield->loadModel("assets/models/uboot_windshield.obj");
+
+    windshield->material.albedo = material.albedo;
+    windshield->material.roughness = material.roughness;
+    windshield->material.metallic = material.metallic;
+    windshield->material.normal = Kern::LoadTexture("assets/textures/water_normal.png");
+    windshield->material.isTransparent = true;
+    windshield->material.shader = ShaderManager::getInstance().loadShader(
+        "windshield",
+        "assets/shaders/default.vert",
+        "assets/shaders/refract.frag"
+    );
+
+    addChild(windshield);
+    windshield->transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
+
+    crosshair = new Fadenkreuz();
+    crosshair->init(16.0f / 9.0f);
+    addChild(crosshair);
+
+    auto * audio = new AudioPlayer("assets/audio/submarine.mp3", true, 4, true);
+    addChild(audio);
+    audio->play();
+    for (int i = 0; i < 2; i++) {
+        auto * headlight = new UbootHeadlight();
+        addChild(headlight);
+        headlight->transform.position = glm::vec3(-0.43f * (i < 1 ? 1.0f : -1.0f), 0.79f, -0.86f);
+        headlights[i] = headlight;
+    }
+
+    for (int i = 0; i < 4; i++) {
+        auto * rotor = new UbootRotor();
+        addChild(rotor);
+
+        auto * emitter = new ParticleEmitter(5000);
+        addChild(emitter);
+        const auto newPos = glm::vec3(-0.28f * (i < 2 ? 1.0f : -1.0f), 0.38f * (i == 1 || i == 3 ? -1.0f : 1.0f), 0.8f);
+        rotor->transform.position = newPos;
+        emitter->transform.position = newPos;
+        rotors[i] = rotor;
+        emitters[i] = emitter;
+    }
 }
 
-void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
-    float angleSpeed = 4.0f;
-    float moveSpeed = 18.0f;
-    float moveSpeedBackward = 12.0f;
-    float targetMoveSpeed = 0.0f;
+void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
+    targetMoveSpeed = 0.0f;
+    targetRotorSpeed = 0.0f;
+    targetRollVelocity = 0.0f;
+    crosshair->visible = isActive;
 
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+    processInput(window, deltaTime);
+
+    constexpr float accelerationSpeed = 0.75f;
+    const float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
+
+    actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
+    actualRotorSpeed = glm::mix(actualRotorSpeed, targetRotorSpeed, tSpeed * 2);
+
+    for (UbootRotor * rotor : rotors) {
+        rotor->rotorSpeed = actualRotorSpeed;
+    }
+
+    handleRolls(window, deltaTime);
+
+    const auto time = static_cast<float>(glfwGetTime());
+    const float waveHeight = getWaterHeight(transform.position.x, transform.position.z, time);
+    constexpr float floatOffset = 0.1f;
+    constexpr float waveInfluenceAccelerationSpeed = 4.f;
+    const float waveTSpeed = 1.0f - glm::exp(-waveInfluenceAccelerationSpeed * deltaTime);
+    actualWaveInfluence = glm::mix(actualWaveInfluence, targetWaveInfluence * static_cast<float>(!isSubmerging), waveTSpeed);
+
+    if (const float maxSurfaceY = waveHeight + floatOffset; transform.position.y >= maxSurfaceY - 0.15f) {
+        targetWaveInfluence = 1.0f;
+        transform.position.y = glm::mix(transform.position.y, maxSurfaceY, actualWaveInfluence);
+
+        if (pitchVelocity > 0.0f) {
+            pitchVelocity = 0.0f;
+        }
+    } else {
+        targetWaveInfluence = 0.0f;
+    }
+
+    if (isActive) updateCameraTransform(cameraTransform, deltaTime);
+
+    for (ParticleEmitter * emitter : emitters) {
+        emitter->active = (transform.position.y < waveHeight) && (glm::abs(actualRotorSpeed) > 2.0f);
+    }
+}
+
+void Uboot::setIsActive(const bool active) {
+    isActive = active;
+}
+
+void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
+    if (Input::isKeyJustPressed(GLFW_KEY_3)) {
+        isActive = !isActive;
+    }
+
+    if (!isActive) return;
+
+    if (Input::isKeyJustPressed(GLFW_KEY_1)) {
+        viewMode = ViewMode::FIRST_PERSON;
+    }
+    if (Input::isKeyJustPressed(GLFW_KEY_2)) {
+        viewMode = ViewMode::THIRD_PERSON;
+    }
+
+    if (Input::isKeyPressed(GLFW_KEY_W)) {
         targetMoveSpeed = moveSpeed;
+        targetRotorSpeed = rotorSpeed;
         transform.position += transform.forward() * actualMoveSpeed * deltaTime;
     }
 
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+    if (Input::isKeyPressed(GLFW_KEY_S)) {
         targetMoveSpeed = moveSpeedBackward;
+        targetRotorSpeed = rotorSpeedBackward;
         transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
     }
 
-    constexpr float accelerationSpeed = 0.75f;
-    float tSpeed = 1.0f - glm::exp(-accelerationSpeed * deltaTime);
-    actualMoveSpeed = glm::mix(actualMoveSpeed, targetMoveSpeed, tSpeed);
+    if (Input::isKeyPressed(GLFW_KEY_A)) {
+        targetMoveSpeed = moveSpeedBackward;
+        targetRotorSpeed = rotorSpeedBackward;
+        targetRollVelocity = -angleSpeed;
+        transform.position -= transform.right() * actualMoveSpeed / 2.0f * deltaTime;
+    }
+    if (Input::isKeyPressed(GLFW_KEY_D)) {
+        targetMoveSpeed = moveSpeedBackward;
+        targetRotorSpeed = rotorSpeedBackward;
+        targetRollVelocity = angleSpeed;
+        transform.position += transform.right() * actualMoveSpeed / 2.0f * deltaTime;
+    }
 
-    float targetRollVelocity = 0.0f;
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) targetRollVelocity = -angleSpeed;
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) targetRollVelocity = angleSpeed;
+    if (Input::isKeyPressed(GLFW_KEY_Z)) {
+        transform.position += transform.up() * 2.f * deltaTime;
+    }
+
+    if (Input::isKeyPressed(GLFW_KEY_X)) {
+        transform.position -= transform.up() * 2.f * deltaTime;
+        isSubmerging = true;
+        targetWaveInfluence = 0.0f;
+    } else {
+        isSubmerging = false;
+    }
+}
+
+void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) const {
+    const glm::vec3 shipPos = transform.position;
+    const glm::vec3 forward = transform.forward();
+    const glm::vec3 up = transform.up();
+
+    glm::vec3 targetCamPos;
+    glm::vec3 lookAtTarget;
+    float camFollowSpeed;
+    float camRotateSpeed;
+
+    if (viewMode == ViewMode::THIRD_PERSON) {
+        targetCamPos = shipPos - forward * 9.0f + up * 1.5f;
+        lookAtTarget = shipPos + up * 0.5f;
+        camFollowSpeed = 6.0f;
+        camRotateSpeed = 8.0f;
+    }
+    else {
+        targetCamPos = shipPos + forward * 2.1f;
+        lookAtTarget = shipPos + forward * 10.0f;
+
+        camFollowSpeed = 200.0f;
+        camRotateSpeed = 40.0f;
+    }
+
+    glm::vec3 swayedCamPos = targetCamPos;
+
+    if (auto time = static_cast<float>(glfwGetTime()); transform.position.y < getWaterHeight(transform.position.x, transform.position.z, time)) {
+        auto t = static_cast<float>(glfwGetTime());
+        float swayMultiplier = (viewMode == ViewMode::FIRST_PERSON) ? 0.2f : 1.0f;
+
+        float swayX = sin(t * 1.2f) * 0.15f * swayMultiplier;
+        float swayY = cos(t * 1.0f) * 0.10f * swayMultiplier;
+        float swayZ = sin(t * 0.8f) * 0.15f * swayMultiplier;
+        swayedCamPos += glm::vec3(swayX, swayY, swayZ);
+    }
+
+    const glm::quat currentCamRot = cameraTransform.rotation;
+    cameraTransform.lookAt(lookAtTarget, up);
+    const glm::quat targetCamRot = cameraTransform.rotation;
+
+    const float tFollow = viewMode == ViewMode::FIRST_PERSON ? 1.0f : 1.0f - glm::exp(-camFollowSpeed * deltaTime);
+    const float tRotate = viewMode == ViewMode::FIRST_PERSON ? 1.0f : 1.0f - glm::exp(-camRotateSpeed * deltaTime);
+
+    cameraTransform.position = glm::mix(cameraTransform.position, swayedCamPos, tFollow);
+    cameraTransform.rotation = glm::slerp(currentCamRot, targetCamRot, tRotate);
+}
+
+void Uboot::handleRolls(GLFWwindow* window, const float deltaTime) {
+    const glm::vec3 right = glm::cross(transform.forward(), transform.up());
+    const float rollError = glm::dot(right, glm::vec3(0.0f, 1.0f, 0.0f));
+    constexpr float stabilizationSpeed = 6.0f;
+    targetRollVelocity += rollError * stabilizationSpeed;
 
     const float tRoll = 1.0f - glm::exp(-10.0f * deltaTime);
     rollVelocity = glm::mix(rollVelocity, targetRollVelocity, tRoll);
@@ -65,8 +249,8 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
 
-    const auto targetPitchVelocity = static_cast<float>(yoffset);
-    const auto targetYawVelocity = -static_cast<float>(xoffset);
+    const auto targetPitchVelocity = static_cast<float>(yoffset) * static_cast<float>(isActive);
+    const auto targetYawVelocity = -static_cast<float>(xoffset) * static_cast<float>(isActive);
 
     constexpr float shipInertia = 8.0f;
     pitchVelocity = glm::mix(pitchVelocity, targetPitchVelocity, shipInertia * deltaTime);
@@ -74,30 +258,21 @@ void Uboot::update(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     transform.pitch(pitchVelocity * deltaTime);
     transform.yaw(yawVelocity * deltaTime);
-
-
-    const glm::vec3 shipPos = transform.position;
-    const glm::vec3 forward = transform.forward();
-    const glm::vec3 up = transform.up();
-
-    const glm::vec3 targetCamPos = shipPos - forward * 3.0f + up * 0.5f;
-
-    const glm::quat currentCamRot = cameraTransform.rotation;
-    cameraTransform.lookAt(shipPos + up * 0.5f, up);
-    const glm::quat targetCamRot = cameraTransform.rotation;
-
-    constexpr float camFollowSpeed = 6.0f;
-    constexpr float camRotateSpeed = 8.0f;
-
-    const float tFollow = 1.0f - glm::exp(-camFollowSpeed * deltaTime);
-    const float tRotate = 1.0f - glm::exp(-camRotateSpeed * deltaTime);
-
-    cameraTransform.position = glm::mix(cameraTransform.position, targetCamPos, tFollow);
-    cameraTransform.rotation = glm::slerp(currentCamRot, targetCamRot, tRotate);
 }
 
-void Uboot::prepareUniforms() const {
-    if (const GLint timeLocation = glGetUniformLocation(material.shader, "time"); timeLocation != -1) {
-        glUniform1f(timeLocation, static_cast<float>(glfwGetTime()));
+float Uboot::getWaterHeight(const float x, const float z, const float t) {
+    CPUWave waves[3] = {
+        { glm::normalize(glm::vec2(1.0f, 0.1f)),  0.25f, 12.0f, 1.5f },
+        { glm::normalize(glm::vec2(0.2f, 1.0f)),  0.15f, 6.0f,  1.0f },
+        { glm::normalize(glm::vec2(-0.5f, 0.5f)), 0.08f, 3.0f,  0.8f }
+    };
+
+    float y = 0.0f;
+    for (auto & [direction, amplitude, wavelength, speed] : waves) {
+        const float k = 2.0f * 3.14159265f / wavelength;
+        const float c = glm::sqrt(9.81f / k) * speed;
+        const float f = k * (glm::dot(direction, glm::vec2(x, z)) - c * t);
+        y += amplitude * glm::sin(f);
     }
+    return y;
 }
