@@ -28,6 +28,8 @@ public:
     ~ParticleEmitter() override;
 
     bool active = false;
+    glm::vec3 emitRichtung = glm::vec3(0.0f, 1.0f, 0.0f);
+    float aufstiegZiel = 1.8f;
 
     bool hasCustomRender() const override { return true; }
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override;

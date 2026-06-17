@@ -37,6 +37,7 @@ public:
     void setMuffled(bool enable) { muffleEnabled = enable; }
     bool isMuffled() const { return muffleEnabled; }
 
+    void allesStoppen();
     void shutdown();
 
 private:

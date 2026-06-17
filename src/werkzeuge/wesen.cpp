@@ -10,7 +10,8 @@
 #include "visual/tween.h"
 
 Wesen::~Wesen() {
-    for (const Wesen* child : children) {
+    for (Wesen* child : children) {
+        child->parent = nullptr;
         delete child;
     }
     children.clear();
@@ -91,7 +92,8 @@ void Wesen::update(GLFWwindow* window, const float deltaTime, Transform& cameraT
 
     updateGlobalTransforms();
 
-    for (Wesen* child : children) {
+    auto kinderKopie = children;
+    for (Wesen* child : kinderKopie) {
         child->update(window, deltaTime, cameraTransform);
     }
 

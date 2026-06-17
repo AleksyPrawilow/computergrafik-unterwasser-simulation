@@ -4,6 +4,7 @@
 
 #include "unterwasserszeneWesen.h"
 
+#include "werkzeuge/himmelsboxWesen.h"
 #include "dieWesen/earth.h"
 #include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
@@ -19,6 +20,15 @@
 #include "werkzeuge/visual/worldEnvironment.h"
 
 void UnterwasserszeneWesen::init() {
+    addChild(new HimmelsboxWesen({
+        "assets/textures/skybox/px.png",
+        "assets/textures/skybox/nx.png",
+        "assets/textures/skybox/py.png",
+        "assets/textures/skybox/ny.png",
+        "assets/textures/skybox/pz.png",
+        "assets/textures/skybox/nz.png"
+    }));
+
     uboot = new Uboot();
     auto * jellyfish = new Jellyfish();
     addChild(uboot);

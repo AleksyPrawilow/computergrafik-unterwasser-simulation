@@ -8,8 +8,8 @@ set(PROJECT_SOURCES
         src/haupt.cpp
         src/werkzeuge/renderWerkzeuge.cpp
         src/werkzeuge/renderWerkzeuge.h
-        src/werkzeuge/ShaderLoader.cpp
-        src/werkzeuge/ShaderLoader.h
+        src/werkzeuge/shaderLoader.cpp
+        src/werkzeuge/shaderLoader.h
         src/werkzeuge/textur.cpp
         src/werkzeuge/textur.h
         src/werkzeuge/objload.h
@@ -88,6 +88,24 @@ set(PROJECT_SOURCES
         src/dieWesen/axe.h
         src/werkzeuge/random.cpp
         src/werkzeuge/random.h
+        src/werkzeuge/himmelsboxWesen.cpp
+        src/werkzeuge/himmelsboxWesen.h
+        src/szenes/weltraumszeneWesen.cpp
+        src/szenes/weltraumszeneWesen.h
+        src/dieWesen/raumschiff.cpp
+        src/dieWesen/raumschiff.h
+        src/dieWesen/asteroid.cpp
+        src/dieWesen/asteroid.h
+        src/dieWesen/torpedo.cpp
+        src/dieWesen/torpedo.h
+        src/dieWesen/feindschiff.cpp
+        src/dieWesen/feindschiff.h
+        src/dieWesen/laser.cpp
+        src/dieWesen/laser.h
+        src/dieWesen/explosion.cpp
+        src/dieWesen/explosion.h
+        src/dieWesen/ui/weltraumHudPanel.cpp
+        src/dieWesen/ui/weltraumHudPanel.h
 )
 
 set(SOIL_SOURCES
@@ -230,8 +248,10 @@ else()
     endif()
 endif()
 
-add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+add_custom_target(kopiere_assets ALL
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         "${CMAKE_CURRENT_SOURCE_DIR}/assets"
-        "$<TARGET_FILE_DIR:${PROJECT_NAME}>/assets"
+        "${CMAKE_CURRENT_BINARY_DIR}/assets"
+        COMMENT "Kopiere Assets..."
 )
+add_dependencies(${PROJECT_NAME} kopiere_assets)

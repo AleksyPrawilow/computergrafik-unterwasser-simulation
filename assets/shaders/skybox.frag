@@ -13,6 +13,7 @@ uniform vec3 u_heightFogColor;
 uniform float u_heightFogMin;
 uniform float u_heightFogMax;
 uniform float u_baseFogDensity;
+uniform float u_heightFogEnabled = 1.0;
 uniform bool u_depthDimmingEnabled = true;
 uniform float u_depthDimmingCoefficient = 0.08f;
 
@@ -22,7 +23,7 @@ void main()
     vec3 distortedCoords = dir;
 
     // Apply wave surface distortion if camera is submerged AND we are looking UP
-    if (cameraPos.y < u_heightFogMax && dir.y > 0.0)
+    if (u_heightFogEnabled > 0.5 && cameraPos.y < u_heightFogMax && dir.y > 0.0)
     {
         float waveSpeed = time * 1.5;
         float waveStrength = 0.04;
@@ -39,7 +40,7 @@ void main()
     vec4 baseColor = texture(skybox, normalize(distortedCoords));
 
     // If submerged, calculate physical water column fog
-    if (cameraPos.y < u_heightFogMax)
+    if (u_heightFogEnabled > 0.5 && cameraPos.y < u_heightFogMax)
     {
         // 1. Calculate physical water column fog
         float waterDistance;

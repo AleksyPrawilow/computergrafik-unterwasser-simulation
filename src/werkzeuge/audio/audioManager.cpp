@@ -100,6 +100,22 @@ void AudioManager::updateListener(const glm::vec3& camPos, const glm::vec3& camF
     }
 }
 
+void AudioManager::allesStoppen() {
+    for (auto* s : active2DSounds) {
+        ma_sound_stop(s);
+        ma_sound_uninit(s);
+        delete s;
+    }
+    active2DSounds.clear();
+
+    for (auto* s : active3DSounds) {
+        ma_sound_stop(s);
+        ma_sound_uninit(s);
+        delete s;
+    }
+    active3DSounds.clear();
+}
+
 void AudioManager::shutdown() {
     if (!initialized) return;
 

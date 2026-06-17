@@ -64,6 +64,6 @@ void Raft::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransf
     transform.rotation = glm::slerp(
         transform.rotation,
         targetRot,
-        1.0f - exp(-rotSmooth * deltaTime)
+        1.0f - glm::exp(-rotSmooth * deltaTime)
     );
 }

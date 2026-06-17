@@ -12,8 +12,7 @@
 #include <algorithm>
 
 #include "visual/worldEnvironment.h"
-
-extern GLuint cubemapTexture;
+#include "himmelsboxWesen.h"
 
 void Renderer::init() {
     defaultNormal = Kern::LoadTexture("assets/textures/default_normal.png");
@@ -26,7 +25,9 @@ void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& pr
         return;
     }
 
-    if (e.material.isUI) {
+    if (dynamic_cast<const HimmelsboxWesen*>(&e) != nullptr) {
+        himmelsboxQueue.push_back(&e);
+    } else if (e.material.isUI) {
         uiQueue.push_back(&e);
     } else if (e.material.isTransparent) {
         transparentQueue.push_back(&e);
@@ -42,6 +43,12 @@ void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& pr
 void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const {
     for (const Wesen* e : opaqueQueue) {
         drawElement(*e, view, projection, cameraPos);
+    }
+}
+
+void Renderer::drawHimmelsbox(const glm::mat4& view, const glm::mat4& projection) const {
+    for (const Wesen* e : himmelsboxQueue) {
+        e->customRender(view, projection);
     }
 }
 
@@ -220,7 +227,7 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     if (const GLint skyboxLocation = Kern::getUniformLocation(m.shader, "skybox"); skyboxLocation != -1) {
         glUniform1i(skyboxLocation, 4);
         glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, HimmelsboxWesen::aktiveCubemap);
     }
 
     Kern::DrawContext(e.mesh);

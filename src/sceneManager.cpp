@@ -11,13 +11,13 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "szenes/unterwasserszeneWesen.h"
+#include "szenes/weltraumszeneWesen.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/transform.h"
 #include "werkzeuge/renderer.h"
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
-#include "werkzeuge/skyboxHelper.h"
 #include "werkzeuge/visual/lightManager.h"
 #include "werkzeuge/visual/tween.h"
 #include "werkzeuge/input.h"
@@ -25,24 +25,13 @@
 #include "werkzeuge/audio/audioManager.h"
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
-
-GLuint programTex;
-GLuint cubemapTexture;
-GLuint skyboxShader;
-
-std::vector<std::string> skyboxFaces {
-	"assets/textures/skybox/px.png",
-	"assets/textures/skybox/nx.png",
-	"assets/textures/skybox/py.png",
-	"assets/textures/skybox/ny.png",
-	"assets/textures/skybox/pz.png",
-	"assets/textures/skybox/nz.png"
-};
+#include "werkzeuge/groupManager.h"
 
 Renderer renderer;
 Kamera kamera;
 WorldEnvironment * WorldEnvironment::activeEnv = nullptr;
-auto * scene = new UnterwasserszeneWesen();
+Wesen * scene = nullptr;
+int aktuelleSzene = 0;
 bool cursorDisabled = true;
 
 void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
@@ -51,23 +40,41 @@ void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const
 	glViewport(0, 0, width, height);
 }
 
+void Scene::szeneWechseln(int index) {
+	if (scene != nullptr) {
+		AudioManager::getInstance().allesStoppen();
+		delete scene;
+		scene = nullptr;
+		WorldEnvironment::activeEnv = nullptr;
+		LightManager::getInstance().cleanup();
+	}
+
+	aktuelleSzene = index;
+
+	if (index == 0) {
+		scene = new UnterwasserszeneWesen();
+	} else {
+		scene = new WeltraumszeneWesen();
+	}
+	scene->init();
+}
+
 void Scene::init(GLFWwindow* window)
 {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glEnable(GL_DEPTH_TEST);
 
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	if (glfwRawMouseMotionSupported()) {
+		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+	}
 
 	renderer.init();
 	UIElement::initUISystem();
 	AudioManager::getInstance().init();
 	Input::init(window);
 
-	initSkybox();
-	cubemapTexture = Kern::LoadCubemap(skyboxFaces);
-	skyboxShader = ShaderManager::getInstance().loadShader("skybox", "assets/shaders/skybox.vert", "assets/shaders/skybox.frag");
-
-	scene->init();
+	szeneWechseln(0);
 
 	IMGUI_CHECKVERSION();
 	ImGui::CreateContext();
@@ -97,9 +104,15 @@ void Scene::processInput(GLFWwindow* window) {
 	}
 
 	if (Input::isKeyJustPressed(GLFW_KEY_TAB)) {
-		std::cout << "Tab" << std::endl;
 		cursorDisabled = !cursorDisabled;
 		glfwSetInputMode(window, GLFW_CURSOR, cursorDisabled ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
+	}
+
+	if (Input::isKeyJustPressed(GLFW_KEY_F1) && aktuelleSzene != 0) {
+		szeneWechseln(0);
+	}
+	if (Input::isKeyJustPressed(GLFW_KEY_F2) && aktuelleSzene != 1) {
+		szeneWechseln(1);
 	}
 }
 
@@ -132,7 +145,7 @@ void Scene::renderLoop(GLFWwindow* window) {
 
 		renderer.render(*scene, view, projection, kamera.transform.position);
 	    renderer.drawOpaque(view, projection, kamera.transform.position);
-	    RenderSkybox(skyboxShader, cubemapTexture, skyboxVAO, kamera, currentFrame);
+	    renderer.drawHimmelsbox(view, projection);
 	    renderer.drawTransparent(view, projection, kamera.transform.position);
 		renderer.drawUI(view, projection);
 	    renderer.clearQueues();

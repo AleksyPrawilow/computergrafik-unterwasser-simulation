@@ -56,11 +56,20 @@ void ParticleEmitter::emit() {
     glm::mat4 globalMatrix = getGlobalModelMatrix();
     glm::vec3 globalOrigin = glm::vec3(globalMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-    glm::vec3 localVelocity = glm::vec3(
-        (rand() % 100 / 1000.0f) - 0.05f,
-        (rand() % 100 / 1000.0f) - 0.05f,
-        -1.5f - (rand() % 100 / 100.0f)
-    );
+    glm::vec3 localVelocity;
+    if (glm::length(emitRichtung) < 0.01f) {
+        localVelocity = glm::vec3(
+            (rand() % 200 / 100.0f) - 1.0f,
+            (rand() % 200 / 100.0f) - 1.0f,
+            (rand() % 200 / 100.0f) - 1.0f
+        ) * 3.0f;
+    } else {
+        localVelocity = glm::vec3(
+            (rand() % 100 / 1000.0f) - 0.05f,
+            (rand() % 100 / 1000.0f) - 0.05f,
+            -1.5f - (rand() % 100 / 100.0f)
+        );
+    }
     glm::vec3 globalVelocity = glm::vec3(globalMatrix * glm::vec4(localVelocity, 0.0f));
 
     float scale = 0.075f;
@@ -88,8 +97,8 @@ void ParticleEmitter::onUpdate(GLFWwindow* window, float deltaTime, Transform& c
             it->velocity.x *= glm::exp(-dragFactor * deltaTime);
             it->velocity.z *= glm::exp(-dragFactor * deltaTime);
 
-            float riseTarget = 1.8f;
-            it->velocity.y = glm::mix(it->velocity.y, riseTarget, 1.0f - glm::exp(-2.0f * deltaTime));
+            float zielAufstieg = aufstiegZiel;
+            it->velocity.y = glm::mix(it->velocity.y, zielAufstieg, 1.0f - glm::exp(-2.0f * deltaTime));
 
             it->position += it->velocity * deltaTime;
 

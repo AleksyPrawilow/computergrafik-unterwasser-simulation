@@ -5,6 +5,8 @@
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
+#include <unordered_map>
+#include <string>
 
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
