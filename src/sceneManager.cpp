@@ -113,6 +113,7 @@ void Scene::renderLoop(GLFWwindow* window) {
 		if (deltaTime > 0.1f) deltaTime = 0.1f;
 
 		Input::update();
+		kamera.updateShake(deltaTime);
 		processInput(window);
 
 		if (cursorDisabled) {

@@ -63,7 +63,7 @@ void ParticleEmitter::emit() {
     );
     glm::vec3 globalVelocity = glm::vec3(globalMatrix * glm::vec4(localVelocity, 0.0f));
 
-    float scale = 0.035f;
+    float scale = 0.075f;
     float life = 1.0f;
 
     particles.push_back({ globalOrigin, globalVelocity, life, life, scale });

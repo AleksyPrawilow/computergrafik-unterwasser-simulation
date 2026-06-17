@@ -76,6 +76,18 @@ set(PROJECT_SOURCES
         src/werkzeuge/audio/audioManager.h
         src/werkzeuge/audio/audioPlayer.cpp
         src/werkzeuge/audio/audioPlayer.h
+        src/dieWesen/island.cpp
+        src/dieWesen/island.h
+        src/dieWesen/player.cpp
+        src/dieWesen/player.h
+        src/dieWesen/raft.cpp
+        src/dieWesen/raft.h
+        src/dieWesen/tree.cpp
+        src/dieWesen/tree.h
+        src/dieWesen/axe.cpp
+        src/dieWesen/axe.h
+        src/werkzeuge/random.cpp
+        src/werkzeuge/random.h
 )
 
 set(SOIL_SOURCES

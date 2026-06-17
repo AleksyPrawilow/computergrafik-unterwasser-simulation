@@ -7,6 +7,7 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_DASWESEN_H
 #include "glew.h"
 #include "groupManager.h"
+#include "string"
 #include "renderer.h"
 #include "renderWerkzeuge.h"
 #include "transform.h"
@@ -35,10 +36,12 @@ public:
     Material material;
     Wesen * parent = nullptr;
     std::vector<Wesen *> children;
+    std::string name = "wesen";
     float boundingRadius = 0.0f;
+    bool visible = true;
     bool isQueuedDestroyed = false;
 
-    void loadModel( const char * filepath );
+    void loadModel(const char* filepath, std::vector<glm::vec3> * vertices = nullptr);
     void addChild( Wesen * wesen );
     [[nodiscard]] virtual Transform getGlobalTransform() const { return cachedGlobalTransform; }
     virtual float getUIScaleFactor() const;

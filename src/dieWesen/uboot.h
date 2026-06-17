@@ -12,6 +12,7 @@
 #include "../werkzeuge/wesen.h"
 #include "../werkzeuge/transform.h"
 #include "../werkzeuge/visual/lightManager.h"
+#include "ui/fadenkreuz.h"
 
 struct CPUWave {
     glm::vec2 direction;
@@ -32,9 +33,11 @@ public:
     [[nodiscard]] float getSpeed() const {
         return actualMoveSpeed;
     }
+    void setIsActive(bool active);
+    static float getWaterHeight(float x, float z, float t);
 private:
+    Fadenkreuz * crosshair = nullptr;
     ViewMode viewMode = ViewMode::THIRD_PERSON;
-    RayCast * testRaycast = nullptr;
     UbootHeadlight * headlights[2] = {nullptr};
     Timer * spotlightTimer {};
     ParticleEmitter* emitters[4] = {nullptr};
@@ -52,6 +55,7 @@ private:
     float targetWaveInfluence = 0.0f;
     float actualWaveInfluence = 0.0f;
     bool isSubmerging = false;
+    bool isActive = false;
 
     // Mouse state tracking
     double lastX = 0.0;
@@ -66,7 +70,6 @@ private:
     void processInput(GLFWwindow* window, float deltaTime);
     void updateCameraTransform(Transform& cameraTransform, float deltaTime) const;
     void handleRolls(GLFWwindow* window, float deltaTime);
-    static float getWaterHeight(float x, float z, float t);
 };
 
 

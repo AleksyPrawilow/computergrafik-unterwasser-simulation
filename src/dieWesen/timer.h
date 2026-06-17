@@ -13,6 +13,7 @@ public:
     bool active = false;
 
     void startTimer(float targetTime, std::function<void()> callbackFunc);
+    void stopTimer();
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override {};
     [[nodiscard]] bool hasCustomRender() const override { return true;};

@@ -13,7 +13,7 @@ Fadenkreuz::~Fadenkreuz() {
     if (VBO != 0) glDeleteBuffers(1, &VBO);
 }
 
-void Fadenkreuz::init(const float aspectRatio) {
+void Fadenkreuz::init(const float aspectRatio, const float wSize, const float hGap, const float dotSize) {
     UIElement::init();
 
     shaderProgram = ShaderManager::getInstance().loadShader(
@@ -24,9 +24,13 @@ void Fadenkreuz::init(const float aspectRatio) {
 
     material.shader = shaderProgram;
 
-    constexpr float wSize = 0.020f;
-    constexpr float hGap = 0.006f;
-    constexpr float dotSize = 0.002f;
+    // std::cout << weSize << std::endl;
+    // std::cout << heGap << std::endl;
+    // std::cout << deotSize << std::endl;
+
+    // constexpr float wSize = 0.020f;
+    // constexpr float hGap = 0.006f;
+    // constexpr float dotSize = 0.002f;
 
     const float vertices[] = {
         -wSize - hGap, 0.0f,    -hGap, 0.0f,

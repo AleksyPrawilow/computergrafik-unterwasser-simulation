@@ -13,6 +13,10 @@ void Timer::startTimer(const float targetTime, std::function<void()> callbackFun
     callback = std::move(callbackFunc);
 }
 
+void Timer::stopTimer() {
+    active = false;
+}
+
 void Timer::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     if (!active) {
         return;

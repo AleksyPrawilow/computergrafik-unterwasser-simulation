@@ -22,6 +22,10 @@ void Renderer::init() {
 }
 
 void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
+    if (!e.visible) {
+        return;
+    }
+
     if (e.material.isUI) {
         uiQueue.push_back(&e);
     } else if (e.material.isTransparent) {

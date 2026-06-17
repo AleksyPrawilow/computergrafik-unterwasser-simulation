@@ -33,7 +33,7 @@ struct EnvParameters {
     float causticsIntensity  = 1.5f;
 
     bool depthDimmingEnabled = true;
-    float depthDimmingCoefficient = 0.08f;
+    float depthDimmingCoefficient = 0.02f;
 };
 
 class WorldEnvironment : public Wesen {

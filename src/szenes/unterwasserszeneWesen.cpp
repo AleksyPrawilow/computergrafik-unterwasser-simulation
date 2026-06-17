@@ -5,8 +5,12 @@
 #include "unterwasserszeneWesen.h"
 
 #include "dieWesen/earth.h"
+#include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
 #include "dieWesen/oceanFloor.h"
+#include "dieWesen/player.h"
+#include "dieWesen/raft.h"
+#include "dieWesen/tree.h"
 #include "dieWesen/wasser.h"
 #include "dieWesen/ui/hudPanel.h"
 #include "werkzeuge/textur.h"
@@ -22,6 +26,10 @@ void UnterwasserszeneWesen::init() {
     addChild(new OceanFloor());
     addChild(new Wasser());
     addChild(new HudPanel());
+    addChild(new Island());
+    addChild(new Player());
+    addChild(new Raft);
+    addChild(new Tree());
     addChild(jellyfish);
 
     auto * worldEnv = new WorldEnvironment();
@@ -47,24 +55,6 @@ void UnterwasserszeneWesen::init() {
     label->setText("Hello world!", 64.0f);
     worldspaceUI->addChild(label);
     // TEST
-
-    Wesen* island = new Wesen();
-    island->init();
-    island->loadModel("assets/models/island.obj");
-    island->material.albedo = Kern::LoadTexture("assets/textures/Ground_baseColor.png");
-    island->material.normal = Kern::LoadTexture("assets/textures/Ground_normal.png");
-    island->material.metallic = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
-    island->material.roughness = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
-
-    island->material.shader = ShaderManager::getInstance().loadShader(
-        "default",
-        "assets/shaders/default.vert",
-        "assets/shaders/default.frag"
-    );
-
-    island->transform.position = glm::vec3(0.0f, 0.5f, 0.0f);
-    island->transform.scale = glm::vec3(4.0f, 4.0f, 4.0f);
-    addChild(island);
 
     AudioManager::getInstance().play2D("assets/audio/abyss.mp3", true, true);
 }

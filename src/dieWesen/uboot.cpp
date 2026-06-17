@@ -22,6 +22,7 @@ void Uboot::init() {
         );
     loadModel("assets/models/uboot.obj");
     transform.position = glm::vec3(-12.f, -1.f, 0.f);
+    transform.scale = glm::vec3(3.0f);
 
     addToGroup("player");
 
@@ -43,7 +44,7 @@ void Uboot::init() {
     addChild(windshield);
     windshield->transform.position = glm::vec3(0.0f, 0.0f, -1.0f);
 
-    auto* crosshair = new Fadenkreuz();
+    crosshair = new Fadenkreuz();
     crosshair->init(16.0f / 9.0f);
     addChild(crosshair);
 
@@ -69,17 +70,13 @@ void Uboot::init() {
         rotors[i] = rotor;
         emitters[i] = emitter;
     }
-
-    testRaycast = new RayCast();
-    testRaycast->targetPosition = glm::vec3(0.0f, 0.0f, -15.0f);
-
-    addChild(testRaycast);
 }
 
 void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
     targetMoveSpeed = 0.0f;
     targetRotorSpeed = 0.0f;
     targetRollVelocity = 0.0f;
+    crosshair->visible = isActive;
 
     processInput(window, deltaTime);
 
@@ -113,24 +110,24 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
         targetWaveInfluence = 0.0f;
     }
 
-    updateCameraTransform(cameraTransform, deltaTime);
+    if (isActive) updateCameraTransform(cameraTransform, deltaTime);
 
     for (ParticleEmitter * emitter : emitters) {
         emitter->active = (transform.position.y < waveHeight) && (glm::abs(actualRotorSpeed) > 2.0f);
     }
+}
 
-    // if (testRaycast != nullptr && testRaycast->isColliding()) {
-    //     Wesen* hitObject = testRaycast->getCollider();
-    //     const glm::vec3 hitPoint = testRaycast->getCollisionPoint();
-    //     const glm::vec3 hitNormal = testRaycast->getCollisionNormal();
-    //
-    //     std::cout << "Laser pointing at: " << typeid(*hitObject).name() << std::endl
-    //               << " | Hit Point: " << hitPoint.y
-    //               << " | Normal: " << hitNormal.y << std::endl;
-    // }
+void Uboot::setIsActive(const bool active) {
+    isActive = active;
 }
 
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
+    if (Input::isKeyJustPressed(GLFW_KEY_3)) {
+        isActive = !isActive;
+    }
+
+    if (!isActive) return;
+
     if (Input::isKeyJustPressed(GLFW_KEY_1)) {
         viewMode = ViewMode::FIRST_PERSON;
     }
@@ -187,13 +184,13 @@ void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) c
     float camRotateSpeed;
 
     if (viewMode == ViewMode::THIRD_PERSON) {
-        targetCamPos = shipPos - forward * 3.0f + up * 0.5f;
+        targetCamPos = shipPos - forward * 9.0f + up * 1.5f;
         lookAtTarget = shipPos + up * 0.5f;
         camFollowSpeed = 6.0f;
         camRotateSpeed = 8.0f;
     }
     else {
-        targetCamPos = shipPos + forward * 0.7f;
+        targetCamPos = shipPos + forward * 2.1f;
         lookAtTarget = shipPos + forward * 10.0f;
 
         camFollowSpeed = 200.0f;
@@ -252,8 +249,8 @@ void Uboot::handleRolls(GLFWwindow* window, const float deltaTime) {
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
 
-    const auto targetPitchVelocity = static_cast<float>(yoffset);
-    const auto targetYawVelocity = -static_cast<float>(xoffset);
+    const auto targetPitchVelocity = static_cast<float>(yoffset) * static_cast<float>(isActive);
+    const auto targetYawVelocity = -static_cast<float>(xoffset) * static_cast<float>(isActive);
 
     constexpr float shipInertia = 8.0f;
     pitchVelocity = glm::mix(pitchVelocity, targetPitchVelocity, shipInertia * deltaTime);

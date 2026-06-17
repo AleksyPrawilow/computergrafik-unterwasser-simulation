@@ -12,7 +12,7 @@ public:
     Fadenkreuz();
     ~Fadenkreuz() override;
 
-    void init(float aspectRatio);
+    void init(float aspectRatio, float wSize = 0.020f, float hGap = 0.006f, float dotSize = 0.002f);
 
     // --- ENGINES-LEVEL OVERRIDES ---
     bool hasCustomRender() const override { return true; }
