@@ -81,16 +81,29 @@ void TweenManager::killTweensOwnedBy(const Wesen* ownerEntity) {
     activeTweens.erase(std::remove_if(activeTweens.begin(), activeTweens.end(), [ownerEntity](const std::unique_ptr<Tween>& t) {
         return t->owner == ownerEntity;
     }), activeTweens.end());
+
+    pendingTweens.erase(std::remove_if(pendingTweens.begin(), pendingTweens.end(), [ownerEntity](const std::unique_ptr<Tween>& t) {
+        return t->owner == ownerEntity;
+    }), pendingTweens.end());
 }
 
-Tween* TweenManager::createTween() {
+Tween * TweenManager::createTween() {
     auto tween = std::make_unique<Tween>();
     Tween* ptr = tween.get();
-    activeTweens.push_back(std::move(tween));
+    pendingTweens.push_back(std::move(tween));
     return ptr;
 }
 
 void TweenManager::update(const float deltaTime) {
+    if (!pendingTweens.empty()) {
+        activeTweens.insert(
+            activeTweens.end(),
+            std::make_move_iterator(pendingTweens.begin()),
+            std::make_move_iterator(pendingTweens.end())
+        );
+        pendingTweens.clear();
+    }
+
     for (auto it = activeTweens.begin(); it != activeTweens.end();) {
         if ((*it)->update(deltaTime)) {
             it = activeTweens.erase(it);

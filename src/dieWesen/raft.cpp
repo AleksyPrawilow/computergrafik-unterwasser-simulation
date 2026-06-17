@@ -8,10 +8,7 @@
 
 void Raft::init() {
     loadModel("assets/models/raft.obj");
-    material.albedo = Kern::LoadTexture("assets/textures/Raft_baseColor.png");
-    material.normal = Kern::LoadTexture("assets/textures/Raft_normal.png");
-    material.metallic = Kern::LoadTexture("assets/textures/Raft_metallicRoughness.png");
-    material.roughness = Kern::LoadTexture("assets/textures/Raft_metallicRoughness.png");
+    material.albedo = Kern::LoadTexture("assets/textures/default_opacity.png");
     material.opacity = Kern::LoadTexture("assets/textures/jellyfish_opacity.png");
     material.shader = ShaderManager::getInstance().getShader("default");
     material.isTransparent = true;

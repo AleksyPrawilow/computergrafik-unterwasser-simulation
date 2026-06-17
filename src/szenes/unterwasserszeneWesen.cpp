@@ -30,6 +30,9 @@ void UnterwasserszeneWesen::init() {
     addChild(new Player());
     addChild(new Raft);
     addChild(new Tree());
+    addChild(new Tree());
+    addChild(new Tree());
+    addChild(new Tree());
     addChild(jellyfish);
 
     auto * worldEnv = new WorldEnvironment();

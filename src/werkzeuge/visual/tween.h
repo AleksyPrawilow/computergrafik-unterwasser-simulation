@@ -136,7 +136,7 @@ public:
     bool isStarted = false;
 
     TweenProperty(T* target, const T& endVal, const float duration, const EaseType ease)
-        : target(target), start(*target), end(endVal), duration(duration), ease(ease) {}
+        : target(target), start(*target), initialStart(*target), end(endVal), duration(duration), ease(ease) {}
 
     bool update(const float deltaTime) override {
         if (target == nullptr) return true;
@@ -263,6 +263,7 @@ public:
 private:
     TweenManager() = default;
     std::vector<std::unique_ptr<Tween>> activeTweens {};
+    std::vector<std::unique_ptr<Tween>> pendingTweens {};
 };
 
 
