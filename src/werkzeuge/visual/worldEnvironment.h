@@ -34,6 +34,10 @@ struct EnvParameters {
 
     bool depthDimmingEnabled = true;
     float depthDimmingCoefficient = 0.02f;
+
+    bool bloomEnabled = true;
+    float bloomThreshold = 0.02f;
+    float bloomIntensity = 0.5f;
 };
 
 class WorldEnvironment : public Wesen {

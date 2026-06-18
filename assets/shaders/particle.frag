@@ -1,5 +1,7 @@
 #version 410 core
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 bloomColor;
+uniform float u_bloomStrength = 0.0;
 
 in vec2 TexCoord;
 
@@ -27,4 +29,5 @@ void main() {
     float alpha = clamp(fresnel * 0.75 + specFactor * 0.9, 0.0, 1.0);
 
     FragColor = vec4(finalColor, alpha);
+    bloomColor = vec4(finalColor * u_bloomStrength, alpha);
 }

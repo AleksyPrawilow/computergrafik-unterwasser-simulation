@@ -7,6 +7,7 @@
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/random.h"
 #include "werkzeuge/visual/worldEnvironment.h"
+#include "werkzeuge/textur.h"
 
 void WeltraumszeneWesen::init() {
     addChild(new HimmelsboxWesen({
@@ -71,6 +72,35 @@ void WeltraumszeneWesen::spawnWave(Timer * timer, int numA, int numB) {
         }
         addChild(feind);
     }
+
+    auto * boss = new Feindschiff();
+    boss->leben = 20.0f;
+    boss->laserSchaden = 30.0f;
+    float bossWinkel = Random::range(0.0f, 6.28f);
+    float bossRadius = Random::range(80.0f, 150.0f);
+    boss->transform.position = glm::vec3(
+        glm::cos(bossWinkel) * bossRadius,
+        Random::range(-20.0f, 20.0f),
+        glm::sin(bossWinkel) * bossRadius
+    );
+    for (int w = 0; w < 4; w++) {
+        float wWinkel = bossWinkel + static_cast<float>(w + 1) * 1.57f;
+        float wRadius = Random::range(50.0f, 130.0f);
+        boss->wegpunkte.emplace_back(
+            glm::cos(wWinkel) * wRadius,
+            Random::range(-20.0f, 20.0f),
+            glm::sin(wWinkel) * wRadius
+        );
+    }
+    addChild(boss);
+    boss->transform.scale = glm::vec3(100.0f);
+    boss->boundingRadius = 120.0f;
+    boss->material.albedo = Kern::LoadTexture("assets/textures/boss_gold.png");
+    boss->laserGroesse = glm::vec3(0.4f, 0.4f, 8.0f);
+    boss->laserOffset = 30.0f;
+    boss->bewegungsGeschwindigkeit = 25.0f;
+    boss->drehGeschwindigkeit = 1.0f;
+    boss->schussIntervall = 1.0f;
 
     timer->startTimer(4.0f, [this, timer]() {
         spawnWave(timer, 2, 2);

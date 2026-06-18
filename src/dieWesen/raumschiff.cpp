@@ -1,5 +1,7 @@
 #include "raumschiff.h"
 #include "torpedo.h"
+#include "feindschiff.h"
+#include "explosion.h"
 
 #include "../werkzeuge/textur.h"
 #include "ui/fadenkreuz.h"
@@ -64,6 +66,25 @@ void Raumschiff::onUpdate(GLFWwindow* window, float deltaTime, Transform& camera
     for (auto * triebwerk : triebwerke) {
         triebwerk->active = glm::abs(tatsaechlicheGeschwindigkeit) > 1.0f;
     }
+
+    if (collisionCooldown > 0.0f) {
+        collisionCooldown -= deltaTime;
+    } else {
+        const auto& feinde = getNodesInGroup("feinde");
+        for (auto* ziel : feinde) {
+            float abstand = glm::distance(getGlobalTransform().position, ziel->getGlobalTransform().position);
+            if (abstand < boundingRadius + ziel->boundingRadius) {
+                if (auto* feind = dynamic_cast<Feindschiff*>(ziel)) {
+                    feind->schadenNehmen(1.0f);
+                }
+                schadenNehmen(25.0f);
+                if (parent != nullptr)
+                    parent->addChild(new Explosion(getGlobalTransform().position, 3.0f));
+                collisionCooldown = 1.0f;
+                break;
+            }
+        }
+    }
 }
 
 void Raumschiff::eingabeVerarbeiten(GLFWwindow* window, const float deltaTime) {
@@ -103,12 +124,16 @@ void Raumschiff::eingabeVerarbeiten(GLFWwindow* window, const float deltaTime) {
         canShoot = false;
         canShootTimer->startTimer(0.1f, [this]() { canShoot = true; });
         shootSound->play();
+
+        float sideOffset = shootLeft ? -1.5f : 1.5f;
+        glm::vec3 spawnPos = transform.position
+            + transform.forward() * 5.0f
+            + transform.right() * sideOffset;
+        shootLeft = !shootLeft;
+
         auto * torpedo = new Torpedo();
         parent->addChild(torpedo);
-        torpedo->abfeuern(
-            transform.position + transform.forward() * 5.0f,
-            transform.rotation
-        );
+        torpedo->abfeuern(spawnPos, transform.rotation);
     }
 }
 

@@ -1,5 +1,7 @@
 #version 410 core
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 bloomColor;
+uniform float u_bloomStrength = 0.0;
 
 in vec3 TexCoords;
 
@@ -77,10 +79,12 @@ void main()
         finalOutputColor = pow(finalOutputColor, vec3(1.0 / 2.2));
 
         FragColor = vec4(finalOutputColor, 1.0);
+        bloomColor = vec4(finalOutputColor * u_bloomStrength, 1.0);
     }
     else
     {
         // Standard clean sky above water
         FragColor = baseColor;
+        bloomColor = vec4(baseColor.rgb * u_bloomStrength, 1.0);
     }
 }

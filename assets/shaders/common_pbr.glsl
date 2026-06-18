@@ -5,7 +5,8 @@ in vec3 worldPos;
 in vec2 texCoord;
 in mat3 TBN;
 
-out vec4 outColor;
+layout(location = 0) out vec4 outColor;
+layout(location = 1) out vec4 bloomColor;
 
 uniform sampler2D colorTexture;
 uniform sampler2D normalMap;
@@ -41,6 +42,7 @@ uniform float u_causticsScale;
 uniform float u_causticsIntensity;
 uniform bool u_depthDimmingEnabled = true;
 uniform float u_depthDimmingCoefficient = 0.08f;
+uniform float u_bloomStrength = 0.0;
 
 // --- PROCEDURAL CAUSTICS GENERATOR ---
 float calculateCaustics(vec2 xz, float t, float scale) {

@@ -53,11 +53,20 @@ void Feindschiff::laserAbfeuern() {
     const glm::vec3 rechts = transform.right();
     const glm::vec3 pos = getGlobalTransform().position;
 
+    float fwd = transform.scale.x * 0.6f;
     for (int i = 0; i < 2; i++) {
         auto * laser = new Laser();
-        laser->schaden = 10.0f;
+        laser->schaden = laserSchaden;
         float seite = (i == 0) ? -1.0f : 1.0f;
         parent->addChild(laser);
-        laser->abfeuern(pos + vorwaerts * 3.0f + rechts * seite * 1.5f, transform.rotation);
+        laser->transform.scale = laserGroesse;
+        laser->abfeuern(pos + vorwaerts * fwd + rechts * seite * laserOffset, transform.rotation);
+    }
+}
+
+void Feindschiff::schadenNehmen(float schaden) {
+    leben -= schaden;
+    if (leben <= 0.0f) {
+        queueDestroy();
     }
 }

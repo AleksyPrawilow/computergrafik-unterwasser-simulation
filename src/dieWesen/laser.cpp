@@ -6,7 +6,7 @@
 
 void Laser::init() {
     loadModel("assets/models/cube.obj");
-    transform.scale = glm::vec3(0.08f, 0.08f, 1.5f);
+    transform.scale = glm::vec3(0.05f, 0.05f, 2.5f);
     material.albedo = Kern::LoadTexture("assets/textures/laser_rot.png");
     material.emission = Kern::LoadTexture("assets/textures/laser_rot.png");
     material.shader = ShaderManager::getInstance().loadShader(
@@ -14,6 +14,7 @@ void Laser::init() {
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
+    material.bloomStrength = 1.0f;
     boundingRadius = 0.3f;
     addToGroup("feindlaser");
     name = "laser";

@@ -123,7 +123,10 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
         causticsScale,
         causticsIntensity,
         depthDimmingEnabled,
-        depthDimmingCoefficient
+        depthDimmingCoefficient,
+        bloomEnabled,
+        bloomThreshold,
+        bloomIntensity
         ] = (WorldEnvironment::activeEnv != nullptr)
                         ? WorldEnvironment::activeEnv->params
                         : EnvParameters();
@@ -229,6 +232,8 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
         glActiveTexture(GL_TEXTURE4);
         glBindTexture(GL_TEXTURE_CUBE_MAP, HimmelsboxWesen::aktiveCubemap);
     }
+
+    Kern::setUniform(m.shader, "u_bloomStrength", m.bloomStrength);
 
     Kern::DrawContext(e.mesh);
     glUseProgram(0);

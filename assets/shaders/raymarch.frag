@@ -1,5 +1,7 @@
 #version 410 core
-out vec4 FragColor;
+layout(location = 0) out vec4 FragColor;
+layout(location = 1) out vec4 bloomColor;
+uniform float u_bloomStrength = 0.0;
 
 in vec3 worldPos;
 in vec2 texCoord;
@@ -262,6 +264,7 @@ void main() {
         }
 
         FragColor = vec4(color, 0.75);
+        bloomColor = vec4(color * u_bloomStrength, 0.75);
     } else {
         discard;
     }

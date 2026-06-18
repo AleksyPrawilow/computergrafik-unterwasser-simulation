@@ -6,6 +6,7 @@
 #include "gtc/type_ptr.hpp"
 #include <GLFW/glfw3.h>
 #include "werkzeuge/shaderManager.h"
+#include "werkzeuge/renderWerkzeuge.h"
 
 ParticleEmitter::ParticleEmitter(unsigned int maxParticles) : maxParticlesCount(maxParticles) {
     shader = ShaderManager::getInstance().loadShader("particle", "assets/shaders/particle.vert", "assets/shaders/particle.frag");
@@ -118,6 +119,7 @@ void ParticleEmitter::customRender(const glm::mat4& view, const glm::mat4& proje
     glUseProgram(shader);
     glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, glm::value_ptr(view));
+    Kern::setUniform(shader, "u_bloomStrength", 0.0f);
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, gpuData.size() * sizeof(GPUParticle), gpuData.data());

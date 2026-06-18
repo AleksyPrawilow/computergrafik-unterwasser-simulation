@@ -11,6 +11,7 @@ void Jellyfish::init() {
         "assets/shaders/raymarch.frag"
     );
     material.isTransparent = true;
+    material.bloomStrength = 0.6f;
     loadModel("assets/models/cube.obj");
 }
 

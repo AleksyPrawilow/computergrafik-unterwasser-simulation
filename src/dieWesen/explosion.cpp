@@ -24,6 +24,7 @@ void Explosion::init() {
     );
 
     material.isTransparent = true;
+    material.bloomStrength = 1.0f;
 
     cachedGlobalModelMatrix = transform.getModelMatrix();
     cachedGlobalTransform = transform;

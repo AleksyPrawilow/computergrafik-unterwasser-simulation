@@ -24,6 +24,7 @@ struct Material {
     GLuint opacity = 0;
     bool isTransparent = false;
     bool isUI = false;
+    float bloomStrength = 0.0f;
 };
 
 class Renderer;
