@@ -160,12 +160,12 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
         transform.position += transform.right() * actualMoveSpeed / 2.0f * deltaTime;
     }
 
-    if (Input::isKeyPressed(GLFW_KEY_Z)) {
-        transform.position += transform.up() * 2.f * deltaTime;
+    if (Input::isKeyPressed(GLFW_KEY_SPACE)) {
+        transform.position += transform.up() * 4.f * deltaTime;
     }
 
-    if (Input::isKeyPressed(GLFW_KEY_X)) {
-        transform.position -= transform.up() * 2.f * deltaTime;
+    if (Input::isKeyPressed(GLFW_KEY_C)) {
+        transform.position -= transform.up() * 4.f * deltaTime;
         isSubmerging = true;
         targetWaveInfluence = 0.0f;
     } else {

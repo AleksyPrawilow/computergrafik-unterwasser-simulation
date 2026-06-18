@@ -50,7 +50,6 @@ void Scene::szeneWechseln(int index) {
 	}
 
 	aktuelleSzene = index;
-
 	if (index == 0) {
 		scene = new UnterwasserszeneWesen();
 	} else {

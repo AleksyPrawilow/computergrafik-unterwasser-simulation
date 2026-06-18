@@ -185,10 +185,10 @@ void Raumschiff::rollsBehandeln(GLFWwindow* window, const float deltaTime) {
 void Raumschiff::schadenNehmen(float schaden) {
     kamera.addShake(0.4f, 0.25f);
     leben -= schaden;
-    if (leben <= 0.0f) {
-        leben = 100.0f;
-        transform.position = glm::vec3(0.0f);
-        transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
-        tatsaechlicheGeschwindigkeit = 0.0f;
-    }
+    // if (leben <= 0.0f) {
+    //     leben = 100.0f;
+    //     transform.position = glm::vec3(0.0f);
+    //     transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    //     tatsaechlicheGeschwindigkeit = 0.0f;
+    // }
 }

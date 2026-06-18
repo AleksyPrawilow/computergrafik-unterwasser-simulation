@@ -33,7 +33,15 @@ void WeltraumszeneWesen::init() {
     addChild(new Raumschiff());
     addChild(new WeltraumHudPanel());
 
-    for (int i = 0; i < 20; i++) {
+    auto * timer = new Timer();
+    addChild(timer);
+    spawnWave(timer, 20, 12);
+
+    AudioManager::getInstance().play2D("assets/audio/beatit.mp3", true, true);
+}
+
+void WeltraumszeneWesen::spawnWave(Timer * timer, int numA, int numB) {
+    for (int i = 0; i < numA; i++) {
         auto * ast = new Asteroid(
             Random::range(30.0f, 100.0f),
             Random::range(0.01f, 0.05f),
@@ -44,7 +52,7 @@ void WeltraumszeneWesen::init() {
         addChild(ast);
     }
 
-    for (int i = 0; i < 12; i++) {
+    for (int i = 0; i < numB; i++) {
         auto * feind = new Feindschiff();
         float winkel = static_cast<float>(i) * 6.28f / 12.0f;
         float radius = Random::range(40.0f, 120.0f);
@@ -55,14 +63,17 @@ void WeltraumszeneWesen::init() {
         for (int w = 0; w < 4; w++) {
             float wWinkel = winkel + static_cast<float>(w + 1) * 1.57f;
             float wRadius = Random::range(30.0f, 100.0f);
-            feind->wegpunkte.push_back(glm::vec3(
+            feind->wegpunkte.emplace_back(
                 glm::cos(wWinkel) * wRadius,
                 Random::range(-25.0f, 25.0f),
                 glm::sin(wWinkel) * wRadius
-            ));
+            );
         }
         addChild(feind);
     }
 
-    AudioManager::getInstance().play2D("assets/audio/beatit.mp3", true, true);
+    timer->startTimer(4.0f, [this, timer]() {
+        spawnWave(timer, 2, 2);
+    });
 }
+

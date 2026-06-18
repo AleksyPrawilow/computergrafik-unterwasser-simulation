@@ -29,9 +29,6 @@ void Earth::init() {
     addChild(moon);
     createTween()
         ->tweenProperty(&transform.position.y, -42.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
-        ->tweenCallback([this]() {
-            std::cout << "Rock reached peak! Emitting bubble burst..." << std::endl;
-        })
         ->tweenProperty(&transform.position.y, -40.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
         ->setLoops(-1);
 }
