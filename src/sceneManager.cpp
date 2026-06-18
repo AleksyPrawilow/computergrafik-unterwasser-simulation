@@ -26,9 +26,11 @@
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "werkzeuge/groupManager.h"
+#include "werkzeuge/bloom.h"
 
 Renderer renderer;
 Kamera kamera;
+Bloom bloom;
 WorldEnvironment * WorldEnvironment::activeEnv = nullptr;
 Wesen * scene = nullptr;
 int aktuelleSzene = 0;
@@ -73,6 +75,10 @@ void Scene::init(GLFWwindow* window)
 	AudioManager::getInstance().init();
 	Input::init(window);
 
+	int fbW, fbH;
+	glfwGetFramebufferSize(window, &fbW, &fbH);
+	bloom.init(fbW, fbH);
+
 	szeneWechseln(0);
 
 	IMGUI_CHECKVERSION();
@@ -88,6 +94,7 @@ void Scene::shutdown(GLFWwindow* window) {
 	ImGui_ImplGlfw_Shutdown();
 	ImGui::DestroyContext();
 
+	bloom.cleanup();
 	ShaderManager::getInstance().cleanup();
 	LightManager::getInstance().cleanup();
 	TweenManager::getInstance().cleanup();
@@ -140,12 +147,19 @@ void Scene::renderLoop(GLFWwindow* window) {
 	    glm::mat4 view = kamera.getViewMatrix();
 	    glm::mat4 projection = kamera.getProjectionMatrix();
 
-	    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		EnvParameters bloomParams;
+		if (WorldEnvironment::activeEnv != nullptr) {
+			bloomParams = WorldEnvironment::activeEnv->params;
+		}
 
 		renderer.render(*scene, view, projection, kamera.transform.position);
+
+		bloom.beginCapture();
 	    renderer.drawOpaque(view, projection, kamera.transform.position);
 	    renderer.drawHimmelsbox(view, projection);
 	    renderer.drawTransparent(view, projection, kamera.transform.position);
+		bloom.endCaptureAndProcess(bloomParams.bloomThreshold, bloomParams.bloomIntensity, bloomParams.bloomEnabled);
+
 		renderer.drawUI(view, projection);
 	    renderer.clearQueues();
 
@@ -197,6 +211,12 @@ void Scene::renderLoop(GLFWwindow* window) {
                 ImGui::ColorEdit3("Caustics Color", &params.causticsColor[0]);
                 ImGui::SliderFloat("Caustics Scale", &params.causticsScale, 0.01f, 0.3f, "%.3f");
                 ImGui::SliderFloat("Caustics Intensity", &params.causticsIntensity, 0.0f, 5.0f);
+            }
+
+            if (ImGui::CollapsingHeader("Bloom", ImGuiTreeNodeFlags_DefaultOpen)) {
+                ImGui::Checkbox("Bloom Enabled", &params.bloomEnabled);
+                ImGui::SliderFloat("Bloom Threshold", &params.bloomThreshold, 0.0f, 0.5f);
+                ImGui::SliderFloat("Bloom Intensity", &params.bloomIntensity, 0.0f, 3.0f);
             }
 
             ImGui::End();

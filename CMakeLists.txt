@@ -106,6 +106,8 @@ set(PROJECT_SOURCES
         src/dieWesen/explosion.h
         src/dieWesen/ui/weltraumHudPanel.cpp
         src/dieWesen/ui/weltraumHudPanel.h
+        src/werkzeuge/bloom.cpp
+        src/werkzeuge/bloom.h
 )
 
 set(SOIL_SOURCES

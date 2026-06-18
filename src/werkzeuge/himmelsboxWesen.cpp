@@ -69,6 +69,7 @@ void HimmelsboxWesen::customRender(const glm::mat4& view, const glm::mat4& proje
     Kern::setUniform(shaderProgramm, "u_baseFogDensity", env.fogDensity);
     Kern::setUniform(shaderProgramm, "u_depthDimmingEnabled", env.depthDimmingEnabled);
     Kern::setUniform(shaderProgramm, "u_depthDimmingCoefficient", env.depthDimmingCoefficient);
+    Kern::setUniform(shaderProgramm, "u_bloomStrength", 0.0f);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTextur);

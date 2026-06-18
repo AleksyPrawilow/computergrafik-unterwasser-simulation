@@ -80,4 +80,5 @@ void main() {
     }
 
     outColor = vec4(finalColor, alpha);
+    bloomColor = vec4(finalColor * u_bloomStrength, alpha);
 }

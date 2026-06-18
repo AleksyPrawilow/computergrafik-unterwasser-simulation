@@ -1,12 +1,13 @@
 #include "torpedo.h"
 #include "explosion.h"
+#include "feindschiff.h"
 
 #include "../werkzeuge/textur.h"
 #include "werkzeuge/shaderManager.h"
 
 void Torpedo::init() {
     loadModel("assets/models/cube.obj");
-    transform.scale = glm::vec3(0.36f, 0.36f, 1.2f);
+    transform.scale = glm::vec3(0.12f, 0.12f, 2.5f);
     material.albedo = Kern::LoadTexture("assets/textures/torpedo_blau.png");
     material.emission = Kern::LoadTexture("assets/textures/torpedo_blau.png");
     material.shader = ShaderManager::getInstance().loadShader(
@@ -14,6 +15,7 @@ void Torpedo::init() {
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
+    material.bloomStrength = 0.8f;
     boundingRadius = 0.25f;
     addToGroup("torpedos");
     name = "torpedo";
@@ -59,7 +61,11 @@ void Torpedo::kollisionPruefen() {
         if (abstand < boundingRadius + ziel->boundingRadius) {
             if (parent != nullptr)
                 parent->addChild(new Explosion(ziel->getGlobalTransform().position, 4.0f));
-            ziel->queueDestroy();
+            if (auto* schiff = dynamic_cast<Feindschiff*>(ziel)) {
+                schiff->schadenNehmen(1.0f);
+            } else {
+                ziel->queueDestroy();
+            }
             queueDestroy();
             return;
         }

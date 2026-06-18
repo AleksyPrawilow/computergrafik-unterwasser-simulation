@@ -30,7 +30,7 @@ private:
     AudioPlayer * shootSound = nullptr;
 
     float tatsaechlicheGeschwindigkeit = 0.0f;
-    float winkelGeschwindigkeit = 2.0f;
+    float winkelGeschwindigkeit = 4.0f;
     float bewegungsGeschwindigkeit = 60.0f;
     float rueckwaertsGeschwindigkeit = 7.0f;
     float zielGeschwindigkeit = 0.0f;
@@ -44,6 +44,8 @@ private:
     float leben = 100.0f;
     bool istAktiv = true;
     bool canShoot = true;
+    bool shootLeft = true;
+    float collisionCooldown = 0.0f;
 
     double letzteX = 0.0;
     double letzteY = 0.0;
