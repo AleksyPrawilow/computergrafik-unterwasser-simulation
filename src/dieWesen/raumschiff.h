@@ -35,6 +35,12 @@ private:
     float rueckwaertsGeschwindigkeit = 7.0f;
     float zielGeschwindigkeit = 0.0f;
     float zielRollGeschwindigkeit = 0.0f;
+    float maxDashSpeed = 100.0f;
+    float currentDashSpeed = 0.0f;
+    bool isDashing = false;
+    glm::vec3 dashDir = glm::vec3(0.0f);
+    float dashRollAngle = 0.0f;
+    float lastDashRollAngle = 0.0f;
     float leben = 100.0f;
     bool istAktiv = true;
     bool canShoot = true;
