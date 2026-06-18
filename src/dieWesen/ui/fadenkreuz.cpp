@@ -8,7 +8,6 @@
 Fadenkreuz::Fadenkreuz() = default;
 
 Fadenkreuz::~Fadenkreuz() {
-    if (shaderProgram != 0) glDeleteProgram(shaderProgram);
     if (VAO != 0) glDeleteVertexArrays(1, &VAO);
     if (VBO != 0) glDeleteBuffers(1, &VBO);
 }
