@@ -6,6 +6,7 @@
 
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "tree.h"
 
 void Island::init() {
     loadModel("assets/models/island.obj", &vertices);
@@ -20,10 +21,14 @@ void Island::init() {
         "assets/shaders/default.frag"
     );
 
-    transform.position = glm::vec3(0.0f, 0.5f, 0.0f);
+    transform.position = glm::vec3(-700.0f, -10.0f, -220.0f);
     transform.scale = glm::vec3(4.0f, 4.0f, 4.0f);
 
     addToGroup("Island");
+    addChild(new Tree());
+    addChild(new Tree());
+    addChild(new Tree());
+    addChild(new Tree());
 }
 
 float Island::getHeight(const float x, const float z) const {
