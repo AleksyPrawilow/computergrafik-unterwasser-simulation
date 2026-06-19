@@ -108,6 +108,11 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/weltraumHudPanel.h
         src/werkzeuge/bloom.cpp
         src/werkzeuge/bloom.h
+        src/szenes/unterwasserszeneProps.h
+        src/dieWesen/rock.cpp
+        src/dieWesen/rock.h
+        src/dieWesen/prop.cpp
+        src/dieWesen/prop.h
 )
 
 set(SOIL_SOURCES

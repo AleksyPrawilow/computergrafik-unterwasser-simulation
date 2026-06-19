@@ -18,6 +18,8 @@
 #include "werkzeuge/audio/audioManager.h"
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
+#include "unterwasserszeneProps.h"
+#include "dieWesen/rock.h"
 
 void UnterwasserszeneWesen::init() {
     addChild(new HimmelsboxWesen({
@@ -63,6 +65,19 @@ void UnterwasserszeneWesen::init() {
     label->setText("Hello world!", 64.0f);
     worldspaceUI->addChild(label);
     // TEST
+
+    auto sceneData = getGodotSceneData();
+    for (const auto& [className, transforms] : sceneData) {
+        for (const auto& t : transforms) {
+            Wesen * entity = nullptr;
+            if (className == "rock") {
+                entity = new Rock(t.position, t.rotation, t.scale);
+            }
+            if (entity != nullptr) {
+                addChild(entity);
+            }
+        }
+    }
 
     AudioManager::getInstance().play2D("assets/audio/abyss.mp3", true, true);
 }

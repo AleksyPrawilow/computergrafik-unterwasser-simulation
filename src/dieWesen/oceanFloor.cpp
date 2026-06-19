@@ -8,10 +8,9 @@
 #include "werkzeuge/textur.h"
 
 void OceanFloor::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/Ground_baseColor.png");
-    material.normal = Kern::LoadTexture("assets/textures/Ground_normal.png");
-    material.metallic = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
-    material.roughness = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
+    material.albedo = Kern::LoadTexture("assets/textures/ocean-rock_albedo.png");
+    material.normal = Kern::LoadTexture("assets/textures/ocean-rock_normal-ogl.png");
+    material.roughness = Kern::LoadTexture("assets/textures/ocean-rock_roughness.png");
     transform.position = glm::vec3(0.0f, -285.0f, 0.0f);
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
@@ -20,5 +19,4 @@ void OceanFloor::init() {
     );
     loadModel("assets/models/oceanbed.obj");
     transform.scale = glm::vec3(1.0f);
-
 }
