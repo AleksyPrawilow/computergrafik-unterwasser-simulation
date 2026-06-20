@@ -19,7 +19,11 @@
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "unterwasserszeneProps.h"
+#include "dieWesen/bottle.h"
 #include "dieWesen/rock.h"
+#include "dieWesen/ui/questCompletedBanner.h"
+#include "dieWesen/ui/questHUD.h"
+#include "werkzeuge/visual/questManager.h"
 
 void UnterwasserszeneWesen::init() {
     addChild(new HimmelsboxWesen({
@@ -41,6 +45,9 @@ void UnterwasserszeneWesen::init() {
     addChild(new Island());
     addChild(new Player());
     addChild(jellyfish);
+    auto * bottle = new Bottle();
+    bottle->transform.position = glm::vec3(-700, 20.0f, -210.0f);
+    addChild(bottle);
 
     auto * worldEnv = new WorldEnvironment();
     worldEnv->init();
@@ -65,6 +72,28 @@ void UnterwasserszeneWesen::init() {
     label->setText("Hello world!", 64.0f);
     worldspaceUI->addChild(label);
     // TEST
+
+    auto* questHUD = new QuestHUD();
+    addChild(questHUD);
+
+    Quest chopTreeQuest;
+    chopTreeQuest.title = "Wood";
+
+    QuestObjective digObjective;
+    digObjective.tag = "chop_tree";
+    digObjective.description = "Chop down the tree";
+    digObjective.requiredCount = 1;
+
+    chopTreeQuest.objectives.push_back(digObjective);
+
+    chopTreeQuest.onComplete = [this]() {
+        std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
+        auto* banner = new QuestCompletedBanner("The tree is no more");
+        this->addChild(banner);
+        AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
+    };
+
+    QuestManager::getInstance().acceptQuest(chopTreeQuest);
 
     auto sceneData = getGodotSceneData();
     for (const auto& [className, transforms] : sceneData) {

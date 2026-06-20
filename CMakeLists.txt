@@ -113,6 +113,14 @@ set(PROJECT_SOURCES
         src/dieWesen/rock.h
         src/dieWesen/prop.cpp
         src/dieWesen/prop.h
+        src/dieWesen/bottle.cpp
+        src/dieWesen/bottle.h
+        src/werkzeuge/visual/questManager.cpp
+        src/werkzeuge/visual/questManager.h
+        src/dieWesen/ui/questHUD.cpp
+        src/dieWesen/ui/questHUD.h
+        src/dieWesen/ui/questCompletedBanner.cpp
+        src/dieWesen/ui/questCompletedBanner.h
 )
 
 set(SOIL_SOURCES

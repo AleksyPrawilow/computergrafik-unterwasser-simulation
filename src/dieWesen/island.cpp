@@ -26,9 +26,6 @@ void Island::init() {
 
     addToGroup("Island");
     addChild(new Tree());
-    addChild(new Tree());
-    addChild(new Tree());
-    addChild(new Tree());
 }
 
 float Island::getHeight(const float x, const float z) const {

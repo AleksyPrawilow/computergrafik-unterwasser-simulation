@@ -2,19 +2,14 @@
 layout (location = 0) in vec2 vertexPosition;
 layout (location = 1) in vec2 vertexTexCoord;
 
-out vec2 TexCoord;
+out vec2 TexCoords;
 
-uniform mat4 ortho;
 uniform mat4 model;
-
-uniform bool isText;
+uniform mat4 ortho;
 uniform vec2 uvOffset;
+uniform bool isText;
 
 void main() {
-    if (isText) {
-        TexCoord = vertexTexCoord / 16.0 + uvOffset;
-    } else {
-        TexCoord = vertexTexCoord;
-    }
+    TexCoords = isText ? (vertexTexCoord / 16.0) + uvOffset : vertexTexCoord;
     gl_Position = ortho * model * vec4(vertexPosition, 0.0, 1.0);
 }
