@@ -106,10 +106,9 @@ void Axe::hitTree() {
     }
 
     if (player->raycast->isColliding()) {
-        if (const auto * hitObject = player->raycast->getCollider(); hitObject->name == "TreeHitbox") {
-            auto * tree = dynamic_cast<Tree *>(hitObject->parent);
+        if (auto * hitObject = player->raycast->getCollider(); hitObject->name == "tree") {
+            auto * tree = dynamic_cast<Tree *>(hitObject);
             treeToHit = tree;
-            hitNormal = player->raycast->getCollisionNormal();
             hitSound->play();
             kamera.addShake(0.12f, 0.2f);
         }

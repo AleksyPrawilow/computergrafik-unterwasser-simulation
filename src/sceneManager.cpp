@@ -165,6 +165,7 @@ void Scene::renderLoop(GLFWwindow* window) {
 	    renderer.drawOpaque(view, projection, kamera.transform.position);
 	    renderer.drawHimmelsbox(view, projection);
 	    renderer.drawTransparent(view, projection, kamera.transform.position);
+		renderer.drawDebugAABBs(view, projection);
 		bloom.endCaptureAndProcess(bloomParams.bloomThreshold, bloomParams.bloomIntensity, bloomParams.bloomEnabled);
 
 		renderer.drawUI(view, projection);
@@ -180,6 +181,10 @@ void Scene::renderLoop(GLFWwindow* window) {
             EnvParameters& params = WorldEnvironment::activeEnv->params;
 
             ImGui::Separator();
+
+			ImGui::Text("Debug Tools");
+			ImGui::Checkbox("Show Mesh AABBs", &renderer.showDebugAABBs);
+			ImGui::Separator();
 
             if (ImGui::CollapsingHeader("Sun / Star Light", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::SliderFloat3("Sun Direction", &params.sunDirection[0], -1.0f, 1.0f);

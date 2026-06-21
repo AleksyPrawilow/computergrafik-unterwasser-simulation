@@ -63,6 +63,7 @@ public:
         transparentQueue.clear();
         uiQueue.clear();
         himmelsboxQueue.clear();
+        debugAABBs.clear();
     }
 
     void updateFrustum(const glm::mat4& view, const glm::mat4& projection);
@@ -70,14 +71,19 @@ public:
     GLuint getEnvUBO() const { return envUBO; }
     static void bindShaderToUBO(GLuint shaderProgram);
 
+    bool showDebugAABBs = false;
+    void drawDebugAABBs(const glm::mat4& view, const glm::mat4& projection) const;
+
 private:
     void drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const;
     void setupUniforms(const Material& m, const glm::vec3& cameraPos) const;
+    void drawDebugBox(const glm::vec3& min, const glm::vec3& max) const;
 
     std::vector<const Wesen*> opaqueQueue;
     std::vector<const Wesen*> himmelsboxQueue;
     std::vector<const Wesen*> transparentQueue;
     std::vector<const Wesen*> uiQueue;
+    mutable std::vector<std::pair<glm::vec3, glm::vec3>> debugAABBs;
 
     GLuint defaultNormal = 0;
     GLuint defaultEmission = 0;

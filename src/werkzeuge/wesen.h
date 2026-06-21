@@ -50,6 +50,7 @@ public:
 
     AABB localAABB;
     bool hasMesh = false; // set to true after mesh loading
+    bool isCollidable = false;
 
     void loadModel(const char* filepath, std::vector<glm::vec3> * vertices = nullptr);
     void addChild( Wesen * wesen );

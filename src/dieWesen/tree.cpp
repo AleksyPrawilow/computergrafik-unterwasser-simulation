@@ -13,6 +13,8 @@
 extern Kamera kamera;
 
 void Tree::init() {
+    name = "tree";
+    isCollidable = true;
     loadModel("assets/models/tree.obj");
     material.shader = ShaderManager::getInstance().getShader("default");
     material.albedo = Kern::LoadTexture("assets/textures/Raft_baseColor.png");
@@ -22,15 +24,6 @@ void Tree::init() {
     material.shader = ShaderManager::getInstance().getShader("default");
     transform.position = glm::vec3(0.0f, 6.0f, 0.0f);
     transform.scale = glm::vec3(1.0f);
-
-    for (int i = 1; i < 4; ++i) {
-        auto * hitbox = new Wesen();
-        hitbox->name = "TreeHitbox";
-        hitbox->boundingRadius = 0.65f;
-        hitbox->transform.position.y = 0.5f * static_cast<float>(i);
-        addChild(hitbox);
-    }
-
     fallSound = new AudioPlayer("assets/audio/tree_fall.mp3", false, 10);
     addChild(fallSound);
 }

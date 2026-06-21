@@ -63,6 +63,10 @@ void Renderer::render(const Wesen& e, const glm::mat4& view, const glm::mat4& pr
         if (!frustum.isAABBInside(worldMin, worldMax)) {
             goto process_children;
         }
+
+        if (showDebugAABBs) {
+            debugAABBs.push_back({ worldMin, worldMax });
+        }
     }
 
     if (dynamic_cast<const HimmelsboxWesen*>(&e) != nullptr) {
@@ -171,6 +175,33 @@ void Renderer::sendEnvironment(const glm::vec3 cameraPos) const {
     }
 }
 
+void Renderer::drawDebugAABBs(const glm::mat4& view, const glm::mat4& projection) const {
+    if (!showDebugAABBs || debugAABBs.empty()) return;
+
+    static GLuint debugShader = 0;
+    if (debugShader == 0) {
+        debugShader = ShaderManager::getInstance().loadShader(
+            "debug",
+            "assets/shaders/debug.vert",
+            "assets/shaders/debug.frag"
+        );
+    }
+
+    glUseProgram(debugShader);
+
+    glm::mat4 vp = projection * view;
+    Kern::setUniform(debugShader, "transformation", vp);
+
+    // Draw wireframes in bright green
+    Kern::setUniform(debugShader, "u_color", glm::vec4(0.0f, 1.0f, 0.0f, 1.0f));
+
+    for (const auto& box : debugAABBs) {
+        drawDebugBox(box.first, box.second);
+    }
+
+    glUseProgram(0);
+}
+
 void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const {
     if (e.hasCustomRender()) {
         e.customRender(view, projection);
@@ -260,6 +291,54 @@ void Renderer::setupUniforms(const Material& m, const glm::vec3& cameraPos) cons
     }
 
     Kern::setUniform(m.shader, "u_bloomStrength", m.bloomStrength);
+}
+
+void Renderer::drawDebugBox(const glm::vec3& min, const glm::vec3& max) const {
+    // Generate the 8 world-space coordinates of the box
+    glm::vec3 vertices[8] = {
+        glm::vec3(min.x, min.y, min.z),
+        glm::vec3(min.x, min.y, max.z),
+        glm::vec3(min.x, max.y, min.z),
+        glm::vec3(min.x, max.y, max.z),
+        glm::vec3(max.x, min.y, min.z),
+        glm::vec3(max.x, min.y, max.z),
+        glm::vec3(max.x, max.y, min.z),
+        glm::vec3(max.x, max.y, max.z)
+    };
+
+    // 12 lines (24 indices) connecting the corners
+    unsigned int indices[24] = {
+        0, 1,  1, 3,  3, 2,  2, 0, // Bottom face outline
+        4, 5,  5, 7,  7, 6,  6, 4, // Top face outline
+        0, 4,  1, 5,  2, 6,  3, 7  // Vertical pillars
+    };
+
+    static GLuint debugVAO = 0;
+    static GLuint debugVBO = 0;
+    static GLuint debugEBO = 0;
+
+    if (debugVAO == 0) {
+        glGenVertexArrays(1, &debugVAO);
+        glGenBuffers(1, &debugVBO);
+        glGenBuffers(1, &debugEBO);
+    }
+
+    glBindVertexArray(debugVAO);
+
+    // Upload vertices and indices to dynamic GPU buffers on the fly
+    glBindBuffer(GL_ARRAY_BUFFER, debugVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, debugEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+    // Draw using GL_LINES
+    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
 }
 
 void Renderer::bindShaderToUBO(GLuint shaderProgram) {
