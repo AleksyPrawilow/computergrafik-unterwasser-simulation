@@ -102,10 +102,8 @@ void Axe::recoverAnimation() {
 void Axe::hitTree() {
     const auto * player = dynamic_cast<Player *>(parent);
     if (player == nullptr) {
-        std::cerr << "Player is nullptr? Cos miales konkretnie zepsuc xD" << std::endl;
         return;
     }
-
 
     if (player->raycast->isColliding()) {
         if (const auto * hitObject = player->raycast->getCollider(); hitObject->name == "TreeHitbox") {

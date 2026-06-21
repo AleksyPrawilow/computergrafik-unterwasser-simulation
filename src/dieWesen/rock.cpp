@@ -12,5 +12,6 @@ void Rock::init() {
     material.albedo = Kern::LoadTexture("assets/textures/RockTexture001_ao.png");
     material.normal = Kern::LoadTexture("assets/textures/RockTexture001_normal.png");
     material.metallic = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
+    material.isInstanced = true;
     loadModel("assets/models/Rock001.obj");
 }

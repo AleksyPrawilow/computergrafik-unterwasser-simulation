@@ -12,7 +12,7 @@ void Bottle::init() {
     material.normal = Kern::LoadTexture("assets/textures/bottle_normal.png");
     material.roughness = Kern::LoadTexture("assets/textures/bottle_roughness.png");
     material.metallic = Kern::LoadTexture("assets/textures/bottle_roughness.png");
-    material.opacity = Kern::LoadTexture("assets/textures/bottle_opacity.png");
+    material.opacity = Kern::LoadTexture("assets/textures/jellyfish_opacity.png");
     material.shader = ShaderManager::getInstance().getShader("default");
     material.isTransparent = true;
     loadModel("assets/models/bottle.obj");

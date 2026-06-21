@@ -2,13 +2,41 @@
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 bloomColor;
 
+layout (std140) uniform GlobalEnvironment {
+    vec4 u_sunDirection;
+    vec4 u_sunColor;
+    vec4 u_ambientColor;
+    vec4 u_fogColor;
+    vec4 u_heightFogColor;
+    vec4 u_causticsColor;
+    vec4 u_cameraPos;
+
+    float u_sunEnergy;
+    float u_ambientEnergy;
+    float u_baseFogDensity;
+    float u_heightFogMin;
+
+    float u_heightFogMax;
+    float u_causticsScale;
+    float u_causticsIntensity;
+    float u_depthDimmingCoefficient;
+
+    float u_time;
+    float u_bloomThreshold;
+    float u_bloomIntensity;
+
+    int u_fogEnabled;
+    int u_heightFogEnabled;
+    int u_causticsEnabled;
+    int u_depthDimmingEnabled;
+    int u_bloomEnabled;
+};
+
 in vec3 worldPos;
 in vec3 worldNormal;
 in vec2 texCoord;
 in mat3 TBN;
 
-uniform vec3 cameraPos;
-uniform float time;
 uniform float u_bloomStrength = 0.0;
 
 // Textures
@@ -16,10 +44,6 @@ uniform sampler2D normalMap;
 uniform samplerCube skybox;
 
 // Universal Environment Uniforms
-uniform vec3 u_fogColor;
-uniform vec3 u_heightFogColor;
-uniform float u_heightFogMin;
-uniform float u_heightFogMax;
 
 // GGX Microfacet Distribution for Specular Highlights
 float DistributionGGX(vec3 N, vec3 H, float roughness) {
@@ -36,13 +60,13 @@ float DistributionGGX(vec3 N, vec3 H, float roughness) {
 }
 
 void main() {
-    vec3 viewDir = normalize(cameraPos - worldPos);
-    vec3 lightDir = normalize(vec3(0.3, 1.0, 0.4)); // Directional sun position
+    vec3 viewDir = normalize(u_cameraPos.xyz - worldPos);
+    vec3 lightDir = u_sunDirection.xyz;
 
     // 1. DYNAMIC DUAL-LAYER NORMAL SCROLLING
     // We scroll two layers of normal maps in different directions to simulate detailed ripples
-    vec2 uv1 = texCoord * 12.0 + vec2(time * 0.015, time * 0.008);
-    vec2 uv2 = texCoord * 24.0 - vec2(time * 0.010, time * 0.020);
+    vec2 uv1 = texCoord * 12.0 + vec2(u_time * 0.015, u_time * 0.008);
+    vec2 uv2 = texCoord * 24.0 - vec2(u_time * 0.010, u_time * 0.020);
 
     vec3 n1 = texture(normalMap, uv1).rgb * 2.0 - 1.0;
     vec3 n2 = texture(normalMap, uv2).rgb * 2.0 - 1.0;
@@ -78,12 +102,12 @@ void main() {
 
     // 6. DYNAMIC ENVIRONMENT FOG COLOR
     vec3 fogColor;
-    if (cameraPos.y < u_heightFogMax) {
+    if (u_cameraPos.y < u_heightFogMax) {
         // Submerged: vertical color gradient based on viewing angle
         float depthBlend = clamp((-viewDir.y - (-0.2)) / 1.0, 0.0, 1.0);
-        fogColor = mix(u_fogColor, u_heightFogColor, depthBlend);
+        fogColor = mix(u_fogColor, u_heightFogColor, depthBlend).xyz;
 
-        float cameraDepthFactor = clamp(exp(cameraPos.y * 0.08), 0.0, 1.0);
+        float cameraDepthFactor = clamp(exp(u_cameraPos.y * 0.08), 0.0, 1.0);
         fogColor *= cameraDepthFactor;
     } else {
         // Above water: fade to matching horizon sky color
@@ -91,7 +115,7 @@ void main() {
     }
 
     // Apply exponential distance fog
-    float dist = length(cameraPos - worldPos);
+    float dist = length(u_cameraPos.xyz - worldPos);
     float fogDensity = 0.035;
     float fogFactor = clamp(exp(-dist * fogDensity), 0.0, 1.0);
 
@@ -99,7 +123,7 @@ void main() {
 
     // 7. HORIZON AND GRAZING TRANSPARENCY FADING
     float finalAlpha = mix(1.0, 0.6, fogFactor);
-    if (cameraPos.y < u_heightFogMax) {
+    if (u_cameraPos.y < u_heightFogMax) {
         // Fade the water surface to 0% opacity as the view gets horizontal
         float viewAngleFactor = clamp(dot(normal, viewDir), 0.0, 1.0);
         finalAlpha *= pow(viewAngleFactor, 2.0);

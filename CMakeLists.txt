@@ -121,6 +121,14 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/questHUD.h
         src/dieWesen/ui/questCompletedBanner.cpp
         src/dieWesen/ui/questCompletedBanner.h
+        src/werkzeuge/audio/musicManager.cpp
+        src/werkzeuge/audio/musicManager.h
+        src/dieWesen/unterwasserszeneAudioHelper.cpp
+        src/dieWesen/unterwasserszeneAudioHelper.h
+        src/werkzeuge/frustum.cpp
+        src/werkzeuge/frustum.h
+        src/werkzeuge/modelManager.cpp
+        src/werkzeuge/modelManager.h
 )
 
 set(SOIL_SOURCES

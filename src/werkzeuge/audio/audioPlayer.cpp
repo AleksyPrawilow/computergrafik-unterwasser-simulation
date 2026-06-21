@@ -5,8 +5,8 @@
 #include "audioPlayer.h"
 #include "audioManager.h"
 
-AudioPlayer::AudioPlayer(const std::string& filepath, bool loop, float volume, bool isInterior)
-    : streamFilepath(filepath), shouldLoop(loop), initialVolume(volume), isInteriorSound(isInterior) {}
+AudioPlayer::AudioPlayer(const std::string& filepath, bool loop, float volume, bool isInterior, bool isSpatial)
+    : streamFilepath(filepath), shouldLoop(loop), initialVolume(volume), isInteriorSound(isInterior), isSpatialSound(isSpatial) {}
 
 AudioPlayer::~AudioPlayer() {
     if (hasSound) {
@@ -28,15 +28,20 @@ void AudioPlayer::init() {
         ma_sound_set_volume(&sound, initialVolume);
         ma_sound_set_looping(&sound, shouldLoop ? MA_TRUE : MA_FALSE);
 
-        glm::vec3 startPos = getGlobalTransform().position;
-        ma_sound_set_position(&sound, startPos.x, startPos.y, startPos.z);
+        if (isSpatialSound) {
+            ma_sound_set_spatialization_enabled(&sound, MA_TRUE);
+            const glm::vec3 startPos = getGlobalTransform().position;
+            ma_sound_set_position(&sound, startPos.x, startPos.y, startPos.z);
+        } else {
+            ma_sound_set_spatialization_enabled(&sound, MA_FALSE);
+        }
     } else {
         std::cerr << "Failed to load 3D sound stream: " << streamFilepath << std::endl;
     }
 }
 
 void AudioPlayer::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (hasSound) {
+    if (hasSound && isSpatialSound) {
         const glm::vec3 worldPos = getGlobalTransform().position;
         ma_sound_set_position(&sound, worldPos.x, worldPos.y, worldPos.z);
     }
@@ -58,4 +63,11 @@ void AudioPlayer::stop() {
 bool AudioPlayer::isPlaying() const {
     if (!hasSound) return false;
     return ma_sound_is_playing(&sound) == MA_TRUE;
+}
+
+void AudioPlayer::setVolume(const float volume) {
+    initialVolume = volume;
+    if (hasSound) {
+        ma_sound_set_volume(&sound, volume);
+    }
 }

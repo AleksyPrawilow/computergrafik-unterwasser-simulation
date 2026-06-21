@@ -4,6 +4,8 @@
 
 #include "shaderManager.h"
 
+#include "renderer.h"
+
 GLuint ShaderManager::getShader(const std::string& name) {
     if (const auto it = shaderMap.find(name); it != shaderMap.end()) {
         return it->second;
@@ -18,6 +20,7 @@ GLuint ShaderManager::loadShader(const std::string& name, const char* vertPath, 
 
     const GLuint program = shaderLoader.CreateProgram(vertPath, fragPath);
     shaderMap[name] = program;
+    Renderer::bindShaderToUBO(program);
     return program;
 }
 

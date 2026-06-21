@@ -21,8 +21,10 @@
 #include "unterwasserszeneProps.h"
 #include "dieWesen/bottle.h"
 #include "dieWesen/rock.h"
+#include "dieWesen/unterwasserszeneAudioHelper.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/questHUD.h"
+#include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/visual/questManager.h"
 
 void UnterwasserszeneWesen::init() {
@@ -51,14 +53,11 @@ void UnterwasserszeneWesen::init() {
 
     auto * worldEnv = new WorldEnvironment();
     worldEnv->init();
-
+    worldEnv->params.sunEnergy = 4.0f;
     worldEnv->params.fogColor = glm::vec3(0.0f, 0.05f, 0.15f);
-
-    // Bright surface/ceiling color
     worldEnv->params.heightFogColor = glm::vec3(0.0f, 0.22f, 0.28f);
-
     worldEnv->params.fogDensity = 0.025f;
-
+    worldEnv->params.depthDimmingCoefficient = 0.01;
     addChild(worldEnv);
 
     // TEST
@@ -108,5 +107,5 @@ void UnterwasserszeneWesen::init() {
         }
     }
 
-    AudioManager::getInstance().play2D("assets/audio/abyss.mp3", true, true);
+    addChild(new UnterwasserszeneAudioHelper());
 }

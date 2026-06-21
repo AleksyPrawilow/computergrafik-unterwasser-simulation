@@ -5,6 +5,7 @@
 #include "wesen.h"
 #include "freeglut.h"
 #include "groupManager.h"
+#include "modelManager.h"
 #include "textur.h"
 #include "renderWerkzeuge.h"
 #include "visual/tween.h"
@@ -30,19 +31,23 @@ Wesen::~Wesen() {
 }
 
 void Wesen::loadModel(const char *filepath, std::vector<glm::vec3> * vertices) {
-    Assimp::Importer import;
-    const aiScene* scene = import.ReadFile(filepath, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipUVs);
-    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
-        std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
-        return;
-    }
+    CachedModel model = ModelManager::getInstance().getModel(filepath);
+
+    mesh = model.mesh;
+    localAABB = model.localAABB;
+    hasMesh = true;
+
+    // 2. If a calling class specifically requests raw vertices (like Island's heightmap check)
     if (vertices != nullptr) {
-        vertices->clear();
-        for (unsigned int i = 0; i < scene->mMeshes[0]->mNumVertices; i++) {
-            vertices->emplace_back(scene->mMeshes[0]->mVertices[i].x, scene->mMeshes[0]->mVertices[i].y, scene->mMeshes[0]->mVertices[i].z);
+        Assimp::Importer import;
+        const aiScene* scene = import.ReadFile(filepath, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipUVs);
+        if (scene && scene->mRootNode) {
+            vertices->clear();
+            for (unsigned int i = 0; i < scene->mMeshes[0]->mNumVertices; i++) {
+                vertices->emplace_back(scene->mMeshes[0]->mVertices[i].x, scene->mMeshes[0]->mVertices[i].y, scene->mMeshes[0]->mVertices[i].z);
+            }
         }
     }
-    mesh.initFromAssimpMesh(scene->mMeshes[0]);
 }
 
 void Wesen::addChild(Wesen* wesen) {

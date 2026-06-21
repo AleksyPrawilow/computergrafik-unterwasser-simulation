@@ -8,6 +8,7 @@
 #include "werkzeuge/random.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/audio/musicManager.h"
 
 void WeltraumszeneWesen::init() {
     addChild(new HimmelsboxWesen({
@@ -37,8 +38,7 @@ void WeltraumszeneWesen::init() {
     auto * timer = new Timer();
     addChild(timer);
     spawnWave(timer, 20, 12);
-
-    AudioManager::getInstance().play2D("assets/audio/beatit.mp3", true, true);
+    MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
 }
 
 void WeltraumszeneWesen::spawnWave(Timer * timer, int numA, int numB) {
