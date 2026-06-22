@@ -27,6 +27,7 @@ public:
 
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
+    void prepareUniforms() const override;
 
 private:
     glm::vec3 calculateSeparation(const std::vector<Wesen*>& neighbors);
@@ -36,6 +37,8 @@ private:
     glm::vec3 calculatePlayerInteraction(Transform& cameraTransform);
 
     glm::vec3 limit(const glm::vec3& v, float maxVal);
+
+    float randTimeOffset = 0.0f;
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_FISHBOID_H

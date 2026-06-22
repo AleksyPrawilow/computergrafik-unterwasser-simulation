@@ -13,6 +13,7 @@ void FishBoid::init() {
     if (glm::length(velocity) > 0.001f) {
         velocity = glm::normalize(velocity) * maxSpeed;
     }
+    randTimeOffset = rand() % 100 / 100.0f;
 }
 
 void FishBoid::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
@@ -40,6 +41,10 @@ void FishBoid::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTr
             transform.rotation = transform.rotation * glm::angleAxis(glm::radians(rotationOffsetY), glm::vec3(0, 1, 0));
         }
     }
+}
+
+void FishBoid::prepareUniforms() const {
+    Kern::setUniform(material.shader, "time", static_cast<float>(glfwGetTime() + randTimeOffset));
 }
 
 glm::vec3 FishBoid::calculatePlayerInteraction(Transform& cameraTransform) {

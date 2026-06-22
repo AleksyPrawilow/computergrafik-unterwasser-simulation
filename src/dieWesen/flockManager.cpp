@@ -8,8 +8,8 @@ void FishFlock::init() {
         FishBoid* fish = new FishBoid();
 
         fish->material.shader = ShaderManager::getInstance().loadShader(
-            "default",
-            "assets/shaders/default.vert",
+            "fish",
+            "assets/shaders/fish.vert",
             "assets/shaders/default.frag"
         );
 
