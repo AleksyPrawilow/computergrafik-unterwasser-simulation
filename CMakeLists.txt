@@ -170,8 +170,8 @@ set(IMGUI_SOURCES
         src/dieWesen/jellyfish.cpp
         src/dieWesen/fishBolid.h
         src/dieWesen/fishBolid.cpp
-        src/dieWesen/fishFlock.h
-        src/dieWesen/fishFlock.cpp
+        src/dieWesen/flockManager.h
+        src/dieWesen/flockManager.cpp
 )
 
 add_executable(${PROJECT_NAME}
