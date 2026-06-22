@@ -162,6 +162,10 @@ set(IMGUI_SOURCES
         external/imgui/backends/imgui_impl_opengl3.h
         src/dieWesen/jellyfish.h
         src/dieWesen/jellyfish.cpp
+        src/dieWesen/fishBolid.h
+        src/dieWesen/fishBolid.cpp
+        src/dieWesen/fishFlock.h
+        src/dieWesen/fishFlock.cpp
 )
 
 add_executable(${PROJECT_NAME}
