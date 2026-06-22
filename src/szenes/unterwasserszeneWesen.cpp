@@ -8,6 +8,7 @@
 #include "dieWesen/earth.h"
 #include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
+#include "dieWesen/fishFlock.h"
 #include "dieWesen/oceanFloor.h"
 #include "dieWesen/player.h"
 #include "dieWesen/raft.h"
@@ -40,6 +41,7 @@ void UnterwasserszeneWesen::init() {
 
     uboot = new Uboot();
     auto * jellyfish = new Jellyfish();
+    FishFlock* flock = new FishFlock();
     addChild(uboot);
     addChild(new Earth());
     addChild(new OceanFloor());
@@ -48,6 +50,8 @@ void UnterwasserszeneWesen::init() {
     addChild(new Island());
     addChild(new Player());
     addChild(jellyfish);
+    flock->transform.position = glm::vec3(-700, 20.0f, -210.0f);
+    addChild(flock);
     auto * bottle = new Bottle();
     bottle->transform.position = glm::vec3(-700, 20.0f, -210.0f);
     addChild(bottle);
