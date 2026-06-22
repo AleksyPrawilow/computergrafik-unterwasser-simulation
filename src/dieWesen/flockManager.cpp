@@ -24,6 +24,14 @@ void FishFlock::init() {
             (rand() % 200 / 100.0f - 1.0f) * spawnRadius,
             (rand() % 200 / 100.0f - 1.0f) * spawnRadius
         );
+
+        float randomScale = 3.0f + (rand() % 100 / 25.0f);
+        fish->transform.scale = glm::vec3(randomScale);
+
+        float randomSpeed = 6.0f + (rand() % 100 / 25.0f);
+        fish->maxSpeed = randomSpeed;
+
+        fish->maxForce = randomSpeed * 0.5f;
         addChild(fish);
     }
 }
