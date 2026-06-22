@@ -129,6 +129,8 @@ set(PROJECT_SOURCES
         src/werkzeuge/frustum.h
         src/werkzeuge/modelManager.cpp
         src/werkzeuge/modelManager.h
+        src/dieWesen/thunderstorm.cpp
+        src/dieWesen/thunderstorm.h
 )
 
 set(SOIL_SOURCES

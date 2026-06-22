@@ -1,6 +1,7 @@
 #version 410 core
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 bloomColor;
+
 layout (std140) uniform GlobalEnvironment {
     vec4 u_sunDirection;
     vec4 u_sunColor;
@@ -41,8 +42,12 @@ void main()
     vec3 dir = normalize(TexCoords);
     vec3 distortedCoords = dir;
 
+    // FIX: Calculate an ambient-aware brightness scale
+    // This dims the skybox during storms and brightens it during lightning flashes
+    float skyBrightness = clamp((u_sunEnergy * 0.35) + (u_ambientEnergy * 1.0), 0.02, 1.15);
+
     // Apply wave surface distortion if camera is submerged AND we are looking UP
-    if (u_heightFogEnabled > 0.5 && u_cameraPos.y < u_heightFogMax && dir.y > 0.0)
+    if (u_heightFogEnabled != 0 && u_cameraPos.y < u_heightFogMax && dir.y > 0.0)
     {
         float waveSpeed = u_time * 1.5;
         float waveStrength = 0.04;
@@ -56,12 +61,13 @@ void main()
         distortedCoords.z += offsetZ * horizonFade;
     }
 
+    // Sample and apply dynamic environmental brightness to the skybox texture
     vec4 baseColor = texture(skybox, normalize(distortedCoords));
+    vec3 litSkyColor = baseColor.rgb * skyBrightness;
 
     // If submerged, calculate physical water column fog
-    if (u_heightFogEnabled > 0.5 && u_cameraPos.y < u_heightFogMax)
+    if (u_heightFogEnabled != 0 && u_cameraPos.y < u_heightFogMax)
     {
-        // 1. Calculate physical water column fog
         float waterDistance;
         if (dir.y > 0.0001) {
             waterDistance = (u_heightFogMax - u_cameraPos.y) / dir.y;
@@ -73,16 +79,16 @@ void main()
 
         // Height-blended water color
         float depthBlend = clamp((dir.y - (-0.2)) / 1.0, 0.0, 1.0);
-        vec3 baseWaterColor = mix(u_fogColor, u_heightFogColor, depthBlend).xyz;
+        vec3 baseWaterColor = mix(u_fogColor.xyz, u_heightFogColor.xyz, depthBlend);
         vec4 waterColor = vec4(baseWaterColor, 1.0);
 
-        // Dynamic Sun Haze
+        // Dynamic Sun Haze (Scaled by the sun's active color/energy)
         vec3 sunDirection = u_sunDirection.xyz;
         float viewSunAngle = max(dot(dir, sunDirection), 0.0);
-        vec3 sunHaze = vec3(0.4, 0.75, 0.9) * pow(viewSunAngle, 6.0) * 0.3;
+        vec3 sunHaze = u_sunColor.xyz * u_sunEnergy * pow(viewSunAngle, 6.0) * 0.15;
 
         // Blend skybox with water color
-        vec4 finalColor = mix(waterColor, baseColor, skyboxFog);
+        vec4 finalColor = mix(waterColor, vec4(litSkyColor, 1.0), skyboxFog);
         finalColor += vec4(sunHaze, 0.0);
 
         vec3 finalOutputColor = finalColor.rgb;
@@ -100,8 +106,8 @@ void main()
     }
     else
     {
-        // Standard clean sky above water
-        FragColor = baseColor;
-        bloomColor = vec4(baseColor.rgb * u_bloomStrength, 1.0);
+        // Standard clean sky above water (Dimmed/Brightened dynamically)
+        FragColor = vec4(litSkyColor, baseColor.a);
+        bloomColor = vec4(litSkyColor * u_bloomStrength, 1.0);
     }
 }

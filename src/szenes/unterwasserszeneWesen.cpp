@@ -21,6 +21,7 @@
 #include "unterwasserszeneProps.h"
 #include "dieWesen/bottle.h"
 #include "dieWesen/rock.h"
+#include "dieWesen/thunderstorm.h"
 #include "dieWesen/unterwasserszeneAudioHelper.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/questHUD.h"
@@ -54,6 +55,7 @@ void UnterwasserszeneWesen::init() {
     auto * worldEnv = new WorldEnvironment();
     worldEnv->init();
     worldEnv->params.sunEnergy = 4.0f;
+    worldEnv->params.sunDirection = glm::vec3(0.004f, 0.055f, 0.998f);
     worldEnv->params.fogColor = glm::vec3(0.0f, 0.05f, 0.15f);
     worldEnv->params.heightFogColor = glm::vec3(0.0f, 0.22f, 0.28f);
     worldEnv->params.fogDensity = 0.025f;
@@ -106,6 +108,8 @@ void UnterwasserszeneWesen::init() {
             }
         }
     }
+
+    addChild(new Thunderstorm());
 
     addChild(new UnterwasserszeneAudioHelper());
 }
