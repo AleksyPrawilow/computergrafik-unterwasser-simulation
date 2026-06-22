@@ -1,4 +1,4 @@
-#include "fishFlock.h"
+#include "flockManager.h"
 #include "fishBolid.h"
 #include "../werkzeuge/TextureManager.h"
 #include "../werkzeuge/ShaderManager.h"
@@ -17,8 +17,13 @@ void FishFlock::init() {
 
         fish->material.albedo = TextureManager::getInstance().loadTexture("assets/textures/fish.png");
 
-        fish->transform.scale = glm::vec3(15.0f);
+        fish->transform.scale = glm::vec3(5.0f);
 
+        fish->transform.position = glm::vec3(
+            (rand() % 200 / 100.0f - 1.0f) * spawnRadius,
+            (rand() % 200 / 100.0f - 1.0f) * spawnRadius,
+            (rand() % 200 / 100.0f - 1.0f) * spawnRadius
+        );
         addChild(fish);
     }
 }
