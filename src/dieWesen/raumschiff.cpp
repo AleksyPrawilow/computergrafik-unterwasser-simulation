@@ -1,4 +1,6 @@
 #include "raumschiff.h"
+
+#include "bubbleEmitter.h"
 #include "torpedo.h"
 #include "feindschiff.h"
 #include "explosion.h"
@@ -34,11 +36,9 @@ void Raumschiff::init() {
     addChild(fadenkreuz);
 
     for (int i = 0; i < 2; i++) {
-        auto * triebwerk = new ParticleEmitter(3000);
+        auto * triebwerk = new BubbleEmitter(3000);
         addChild(triebwerk);
         triebwerk->transform.position = glm::vec3(-0.2f * (i == 0 ? 1.0f : -1.0f), 0.0f, 0.8f);
-        triebwerk->emitRichtung = glm::vec3(0.0f, 0.0f, 1.0f);
-        triebwerk->aufstiegZiel = 0.0f;
         triebwerke[i] = triebwerk;
     }
 
