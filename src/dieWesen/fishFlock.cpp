@@ -7,7 +7,7 @@ void FishFlock::init() {
     for (int i = 0; i < numFishes; i++) {
         FishBoid* fish = new FishBoid();
 
-        material.shader = ShaderManager::getInstance().loadShader(
+        fish->material.shader = ShaderManager::getInstance().loadShader(
             "default",
             "assets/shaders/default.vert",
             "assets/shaders/default.frag"
