@@ -12,6 +12,8 @@
 #include "gtc/type_ptr.hpp"
 #include <iostream>
 
+#include "rainEmitter.h"
+
 extern Kamera kamera;
 
 // Specialized internal Wesen class to safely bind custom uniforms during standard draw passes
@@ -47,9 +49,8 @@ void Thunderstorm::init() {
         this->triggerLightning();
     });
 
-    rainEmitter = new ParticleEmitter(5000);
-    //rainEmitter->material.albedo = Kern::LoadTexture("assets/textures/rain_streak.png", true);
-    rainEmitter->emitRichtung = glm::vec3(0.0f, -1.0f, 0.0f);
+    rainEmitter = new RainEmitter(6000);
+    rainEmitter->active = true;
     addChild(rainEmitter);
 
     // 4. Configure the procedural lightning bolt billboard

@@ -131,6 +131,10 @@ set(PROJECT_SOURCES
         src/werkzeuge/modelManager.h
         src/dieWesen/thunderstorm.cpp
         src/dieWesen/thunderstorm.h
+        src/dieWesen/bubbleEmitter.cpp
+        src/dieWesen/bubbleEmitter.h
+        src/dieWesen/rainEmitter.cpp
+        src/dieWesen/rainEmitter.h
 )
 
 set(SOIL_SOURCES

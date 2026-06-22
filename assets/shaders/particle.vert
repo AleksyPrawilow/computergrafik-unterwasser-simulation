@@ -2,7 +2,7 @@
 layout (location = 0) in vec3 vertexPosition;
 layout (location = 1) in vec2 vertexTexCoord;
 layout (location = 2) in vec3 instancePosition;
-layout (location = 3) in float instanceScale;
+layout (location = 3) in vec2 instanceScale;
 
 out vec2 TexCoord;
 
@@ -16,8 +16,8 @@ void main() {
     vec3 cameraUp    = vec3(view[0][1], view[1][1], view[2][1]);
 
     vec3 worldPos = instancePosition
-    + (cameraRight * vertexPosition.x * instanceScale)
-    + (cameraUp * vertexPosition.y * instanceScale);
+    + (cameraRight * vertexPosition.x * instanceScale.x)
+    + (cameraUp * vertexPosition.y * instanceScale.y);
 
     gl_Position = projection * view * vec4(worldPos, 1.0);
 }
