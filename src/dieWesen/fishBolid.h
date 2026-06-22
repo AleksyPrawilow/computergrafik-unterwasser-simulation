@@ -10,8 +10,8 @@ public:
     glm::vec3 velocity;
     glm::vec3 acceleration;
 
-    float maxSpeed = 8.0f;
-    float maxForce = 4.0f;
+    float maxSpeed;
+    float maxForce;
     float neighborRadius = 6.0f;
     float separationRadius = 1.8f;
 
