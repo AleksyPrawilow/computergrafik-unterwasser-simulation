@@ -20,9 +20,12 @@ void Axe::init() {
     defaultAlbedo = Kern::LoadTexture("assets/textures/axe_albedo.png");
     upgradedAlbedo = Kern::LoadTexture("assets/textures/icon_axt.png");
     material.albedo = defaultAlbedo;
-    material.normal = Kern::LoadTexture("assets/textures/axe_normal.png");
-    material.metallic = Kern::LoadTexture("assets/textures/axe_metallicRoughness.png");
-    material.roughness = Kern::LoadTexture("assets/textures/axe_metallicRoughness.png");
+    axeNormal = Kern::LoadTexture("assets/textures/axe_normal.png");
+    axeMetallic = Kern::LoadTexture("assets/textures/axe_metallicRoughness.png");
+    axeRoughness = Kern::LoadTexture("assets/textures/axe_metallicRoughness.png");
+    material.normal = axeNormal;
+    material.metallic = axeMetallic;
+    material.roughness = axeRoughness;
     material.shader = ShaderManager::getInstance().getShader("default");
     transform.scale = glm::vec3(0.8f);
     transform.position = glm::vec3(0.75f, -0.3f, -1.25f);
@@ -33,6 +36,13 @@ void Axe::init() {
     CachedModel cubeModel = ModelManager::getInstance().getModel("assets/models/cube.obj");
     cubeModelMesh = cubeModel.mesh;
     cubeModelAABB = cubeModel.localAABB;
+
+    CachedModel mapModel = ModelManager::getInstance().getModel("assets/models/map.obj");
+    mapModelMesh = mapModel.mesh;
+    mapModelAABB = mapModel.localAABB;
+    mapAlbedo = Kern::LoadTexture("assets/textures/map.png");
+    mapShader = ShaderManager::getInstance().loadShader(
+        "map_fold", "assets/shaders/map_fold.vert", "assets/shaders/default.frag");
 
     recoveryTimer = new Timer();
     addChild(recoveryTimer);
@@ -51,6 +61,28 @@ void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     if (!visible) return;
 
+    if (letzteAktivesItem == GegenstandID::KARTE) {
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && !karteOffen && !karteAnimiert) {
+            karteAnimiert = true;
+            karteOffen = true;
+            createTween()
+                ->tweenProperty(&transform.position, karteLesePos, 0.4f, EaseType::EASE_OUT_CUBIC)
+                ->parallel()
+                ->tweenProperty(&weaponEuler, karteLeseEuler, 0.4f, EaseType::EASE_OUT_CUBIC)
+                ->tweenCallback([this]() { karteAnimiert = false; });
+        } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_PRESS && karteOffen && !karteAnimiert) {
+            karteAnimiert = true;
+            karteOffen = false;
+            createTween()
+                ->tweenProperty(&transform.position, karteIdlePos, 0.3f, EaseType::EASE_OUT_CUBIC)
+                ->parallel()
+                ->tweenProperty(&weaponEuler, karteIdleEuler, 0.3f, EaseType::EASE_OUT_CUBIC)
+                ->tweenCallback([this]() { karteAnimiert = false; });
+        }
+        transform.rotation = glm::quat(glm::radians(weaponEuler));
+        return;
+    }
+
     if (istAxt && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
         isPlayingAnimation = true;
         swing();
@@ -59,7 +91,8 @@ void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     if (treeToHit != nullptr) {
         GegenstandID aktiv = Inventar::getInstance().getAktivesItem();
-        int schaden = (aktiv == GegenstandID::AXT) ? 5 : 1;
+        const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
+        int schaden = (info.werkzeugSchaden > 0) ? info.werkzeugSchaden : 1;
         treeToHit->hit(-hitNormal, schaden);
         treeToHit = nullptr;
     }
@@ -74,30 +107,70 @@ void Axe::ausruestungAktualisieren() {
     if (aktiv == GegenstandID::KEINE) {
         visible = false;
         istAxt = false;
+        karteOffen = false;
+        karteAnimiert = false;
         return;
     }
 
-    visible = true;
+    karteOffen = false;
+    karteAnimiert = false;
+    weaponEuler = glm::vec3(0.0f);
 
-    if (aktiv == GegenstandID::HOLZAXT) {
+    visible = true;
+    const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
+
+    if (info.werkzeugTyp == WerkzeugTyp::AXT) {
         mesh = axeModelMesh;
         localAABB = axeModelAABB;
-        material.albedo = defaultAlbedo;
+        material.albedo = (aktiv == GegenstandID::HOLZAXT) ? defaultAlbedo : upgradedAlbedo;
+        material.normal = axeNormal;
+        material.roughness = axeRoughness;
+        material.metallic = axeMetallic;
+        material.shader = ShaderManager::getInstance().getShader("default");
         transform.scale = glm::vec3(0.8f);
+        transform.position = glm::vec3(0.75f, -0.3f, -1.25f);
         istAxt = true;
-    } else if (aktiv == GegenstandID::AXT) {
-        mesh = axeModelMesh;
-        localAABB = axeModelAABB;
-        material.albedo = upgradedAlbedo;
-        transform.scale = glm::vec3(0.8f);
-        istAxt = true;
+    } else if (aktiv == GegenstandID::KARTE) {
+        mesh = mapModelMesh;
+        localAABB = mapModelAABB;
+        material.albedo = mapAlbedo;
+        material.normal = 0;
+        material.roughness = 0;
+        material.metallic = 0;
+        material.shader = mapShader;
+        transform.scale = glm::vec3(0.4f);
+        transform.position = karteIdlePos;
+        weaponEuler = glm::vec3(0.0f);
+        istAxt = false;
+    } else if (!info.modellPfad.empty()) {
+        CachedModel custom = ModelManager::getInstance().getModel(info.modellPfad);
+        mesh = custom.mesh;
+        localAABB = custom.localAABB;
+        material.albedo = Kern::LoadTexture(info.modellAlbedoPfad.c_str());
+        material.normal = 0;
+        material.roughness = 0;
+        material.metallic = 0;
+        material.shader = ShaderManager::getInstance().getShader("default");
+        transform.scale = glm::vec3(0.15f);
+        transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
+        istAxt = false;
     } else {
-        const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
         mesh = cubeModelMesh;
         localAABB = cubeModelAABB;
         material.albedo = info.iconTextur;
+        material.normal = 0;
+        material.roughness = 0;
+        material.metallic = 0;
+        material.shader = ShaderManager::getInstance().getShader("default");
         transform.scale = glm::vec3(0.3f, 0.3f, 0.03f);
+        transform.position = glm::vec3(0.75f, -0.3f, -1.25f);
         istAxt = false;
+    }
+}
+
+void Axe::prepareUniforms() const {
+    if (letzteAktivesItem == GegenstandID::KARTE) {
+        Kern::setUniform(material.shader, "u_progress", 1.0f);
     }
 }
 

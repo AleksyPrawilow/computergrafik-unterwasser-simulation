@@ -200,6 +200,8 @@ set(IMGUI_SOURCES
         src/dieWesen/path3d.h
         src/dieWesen/pathFollower.cpp
         src/dieWesen/pathFollower.h
+        src/dieWesen/vergrabeneSchatztruhe.cpp
+        src/dieWesen/vergrabeneSchatztruhe.h
 )
 
 add_executable(${PROJECT_NAME}

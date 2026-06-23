@@ -7,13 +7,6 @@
 #include "werkzeuge/ui/wesenUI.h"
 #include "werkzeuge/gegenstandDaten.h"
 
-struct HandwerkRezept {
-    GegenstandID eingabe1;
-    GegenstandID eingabe2;
-    GegenstandID ausgabe;
-    int ausgabeAnzahl = 1;
-};
-
 class RezeptZeileUI;
 
 class HandwerkHUD : public UIElement {
@@ -34,18 +27,17 @@ private:
     UILabel* titelLabel = nullptr;
     UILabel* hinweisLabel = nullptr;
 
-    std::vector<HandwerkRezept> rezepte;
+    std::vector<Rezept> rezepte;
     std::vector<RezeptZeileUI*> zeilen;
 
     void umschalten(GLFWwindow* window);
-    void rezepteRegistrieren();
     void herstellen();
     void aktualisieren();
 };
 
 class RezeptZeileUI : public HBoxUI {
 public:
-    HandwerkRezept rezept;
+    Rezept rezept;
     UILabel* cursorLabel = nullptr;
     UIElement* icon1 = nullptr;
     UILabel* plusLabel = nullptr;

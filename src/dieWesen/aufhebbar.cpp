@@ -15,11 +15,17 @@ void Aufhebbar::init() {
     isCollidable = true;
     addToGroup("aufhebbar");
 
-    loadModel("assets/models/cube.obj");
     const auto& info = GegenstandDaten::getInstance().getInfo(gegenstandId);
-    material.albedo = info.iconTextur;
+    if (!info.modellPfad.empty()) {
+        loadModel(info.modellPfad.c_str());
+        material.albedo = Kern::LoadTexture(info.modellAlbedoPfad.c_str());
+        transform.scale = glm::vec3(0.3f);
+    } else {
+        loadModel("assets/models/cube.obj");
+        material.albedo = info.iconTextur;
+        transform.scale = glm::vec3(0.5f);
+    }
     material.shader = ShaderManager::getInstance().getShader("default");
-    transform.scale = glm::vec3(0.5f);
     startHoehe = transform.position.y;
 }
 

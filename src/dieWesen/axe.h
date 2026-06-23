@@ -17,6 +17,7 @@ class Axe: public Wesen {
 public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
+    void prepareUniforms() const override;
 private:
     bool isPlayingAnimation = false;
     bool recoveringAnimation = false;
@@ -30,12 +31,26 @@ private:
 
     GLuint defaultAlbedo = 0;
     GLuint upgradedAlbedo = 0;
+    GLuint axeNormal = 0;
+    GLuint axeRoughness = 0;
+    GLuint axeMetallic = 0;
     GegenstandID letzteAktivesItem = GegenstandID::KEINE;
 
     Kern::RenderContext axeModelMesh;
     AABB axeModelAABB;
     Kern::RenderContext cubeModelMesh;
     AABB cubeModelAABB;
+    Kern::RenderContext mapModelMesh;
+    AABB mapModelAABB;
+    GLuint mapAlbedo = 0;
+    GLuint mapShader = 0;
+
+    bool karteOffen = false;
+    bool karteAnimiert = false;
+    glm::vec3 karteIdlePos = glm::vec3(0.3f, -0.35f, -0.7f);
+    glm::vec3 karteLesePos = glm::vec3(0.0f, -0.15f, -0.75f);
+    glm::vec3 karteIdleEuler = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::vec3 karteLeseEuler = glm::vec3(-82.0f, 0.0f, 0.0f);
 
     void swing();
     void recoverAnimation();

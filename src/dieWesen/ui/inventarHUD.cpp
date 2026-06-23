@@ -59,7 +59,7 @@ void InventarHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& camer
 
     if (!offen) return;
 
-    glm::vec2 viewport = Kern::GetViewportSize();
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
 
     float contentH = rasterContainer->transform.scale.y;
     float contentW = rasterContainer->transform.scale.x;

@@ -7,8 +7,10 @@
 #include "aufhebbar.h"
 #include "grabLoch.h"
 #include "platzierbaresObjekt.h"
+#include "vergrabeneSchatztruhe.h"
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/gegenstandDaten.h"
 #include "werkzeuge/inventar.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
@@ -173,30 +175,42 @@ void Player::handleItemAction(GLFWwindow* window) {
     if (aktiv == GegenstandID::KEINE) return;
     if (parent == nullptr) return;
 
+    const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
+
     glm::vec3 platzPos = transform.position + transform.forward() * 3.0f;
     platzPos.y = island->getHeight(platzPos.x, platzPos.z) + 0.5f;
 
-    if (aktiv == GegenstandID::SCHAUFEL) {
-        if (island != nullptr) {
-            island->graben(platzPos, 2.0f, 1.5f);
+    if (info.werkzeugTyp == WerkzeugTyp::SCHAUFEL) {
+        bool naheSchatz = false;
+        const auto& truhen = getNodesInGroup("schatztruhe");
+        for (auto* t : truhen) {
+            if (glm::distance(platzPos, t->getGlobalTransform().position) < 5.0f) {
+                auto* truhe = dynamic_cast<VergrabeneSchatztruhe*>(t);
+                if (truhe) {
+                    truhe->graben();
+                    naheSchatz = true;
+                    if (island != nullptr) {
+                        island->graben(t->getGlobalTransform().position, 6.0f, 3.0f);
+                    }
+                }
+            }
         }
 
-        auto* erde = new Aufhebbar(GegenstandID::ERDE, 1);
-        erde->transform.position = platzPos;
-        erde->transform.position.y += 0.5f;
-        parent->addChild(erde);
+        if (!naheSchatz) {
+            if (island != nullptr) {
+                island->graben(platzPos, 2.0f, 1.5f);
+            }
+            auto* erde = new Aufhebbar(GegenstandID::ERDE, 1);
+            erde->transform.position = platzPos;
+            erde->transform.position.y += 0.5f;
+            parent->addChild(erde);
+        }
 
         AudioManager::getInstance().play2D("assets/audio/pickup.mp3", false, true);
-        QuestManager::getInstance().progressObjective("dig_out", 1);
         return;
     }
 
-    bool istPlatzierbar = (aktiv == GegenstandID::WERKBANK ||
-                           aktiv == GegenstandID::ZAUN ||
-                           aktiv == GegenstandID::TRUHE ||
-                           aktiv == GegenstandID::FACKEL);
-
-    if (istPlatzierbar) {
+    if (info.istPlatzierbar) {
         int hotbarIdx = Inventar::getInstance().getAktiverSlot();
         Inventar::getInstance().hotbarEntfernen(hotbarIdx);
 
