@@ -22,7 +22,9 @@ enum class GegenstandID {
     ERDE,
     FACKEL,
     ZAUN,
-    TRUHE
+    TRUHE,
+    KARTE,
+    MINIUBOOT
 };
 
 enum class WerkzeugTyp {
@@ -46,6 +48,8 @@ struct GegenstandInfo {
     WerkzeugTyp werkzeugTyp = WerkzeugTyp::KEINS;
     int werkzeugSchaden = 0;
     bool istPlatzierbar = false;
+    std::string modellPfad;
+    std::string modellAlbedoPfad;
 };
 
 struct Rezept {

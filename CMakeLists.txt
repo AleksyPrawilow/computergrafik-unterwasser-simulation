@@ -196,6 +196,8 @@ set(IMGUI_SOURCES
         src/dieWesen/platzierbaresObjekt.h
         src/dieWesen/grabLoch.cpp
         src/dieWesen/grabLoch.h
+        src/dieWesen/vergrabeneSchatztruhe.cpp
+        src/dieWesen/vergrabeneSchatztruhe.h
 )
 
 add_executable(${PROJECT_NAME}

@@ -4,6 +4,7 @@
 
 #include "unterwasserszeneQuests.h"
 
+#include "bottle.h"
 #include "ui/questCompletedBanner.h"
 #include "werkzeuge/input.h"
 #include "werkzeuge/visual/questManager.h"
@@ -110,12 +111,19 @@ void UnterwasserszeneQuests::setupTutorial() {
         auto * banner = new QuestCompletedBanner("Tutorial completed!");
         parent->addChild(banner);
         audio->play();
+        setQuest(COLLECT_BOTTLE);
     };
 
     QuestManager::getInstance().acceptQuest(tutorialQuest);
 }
 
 void UnterwasserszeneQuests::setupCollectBottle() {
+    const auto& flaschen = getNodesInGroup("bottle");
+    if (!flaschen.empty()) {
+        auto* flasche = dynamic_cast<Bottle*>(flaschen[0]);
+        if (flasche) flasche->aktiviereAbholung();
+    }
+
     Quest collectBottleQuest;
     collectBottleQuest.title = "Mysterious Bottle";
 

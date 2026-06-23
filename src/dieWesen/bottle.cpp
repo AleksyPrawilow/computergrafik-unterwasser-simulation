@@ -7,6 +7,7 @@
 #include "uboot.h"
 #include "unterwasserszeneQuests.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/inventar.h"
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
@@ -117,6 +118,11 @@ void Bottle::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTran
         transform.rotation = glm::quat(glm::radians(euler));
     }
 
+    if (!canBePicked && !isPicked && questBereit && reachedShore) {
+        canBePicked = true;
+        uiMarker->enabled = true;
+    }
+
     if (canBePicked) {
         if (player->raycast->isColliding() && player->raycast->getCollider() == this) {
             interactLabel->visible = true;
@@ -139,12 +145,14 @@ void Bottle::beginSwim() {
         ->parallel()
         ->tweenProperty(&transform.position.z, targetIslandPos.z, 5.0f, EaseType::EASE_OUT_SINE)
         ->tweenCallback([this]() {
-            canBePicked = true;
-            uiMarker->enabled = true;
-            dynamic_cast<UnterwasserszeneQuests *>(getNodesInGroup("QuestManager")[0])->setQuest(UnterwasserszeneQuests::COLLECT_BOTTLE);
+            reachedShore = true;
         });
 }
 
+
+void Bottle::aktiviereAbholung() {
+    questBereit = true;
+}
 
 void Bottle::pickup() {
     isPicked = true;
@@ -158,5 +166,12 @@ void Bottle::pickup() {
         ->tweenCallback([this]() {
             map->unwrap(1.0f);
             QuestManager::getInstance().progressObjective("collect_bottle", 1);
+            Inventar::getInstance().hinzufuegen(GegenstandID::KARTE, 1);
+        })
+        ->tweenInterval(2.0f)
+        ->tweenCallback([this]() {
+            visible = false;
+            cork->visible = false;
+            map->visible = false;
         });
 }

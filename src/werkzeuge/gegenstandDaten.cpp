@@ -38,6 +38,11 @@ void GegenstandDaten::init() {
     registrieren(GegenstandID::TRUHE, "Chest", "assets/textures/icon_truhe.png", 1);
     registry[static_cast<int>(GegenstandID::TRUHE)].istPlatzierbar = true;
 
+    registrieren(GegenstandID::KARTE, "Map", "assets/textures/icon_karte.png", 1);
+    registrieren(GegenstandID::MINIUBOOT, "Mini U-Boot", "assets/textures/icon_miniuboot.png", 1);
+    registry[static_cast<int>(GegenstandID::MINIUBOOT)].modellPfad = "assets/models/uboot.obj";
+    registry[static_cast<int>(GegenstandID::MINIUBOOT)].modellAlbedoPfad = "assets/textures/sub_albedo.png";
+
     // --- Hand recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::STEIN, GegenstandID::AXT, 1, RezeptQuelle::HAND);

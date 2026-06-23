@@ -17,6 +17,7 @@ public:
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void beginSwim();
     void pickup();
+    void aktiviereAbholung();
 private:
     UILabel * interactLabel = nullptr;
     WorldspaceUI * uiMarker = nullptr;
@@ -29,6 +30,8 @@ private:
     float rotSmooth = 6.0f;
     bool canBePicked = false;
     bool isPicked = false;
+    bool reachedShore = false;
+    bool questBereit = false;
 };
 
 
