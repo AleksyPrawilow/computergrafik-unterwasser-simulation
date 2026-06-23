@@ -10,12 +10,14 @@
 
 class AudioPlayer : public Wesen {
 public:
-    AudioPlayer(const std::string& filepath, bool loop = false, float volume = 1.0f, bool isInterior = false);
+    AudioPlayer(const std::string& filepath, bool loop = false, float volume = 1.0f, bool isInterior = false, bool isSpatial = true);
     ~AudioPlayer() override;
 
     void play();
     void stop();
-    bool isPlaying() const;
+    [[nodiscard]] bool isPlaying() const;
+    void setVolume(float volume);
+    [[nodiscard]] float getVolume() const { return initialVolume; }
 
     bool hasCustomRender() const override { return true; }
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override {}
@@ -28,6 +30,7 @@ private:
     bool shouldLoop = false;
     float initialVolume = 1.0f;
     bool isInteriorSound = false;;
+    bool isSpatialSound = true;
 
     ma_sound sound;
     bool hasSound = false;

@@ -1,7 +1,6 @@
 //
 // Created by Alexey Pravilov on 07/06/2026.
 //
-
 #include "particleEmitter.h"
 #include "gtc/type_ptr.hpp"
 #include <GLFW/glfw3.h>
@@ -11,6 +10,8 @@
 ParticleEmitter::ParticleEmitter(unsigned int maxParticles) : maxParticlesCount(maxParticles) {
     shader = ShaderManager::getInstance().loadShader("particle", "assets/shaders/particle.vert", "assets/shaders/particle.frag");
     material.isTransparent = true;
+    material.isUI = false;
+
     float quadVertices[] = {
         -0.5f,  0.5f, 0.0f,  0.0f, 1.0f,
         -0.5f, -0.5f, 0.0f,  0.0f, 0.0f,
@@ -34,12 +35,14 @@ ParticleEmitter::ParticleEmitter(unsigned int maxParticles) : maxParticlesCount(
     glBindBuffer(GL_ARRAY_BUFFER, instanceVbo);
     glBufferData(GL_ARRAY_BUFFER, maxParticles * sizeof(GPUParticle), nullptr, GL_DYNAMIC_DRAW);
 
+    // Layout location 2: vec3 position
     glEnableVertexAttribArray(2);
     glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(GPUParticle), (void*)0);
     glVertexAttribDivisor(2, 1);
 
+    // Layout location 3: vec2 scale (width, height)
     glEnableVertexAttribArray(3);
-    glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(GPUParticle), (void*)(offsetof(GPUParticle, scale)));
+    glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(GPUParticle), (void*)(offsetof(GPUParticle, scale)));
     glVertexAttribDivisor(3, 1);
 
     glBindVertexArray(0);
@@ -54,36 +57,18 @@ ParticleEmitter::~ParticleEmitter() {
 void ParticleEmitter::emit() {
     if (particles.size() >= maxParticlesCount) return;
 
-    glm::mat4 globalMatrix = getGlobalModelMatrix();
-    glm::vec3 globalOrigin = glm::vec3(globalMatrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+    CPUParticle p;
+    // Delegate initial properties assignment to the active subclass
+    onEmit(p);
 
-    glm::vec3 localVelocity;
-    if (glm::length(emitRichtung) < 0.01f) {
-        localVelocity = glm::vec3(
-            (rand() % 200 / 100.0f) - 1.0f,
-            (rand() % 200 / 100.0f) - 1.0f,
-            (rand() % 200 / 100.0f) - 1.0f
-        ) * 3.0f;
-    } else {
-        localVelocity = glm::vec3(
-            (rand() % 100 / 1000.0f) - 0.05f,
-            (rand() % 100 / 1000.0f) - 0.05f,
-            -1.5f - (rand() % 100 / 100.0f)
-        );
-    }
-    glm::vec3 globalVelocity = glm::vec3(globalMatrix * glm::vec4(localVelocity, 0.0f));
-
-    float scale = 0.075f;
-    float life = 1.0f;
-
-    particles.push_back({ globalOrigin, globalVelocity, life, life, scale });
+    particles.push_back(p);
 }
 
 void ParticleEmitter::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     if (active) {
         spawnTimer += deltaTime;
-        while (spawnTimer >= 0.02f) {
-            spawnTimer -= 0.02f;
+        while (spawnTimer >= spawnInterval) {
+            spawnTimer -= spawnInterval;
             emit();
         }
     }
@@ -94,18 +79,8 @@ void ParticleEmitter::onUpdate(GLFWwindow* window, float deltaTime, Transform& c
         if (it->life <= 0.0f) {
             it = particles.erase(it);
         } else {
-            float dragFactor = 4.0f;
-            it->velocity.x *= glm::exp(-dragFactor * deltaTime);
-            it->velocity.z *= glm::exp(-dragFactor * deltaTime);
-
-            float zielAufstieg = aufstiegZiel;
-            it->velocity.y = glm::mix(it->velocity.y, zielAufstieg, 1.0f - glm::exp(-2.0f * deltaTime));
-
-            it->position += it->velocity * deltaTime;
-
-            float speedDamping = glm::exp(-dragFactor * (it->maxLife - it->life));
-            it->position.x += sin(it->life * 6.0f) * 0.05f * speedDamping * deltaTime;
-            it->position.z += cos(it->life * 6.0f) * 0.05f * speedDamping * deltaTime;
+            // Delegate physics updates to the active subclass
+            onUpdateParticle(*it, deltaTime);
 
             gpuData.push_back({ it->position, it->scale });
             ++it;
@@ -119,7 +94,9 @@ void ParticleEmitter::customRender(const glm::mat4& view, const glm::mat4& proje
     glUseProgram(shader);
     glUniformMatrix4fv(glGetUniformLocation(shader, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
     glUniformMatrix4fv(glGetUniformLocation(shader, "view"), 1, GL_FALSE, glm::value_ptr(view));
-    Kern::setUniform(shader, "u_bloomStrength", 0.0f);
+
+    // Delegate custom shader configurations to the subclass
+    onSetupUniforms(shader);
 
     glBindBuffer(GL_ARRAY_BUFFER, instanceVbo);
     glBufferSubData(GL_ARRAY_BUFFER, 0, gpuData.size() * sizeof(GPUParticle), gpuData.data());

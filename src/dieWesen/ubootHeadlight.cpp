@@ -29,7 +29,7 @@ void UbootHeadlight::init() {
     });
 
     spotlight = LightManager::getInstance().createSpotLight(
-        glm::vec3(1.0f, 0.95f, 0.8f), 100.0f, 12.5f, 17.5f
+        glm::vec3(1.0f, 0.95f, 0.8f), 300.0f, 12.5f, 30.5f
     );
 }
 

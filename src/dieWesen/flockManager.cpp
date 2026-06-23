@@ -1,0 +1,33 @@
+#include "flockManager.h"
+#include "fishBolid.h"
+#include "../werkzeuge/TextureManager.h"
+#include "../werkzeuge/ShaderManager.h"
+
+void FishFlock::init() {
+    for (int i = 0; i < numFishes; i++) {
+        FishBoid* fish = new FishBoid();
+
+        fish->material.shader = ShaderManager::getInstance().loadShader(
+            "fish",
+            "assets/shaders/fish.vert",
+            "assets/shaders/default.frag"
+        );
+
+        fish->loadModel("assets/models/fish.obj");
+
+        fish->material.albedo = TextureManager::getInstance().loadTexture("assets/textures/fish.png");
+
+        fish->transform.scale = glm::vec3(5.0f);
+
+        fish->transform.position = glm::vec3(
+            (rand() % 200 / 100.0f - 1.0f) * spawnRadius,
+            (rand() % 200 / 100.0f - 1.0f) * spawnRadius,
+            (rand() % 200 / 100.0f - 1.0f) * spawnRadius
+        );
+        addChild(fish);
+    }
+}
+
+void FishFlock::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+
+}

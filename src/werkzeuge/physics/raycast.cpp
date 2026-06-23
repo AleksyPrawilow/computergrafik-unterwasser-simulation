@@ -5,23 +5,53 @@
 #include "raycast.h"
 #include <limits>
 #include <vector>
-
+#include <algorithm>
 #include "werkzeuge/wesen.h"
 
 extern Wesen * scene;
 
-bool IntersectRaySphere(const glm::vec3& ro, const glm::vec3& rd, const glm::vec3& sCenter, const float radius, float& out_t) {
-    const glm::vec3 l = sCenter - ro;
-    const float tca = glm::dot(l, rd);
-    if (tca < 0) return false;
+bool IntersectRayAABB(
+    const glm::vec3& ro,
+    const glm::vec3& rd,
+    const glm::vec3& boxMin,
+    const glm::vec3& boxMax,
+    float& out_t
+) {
+    float tmin = -1e30f;
+    float tmax = 1e30f;
 
-    const float d2 = glm::dot(l, l) - tca * tca;
-    const float r2 = radius * radius;
-    if (d2 > r2) return false;
+    if (glm::abs(rd.x) > 1e-6f) {
+        float t1 = (boxMin.x - ro.x) / rd.x;
+        float t2 = (boxMax.x - ro.x) / rd.x;
+        tmin = glm::max(tmin, glm::min(t1, t2));
+        tmax = glm::min(tmax, glm::max(t1, t2));
+    } else if (ro.x < boxMin.x || ro.x > boxMax.x) {
+        return false;
+    }
 
-    const float thc = glm::sqrt(r2 - d2);
-    out_t = tca - thc;
-    return true;
+    if (glm::abs(rd.y) > 1e-6f) {
+        float t1 = (boxMin.y - ro.y) / rd.y;
+        float t2 = (boxMax.y - ro.y) / rd.y;
+        tmin = glm::max(tmin, glm::min(t1, t2));
+        tmax = glm::min(tmax, glm::max(t1, t2));
+    } else if (ro.y < boxMin.y || ro.y > boxMax.y) {
+        return false;
+    }
+
+    if (glm::abs(rd.z) > 1e-6f) {
+        float t1 = (boxMin.z - ro.z) / rd.z;
+        float t2 = (boxMax.z - ro.z) / rd.z;
+        tmin = glm::max(tmin, glm::min(t1, t2));
+        tmax = glm::min(tmax, glm::max(t1, t2));
+    } else if (ro.z < boxMin.z || ro.z > boxMax.z) {
+        return false;
+    }
+
+    if (tmax >= tmin && tmax >= 0.0f) {
+        out_t = tmin < 0.0f ? tmax : tmin;
+        return true;
+    }
+    return false;
 }
 
 void CheckRayCollisionRecursive(
@@ -35,12 +65,20 @@ void CheckRayCollisionRecursive(
 ) {
     if (entity == nullptr) return;
 
-    if (entity != raycastParent && entity->parent != raycastParent && entity->boundingRadius > 0.0f) {
-        const glm::vec3 worldPos = entity->getGlobalTransform().position;
+    if (entity != raycastParent && entity->parent != raycastParent && entity->hasMesh && entity->isCollidable) {
+        glm::mat4 invModel = glm::inverse(entity->getGlobalModelMatrix());
+        glm::vec3 localRo = glm::vec3(invModel * glm::vec4(rayOrigin, 1.0f));
+        glm::vec3 localRd = glm::normalize(glm::vec3(invModel * glm::vec4(rayDirection, 0.0f)));
 
-        if (float t = 0.0f; IntersectRaySphere(rayOrigin, rayDirection, worldPos, entity->boundingRadius, t)) {
-            if (t <= maxRange && t < closestHitT) {
-                closestHitT = t;
+        float localT = 0.0f;
+        if (IntersectRayAABB(localRo, localRd, entity->localAABB.min, entity->localAABB.max, localT)) {
+            glm::vec3 localHitPoint = localRo + localRd * localT;
+            glm::vec3 worldHitPoint = glm::vec3(entity->getGlobalModelMatrix() * glm::vec4(localHitPoint, 1.0f));
+
+            float worldT = glm::distance(rayOrigin, worldHitPoint);
+
+            if (worldT <= maxRange && worldT < closestHitT) {
+                closestHitT = worldT;
                 closestHitEntity = entity;
             }
         }
@@ -84,7 +122,6 @@ void RayCast::ensureUpdated() const {
         colliding = true;
         collider = closestHitEntity;
         collisionPoint = rayOrigin + rayDirection * closestHitT;
-
         glm::vec3 hitWorldPos = closestHitEntity->getGlobalTransform().position;
         collisionNormal = glm::normalize(collisionPoint - hitWorldPos);
     }

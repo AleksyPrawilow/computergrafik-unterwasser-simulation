@@ -10,10 +10,8 @@
 #include "werkzeuge/textur.h"
 
 void Player::init() {
-    loadModel("assets/models/cube.obj");
-    material.shader = ShaderManager::getInstance().getShader("default");
     transform.scale = glm::vec3(1.0f);
-    material.albedo = Kern::LoadTexture("assets/textures/albedo.png");
+    transform.position = glm::vec3(-700.0f, 0.0f, -220.0f);
     island = dynamic_cast<Island *>(getNodesInGroup("Island")[0]);
     auto * crosshair = new Fadenkreuz();
     crosshair->init(16.0f / 7.0f);

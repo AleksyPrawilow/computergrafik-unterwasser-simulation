@@ -7,11 +7,14 @@
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/visual/questManager.h"
 #include "werkzeuge/visual/tween.h"
 
 extern Kamera kamera;
 
 void Tree::init() {
+    name = "tree";
+    isCollidable = true;
     loadModel("assets/models/tree.obj");
     material.shader = ShaderManager::getInstance().getShader("default");
     material.albedo = Kern::LoadTexture("assets/textures/Raft_baseColor.png");
@@ -19,17 +22,8 @@ void Tree::init() {
     material.metallic = Kern::LoadTexture("assets/textures/Raft_metallicRoughness.png");
     material.roughness = Kern::LoadTexture("assets/textures/Raft_metallicRoughness.png");
     material.shader = ShaderManager::getInstance().getShader("default");
-    transform.position = glm::vec3(0.0f, 2.0f, 0.0f);
-    transform.scale = glm::vec3(3.0f);
-
-    for (int i = 1; i < 4; ++i) {
-        auto * hitbox = new Wesen();
-        hitbox->name = "TreeHitbox";
-        hitbox->boundingRadius = 0.65f;
-        hitbox->transform.position.y = 0.5f * static_cast<float>(i);
-        addChild(hitbox);
-    }
-
+    transform.position = glm::vec3(0.0f, 6.0f, 0.0f);
+    transform.scale = glm::vec3(1.0f);
     fallSound = new AudioPlayer("assets/audio/tree_fall.mp3", false, 10);
     addChild(fallSound);
 }
@@ -73,6 +67,24 @@ void Tree::fall(glm::vec3 hitDir) {
         ->tweenProperty(&treeEuler.x, -35.0f, 2.20f, EaseType::EASE_IN_CUBIC)
         ->tweenCallback([this]() {
             kamera.addShake(0.25f, 0.4f);
+            QuestManager::getInstance().progressObjective("chop_tree", 1);
+
+            Quest craftingQuest;
+            craftingQuest.title = "Crafty time";
+
+            QuestObjective digObjective;
+            digObjective.tag = "craft_shovel";
+            digObjective.description = "Craft a shovel";
+            digObjective.requiredCount = 1;
+
+            craftingQuest.objectives.push_back(digObjective);
+
+            craftingQuest.onComplete = []() {
+                std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
+                AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
+            };
+
+            QuestManager::getInstance().acceptQuest(craftingQuest);
         })
         ->tweenProperty(&treeEuler.z, 88.0f, 0.40f, EaseType::EASE_OUT_BACK)
         ->parallel()

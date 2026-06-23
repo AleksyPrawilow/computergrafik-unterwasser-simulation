@@ -4,6 +4,7 @@
 #pragma once
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_PARTICLEEMITTER_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_PARTICLEEMITTER_H
+
 #include <vector>
 #include "glew.h"
 #include <glm.hpp>
@@ -11,7 +12,7 @@
 
 struct GPUParticle {
     glm::vec3 position;
-    float scale;
+    glm::vec2 scale; // x = width, y = height (supports stretched particles)
 };
 
 struct CPUParticle {
@@ -19,7 +20,7 @@ struct CPUParticle {
     glm::vec3 velocity;
     float life;
     float maxLife;
-    float scale;
+    glm::vec2 scale;
 };
 
 class ParticleEmitter : public Wesen {
@@ -28,8 +29,12 @@ public:
     ~ParticleEmitter() override;
 
     bool active = false;
-    glm::vec3 emitRichtung = glm::vec3(0.0f, 1.0f, 0.0f);
-    float aufstiegZiel = 1.8f;
+    float spawnInterval = 0.02f; // Configurable spawn frequency
+
+    // Virtual hooks for child classes to define custom behaviors
+    virtual void onEmit(CPUParticle& p) = 0;
+    virtual void onUpdateParticle(CPUParticle& p, float deltaTime) = 0;
+    virtual void onSetupUniforms(GLuint shaderID) const {}
 
     bool hasCustomRender() const override { return true; }
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
@@ -51,5 +56,4 @@ private:
     float spawnTimer = 0.0f;
 };
 
-
-#endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_PARTICLEEMITTER_H
+#endif

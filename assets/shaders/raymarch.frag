@@ -1,33 +1,40 @@
 #version 410 core
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 bloomColor;
+layout (std140) uniform GlobalEnvironment {
+    vec4 u_sunDirection;
+    vec4 u_sunColor;
+    vec4 u_ambientColor;
+    vec4 u_fogColor;
+    vec4 u_heightFogColor;
+    vec4 u_causticsColor;
+    vec4 u_cameraPos;
+
+    float u_sunEnergy;
+    float u_ambientEnergy;
+    float u_baseFogDensity;
+    float u_heightFogMin;
+
+    float u_heightFogMax;
+    float u_causticsScale;
+    float u_causticsIntensity;
+    float u_depthDimmingCoefficient;
+
+    float u_time;
+    float u_bloomThreshold;
+    float u_bloomIntensity;
+
+    int u_fogEnabled;
+    int u_heightFogEnabled;
+    int u_causticsEnabled;
+    int u_depthDimmingEnabled;
+    int u_bloomEnabled;
+};
 uniform float u_bloomStrength = 0.0;
 
 in vec3 worldPos;
 in vec2 texCoord;
 in mat3 TBN;
-
-uniform vec3 cameraPos;
-uniform float time;
-
-uniform vec3 u_sunDirection;
-uniform vec3 u_sunColor;
-uniform float u_sunEnergy;
-
-uniform vec3 u_ambientColor;
-uniform float u_ambientEnergy;
-
-uniform bool u_fogEnabled;
-uniform vec3 u_fogColor;
-uniform float u_baseFogDensity;
-
-uniform bool u_heightFogEnabled;
-uniform vec3 u_heightFogColor;
-uniform float u_heightFogMin;
-uniform float u_heightFogMax;
-
-uniform bool u_depthDimmingEnabled = true;
-uniform float u_depthDimmingCoefficient = 0.08f;
 
 uniform mat4 inverseModelMatrix;
 uniform mat4 modelMatrix;
@@ -53,13 +60,13 @@ float sdDome(vec3 p, float radius) {
 float mapScene(vec3 p) {
     vec3 localP = p * 1.5;
 
-    localP.y += sin(time * 2.0 + localP.x * 3.0) * 0.05;
+    localP.y += sin(u_time * 2.0 + localP.x * 3.0) * 0.05;
 
     float dome = sdDome(localP - vec3(0.0, 0.3, 0.0), 0.8);
 
     vec3 tentacleP = localP;
-    tentacleP.x += sin(tentacleP.y * 5.0 + time * 3.0) * 0.1;
-    tentacleP.z += cos(tentacleP.y * 4.0 + time * 2.5) * 0.1;
+    tentacleP.x += sin(tentacleP.y * 5.0 + u_time * 3.0) * 0.1;
+    tentacleP.z += cos(tentacleP.y * 4.0 + u_time * 2.5) * 0.1;
 
     float centerTentacle = sdCappedCylinder(tentacleP - vec3(0.0, -0.4, 0.0), 0.7, 0.15);
 
@@ -128,7 +135,7 @@ vec3 getNormal(vec3 p) {
 }
 
 void main() {
-    vec3 localCamPos = (inverseModelMatrix * vec4(cameraPos, 1.0)).xyz;
+    vec3 localCamPos = (inverseModelMatrix * vec4(u_cameraPos.xyz, 1.0)).xyz;
     vec3 localWorldPos = (inverseModelMatrix * vec4(worldPos, 1.0)).xyz;
 
     bool cameraInside = true;
@@ -169,20 +176,20 @@ void main() {
         vec3 hitPointWorld = (modelMatrix * vec4(hitPoint, 1.0)).xyz;
 
         float ambientScale = u_ambientEnergy;
-        if (u_heightFogEnabled) {
-            ambientScale = mix(u_ambientEnergy * 0.1, u_ambientEnergy, smoothstep(u_heightFogMin, u_heightFogMax, cameraPos.y));
+        if (u_heightFogEnabled == 1) {
+            ambientScale = mix(u_ambientEnergy * 0.1, u_ambientEnergy, smoothstep(u_heightFogMin, u_heightFogMax, u_cameraPos.y));
         }
 
         float depthFactor = 1.0;
-        if (u_heightFogEnabled && hitPointWorld.y < u_heightFogMax) {
+        if (u_heightFogEnabled == 1 && hitPointWorld.y < u_heightFogMax) {
             depthFactor = clamp(exp((hitPointWorld.y - u_heightFogMax) * u_depthDimmingCoefficient), 0.01, 1.0);
         }
 
-        vec3 ambient = u_ambientColor * ambientScale * albedo * depthFactor;
+        vec3 ambient = u_ambientColor.xyz * ambientScale * albedo * depthFactor;
         vec3 Lo = vec3(0.0);
 
-        vec3 sunDir = normalize(u_sunDirection);
-        vec3 sunRadiance = u_sunColor * u_sunEnergy * depthFactor;
+        vec3 sunDir = normalize(u_sunDirection.xyz);
+        vec3 sunRadiance = u_sunColor.xyz * u_sunEnergy * depthFactor;
         Lo += CalculateCookTorrance(N, V, sunDir, sunRadiance, albedo, roughness, metallic, F0, hitPoint);
 
         for (int i = 0; i < MAX_POINT_LIGHTS; ++i) {
@@ -214,24 +221,24 @@ void main() {
         color = color / (color + vec3(1.0));
         color = pow(color, vec3(1.0 / 2.2));
 
-        if (u_fogEnabled && cameraPos.y < u_heightFogMax) {
-            float dist = length(cameraPos - hitPointWorld);
+        if (u_fogEnabled == 1 && u_cameraPos.y < u_heightFogMax) {
+            float dist = length(u_cameraPos.xyz - hitPointWorld);
 
-            float currentDrift = sin(hitPointWorld.x * 0.08 + time * 0.3)
-            * cos(hitPointWorld.z * 0.08 - time * 0.2)
+            float currentDrift = sin(hitPointWorld.x * 0.08 + u_time * 0.3)
+            * cos(hitPointWorld.z * 0.08 - u_time * 0.2)
             * sin(hitPointWorld.y * 0.04);
 
             float baseFogDensity = u_baseFogDensity;
             float dynamicDensity = baseFogDensity + (currentDrift * 0.008);
             float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
 
-            vec3 worldRayDir = normalize(hitPointWorld - cameraPos);
+            vec3 worldRayDir = normalize(hitPointWorld - u_cameraPos.xyz);
 
             float depthBlend = clamp((worldRayDir.y - (-0.2)) / 1.0, 0.0, 1.0);
-            vec3 baseWaterColor = mix(u_fogColor, u_heightFogColor, depthBlend);
+            vec3 baseWaterColor = mix(u_fogColor, u_heightFogColor, depthBlend).xyz;
 
             float viewSunAngle = max(dot(worldRayDir, sunDir), 0.0);
-            vec3 sunHazeColor = u_sunColor * pow(viewSunAngle, 6.0) * 0.3;
+            vec3 sunHazeColor = u_sunColor.xyz * pow(viewSunAngle, 6.0) * 0.3;
 
             vec3 finalFogColor = baseWaterColor + sunHazeColor;
 
@@ -252,8 +259,8 @@ void main() {
             }
 
             float cameraDepthFactor = 1.0;
-            if (u_depthDimmingEnabled && u_heightFogEnabled && cameraPos.y < u_heightFogMax) {
-                cameraDepthFactor = clamp(exp((cameraPos.y - u_heightFogMax) * u_depthDimmingCoefficient), 0.0, 1.0);
+            if (u_depthDimmingEnabled == 1 && u_heightFogEnabled == 1 && u_cameraPos.y < u_heightFogMax) {
+                cameraDepthFactor = clamp(exp((u_cameraPos.y - u_heightFogMax) * u_depthDimmingCoefficient), 0.0, 1.0);
             }
             finalFogColor *= cameraDepthFactor;
 

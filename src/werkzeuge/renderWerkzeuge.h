@@ -16,8 +16,10 @@ namespace Kern
 		GLuint vertexArray{};
 		GLuint vertexBuffer{};
 		GLuint vertexIndexBuffer{};
+		GLuint instanceVBO = 0;
 		int size = 0;
 		void initFromAssimpMesh(const aiMesh* mesh);
+		void setupInstanceBuffer(const std::vector<glm::mat4>& matrices);
 	};
 
 	struct VertexAttribute {

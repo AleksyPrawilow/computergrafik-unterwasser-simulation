@@ -27,6 +27,8 @@
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "werkzeuge/groupManager.h"
 #include "werkzeuge/bloom.h"
+#include "werkzeuge/modelManager.h"
+#include "werkzeuge/audio/musicManager.h"
 
 Renderer renderer;
 Kamera kamera;
@@ -45,6 +47,7 @@ void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const
 void Scene::szeneWechseln(int index) {
 	if (scene != nullptr) {
 		AudioManager::getInstance().allesStoppen();
+		GroupManager::getInstance().cleanup();
 		delete scene;
 		scene = nullptr;
 		WorldEnvironment::activeEnv = nullptr;
@@ -100,6 +103,7 @@ void Scene::shutdown(GLFWwindow* window) {
 	TweenManager::getInstance().cleanup();
 	GroupManager::getInstance().cleanup();
 	TextureManager::getInstance().cleanup();
+	ModelManager::getInstance().cleanup();
 	UIElement::cleanupUISystem();
 	Kern::clearUniformCache();
 }
@@ -143,9 +147,12 @@ void Scene::renderLoop(GLFWwindow* window) {
 
 		AudioManager::getInstance().updateListener(kamera.transform.position, kamera.transform.forward(), kamera.transform.up());
 		TweenManager::getInstance().update(deltaTime);
+		MusicManager::getInstance().onUpdate(window, deltaTime, kamera.transform);
 
 	    glm::mat4 view = kamera.getViewMatrix();
 	    glm::mat4 projection = kamera.getProjectionMatrix();
+		renderer.updateFrustum(view, projection);
+		renderer.sendEnvironment(kamera.transform.position);
 
 		EnvParameters bloomParams;
 		if (WorldEnvironment::activeEnv != nullptr) {
@@ -158,6 +165,7 @@ void Scene::renderLoop(GLFWwindow* window) {
 	    renderer.drawOpaque(view, projection, kamera.transform.position);
 	    renderer.drawHimmelsbox(view, projection);
 	    renderer.drawTransparent(view, projection, kamera.transform.position);
+		renderer.drawDebugAABBs(view, projection);
 		bloom.endCaptureAndProcess(bloomParams.bloomThreshold, bloomParams.bloomIntensity, bloomParams.bloomEnabled);
 
 		renderer.drawUI(view, projection);
@@ -173,6 +181,10 @@ void Scene::renderLoop(GLFWwindow* window) {
             EnvParameters& params = WorldEnvironment::activeEnv->params;
 
             ImGui::Separator();
+
+			ImGui::Text("Debug Tools");
+			ImGui::Checkbox("Show Mesh AABBs", &renderer.showDebugAABBs);
+			ImGui::Separator();
 
             if (ImGui::CollapsingHeader("Sun / Star Light", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::SliderFloat3("Sun Direction", &params.sunDirection[0], -1.0f, 1.0f);

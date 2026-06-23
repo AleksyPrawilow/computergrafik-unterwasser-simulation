@@ -108,6 +108,33 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/weltraumHudPanel.h
         src/werkzeuge/bloom.cpp
         src/werkzeuge/bloom.h
+        src/szenes/unterwasserszeneProps.h
+        src/dieWesen/rock.cpp
+        src/dieWesen/rock.h
+        src/dieWesen/prop.cpp
+        src/dieWesen/prop.h
+        src/dieWesen/bottle.cpp
+        src/dieWesen/bottle.h
+        src/werkzeuge/visual/questManager.cpp
+        src/werkzeuge/visual/questManager.h
+        src/dieWesen/ui/questHUD.cpp
+        src/dieWesen/ui/questHUD.h
+        src/dieWesen/ui/questCompletedBanner.cpp
+        src/dieWesen/ui/questCompletedBanner.h
+        src/werkzeuge/audio/musicManager.cpp
+        src/werkzeuge/audio/musicManager.h
+        src/dieWesen/unterwasserszeneAudioHelper.cpp
+        src/dieWesen/unterwasserszeneAudioHelper.h
+        src/werkzeuge/frustum.cpp
+        src/werkzeuge/frustum.h
+        src/werkzeuge/modelManager.cpp
+        src/werkzeuge/modelManager.h
+        src/dieWesen/thunderstorm.cpp
+        src/dieWesen/thunderstorm.h
+        src/dieWesen/bubbleEmitter.cpp
+        src/dieWesen/bubbleEmitter.h
+        src/dieWesen/rainEmitter.cpp
+        src/dieWesen/rainEmitter.h
 )
 
 set(SOIL_SOURCES
@@ -141,6 +168,10 @@ set(IMGUI_SOURCES
         external/imgui/backends/imgui_impl_opengl3.h
         src/dieWesen/jellyfish.h
         src/dieWesen/jellyfish.cpp
+        src/dieWesen/fishBolid.h
+        src/dieWesen/fishBolid.cpp
+        src/dieWesen/flockManager.h
+        src/dieWesen/flockManager.cpp
 )
 
 add_executable(${PROJECT_NAME}

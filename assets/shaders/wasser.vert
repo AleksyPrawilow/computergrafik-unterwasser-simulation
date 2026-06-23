@@ -2,7 +2,35 @@
 
 #include "common_transform.glsl"
 
-uniform float time;
+layout (std140) uniform GlobalEnvironment {
+    vec4 u_sunDirection;
+    vec4 u_sunColor;
+    vec4 u_ambientColor;
+    vec4 u_fogColor;
+    vec4 u_heightFogColor;
+    vec4 u_causticsColor;
+    vec4 u_cameraPos;
+
+    float u_sunEnergy;
+    float u_ambientEnergy;
+    float u_baseFogDensity;
+    float u_heightFogMin;
+
+    float u_heightFogMax;
+    float u_causticsScale;
+    float u_causticsIntensity;
+    float u_depthDimmingCoefficient;
+
+    float u_time;
+    float u_bloomThreshold;
+    float u_bloomIntensity;
+
+    int u_fogEnabled;
+    int u_heightFogEnabled;
+    int u_causticsEnabled;
+    int u_depthDimmingEnabled;
+    int u_bloomEnabled;
+};
 
 struct GerstnerWave {
     vec2 direction;
@@ -19,7 +47,7 @@ vec3 calculateGerstnerWave(GerstnerWave wave, vec3 pos, inout vec3 tangent, inou
     float k = 2.0 * 3.14159 / wave.wavelength;
     float c = sqrt(9.81 / k) * wave.speed;
     vec2 d = normalize(wave.direction);
-    float f = k * (dot(d, pos.xz) - c * time);
+    float f = k * (dot(d, pos.xz) - c * u_time);
     float a = wave.amplitude;
     float q = wave.steepness / (a * k * NUM_WAVES);
 

@@ -24,7 +24,13 @@ struct Material {
     GLuint opacity = 0;
     bool isTransparent = false;
     bool isUI = false;
+    int isInstanced = 0;
     float bloomStrength = 0.0f;
+};
+
+struct AABB {
+    glm::vec3 min = glm::vec3(0.0f);
+    glm::vec3 max = glm::vec3(0.0f);
 };
 
 class Renderer;
@@ -41,6 +47,10 @@ public:
     float boundingRadius = 0.0f;
     bool visible = true;
     bool isQueuedDestroyed = false;
+
+    AABB localAABB;
+    bool hasMesh = false; // set to true after mesh loading
+    bool isCollidable = false;
 
     void loadModel(const char* filepath, std::vector<glm::vec3> * vertices = nullptr);
     void addChild( Wesen * wesen );

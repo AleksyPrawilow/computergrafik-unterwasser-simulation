@@ -3,6 +3,7 @@
 //
 #include "uboot.h"
 
+#include "bubbleEmitter.h"
 #include "ubootRotor.h"
 #include "../werkzeuge/textur.h"
 #include "ui/fadenkreuz.h"
@@ -62,7 +63,7 @@ void Uboot::init() {
         auto * rotor = new UbootRotor();
         addChild(rotor);
 
-        auto * emitter = new ParticleEmitter(5000);
+        auto * emitter = new BubbleEmitter(5000);
         addChild(emitter);
         const auto newPos = glm::vec3(-0.28f * (i < 2 ? 1.0f : -1.0f), 0.38f * (i == 1 || i == 3 ? -1.0f : 1.0f), 0.8f);
         rotor->transform.position = newPos;

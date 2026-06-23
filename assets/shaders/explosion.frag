@@ -35,7 +35,7 @@ void main() {
     }
 
     // Fresnel Edge Softening (Uses normal vector N from TBN matrix out of transform)
-    vec3 viewDir = normalize(cameraPos - worldPos);
+    vec3 viewDir = normalize(u_cameraPos.xyz - worldPos);
     vec3 normal = normalize(TBN[2]);
     float edgeFactor = dot(normal, viewDir);
     edgeFactor = clamp(1.0 - abs(edgeFactor), 0.0, 1.0);
@@ -44,39 +44,40 @@ void main() {
     vec3 finalColor = fireColor;
 
     // --- INTEGRATED UNDERWATER EFFECT 1: COLOR ABSORPTION ---
-    if (u_heightFogEnabled && cameraPos.y < u_heightFogMax) {
-        vec3 absorptionFilter = vec3(0.35, 0.75, 1.0);
-        finalColor *= absorptionFilter;
+    if (u_heightFogEnabled != 0 && u_cameraPos.y < u_heightFogMax) { // FIX: Changed int check
+       vec3 absorptionFilter = vec3(0.35, 0.75, 1.0);
+       finalColor *= absorptionFilter;
     }
 
     // --- INTEGRATED UNDERWATER EFFECT 2: DISTANCE WATER FOG & DIMMING ---
-    if (u_fogEnabled && cameraPos.y < u_heightFogMax) {
-        float dist = length(cameraPos - worldPos);
+    if (u_fogEnabled != 0 && u_cameraPos.y < u_heightFogMax) { // FIX: Changed int check
+         float dist = length(u_cameraPos.xyz - worldPos);
 
-        // Match the organic waving fog drift defined in common_pbr.glsl
-        float currentDrift = sin(worldPos.x * 0.08 + time * 0.3)
-        * cos(worldPos.z * 0.08 - time * 0.2)
-        * sin(worldPos.y * 0.04);
+         // Match the organic waving fog drift defined in common_pbr.glsl
+         float currentDrift = sin(worldPos.x * 0.08 + u_time * 0.3)
+         * cos(worldPos.z * 0.08 - u_time * 0.2)
+         * sin(worldPos.y * 0.04);
 
-        float dynamicDensity = u_baseFogDensity + (currentDrift * 0.008);
-        float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
+         float dynamicDensity = u_baseFogDensity + (currentDrift * 0.008);
+         float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
 
-        // Calculate depth-blended background water color
-        float depthBlend = clamp((-viewDir.y - (-0.2)) / 1.0, 0.0, 1.0);
-        vec3 baseWaterColor = mix(u_fogColor, u_heightFogColor, depthBlend);
+         // Calculate depth-blended background water color
+         float depthBlend = clamp((-viewDir.y - (-0.2)) / 1.0, 0.0, 1.0);
+         // FIX: Extracted .xyz from vec4 fog colors
+         vec3 baseWaterColor = mix(u_fogColor.xyz, u_heightFogColor.xyz, depthBlend);
 
-        // Dim the background fog color by the camera's depth
-        if (u_depthDimmingEnabled) {
-            float cameraDepthFactor = clamp(exp(cameraPos.y * u_depthDimmingCoefficient), 0.0, 1.0);
-            baseWaterColor *= cameraDepthFactor;
-        }
+         // Dim the background fog color by the camera's depth
+         if (u_depthDimmingEnabled != 0) { // FIX: Changed int check
+               float cameraDepthFactor = clamp(exp(u_cameraPos.y * u_depthDimmingCoefficient), 0.0, 1.0);
+               baseWaterColor *= cameraDepthFactor;
+         }
 
-        // Apply standard HDR tonemapping and gamma correction to the background fog color
-        baseWaterColor = baseWaterColor / (baseWaterColor + vec3(1.0));
-        baseWaterColor = pow(baseWaterColor, vec3(1.0 / 2.2));
+         // Apply standard HDR tonemapping and gamma correction to the background fog color
+         baseWaterColor = baseWaterColor / (baseWaterColor + vec3(1.0));
+         baseWaterColor = pow(baseWaterColor, vec3(1.0 / 2.2));
 
-        // Blend the fire color into the background fog
-        finalColor = mix(baseWaterColor, finalColor, fogFactor);
+         // Blend the fire color into the background fog
+         finalColor = mix(baseWaterColor, finalColor, fogFactor);
     }
 
     outColor = vec4(finalColor, alpha);
