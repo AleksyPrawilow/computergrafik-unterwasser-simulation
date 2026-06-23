@@ -20,15 +20,20 @@
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "unterwasserszeneProps.h"
-#include "dieWesen/backrooms.h"
 #include "dieWesen/bottle.h"
 #include "dieWesen/rock.h"
 #include "dieWesen/thunderstorm.h"
 #include "dieWesen/unterwasserszeneAudioHelper.h"
-#include "dieWesen/unterwasserszeneQuests.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/questHUD.h"
+#include "dieWesen/ui/inventarHUD.h"
+#include "dieWesen/ui/handwerkHUD.h"
+#include "dieWesen/ui/werkbankHUD.h"
+#include "dieWesen/ui/ausruestungsLeiste.h"
+#include "dieWesen/aufhebbar.h"
 #include "werkzeuge/audio/musicManager.h"
+#include "werkzeuge/gegenstandDaten.h"
+#include "werkzeuge/inventar.h"
 #include "werkzeuge/visual/questManager.h"
 
 void UnterwasserszeneWesen::init() {
@@ -55,7 +60,7 @@ void UnterwasserszeneWesen::init() {
     flock->transform.position = glm::vec3(-12.f, -10.f, 0.f);
     addChild(flock);
     auto * bottle = new Bottle();
-    bottle->transform.position = glm::vec3(-650.0, 0.0f, 0.0f);
+    bottle->transform.position = glm::vec3(-700, 20.0f, -210.0f);
     addChild(bottle);
 
     auto * worldEnv = new WorldEnvironment();
@@ -71,7 +76,7 @@ void UnterwasserszeneWesen::init() {
     // TEST
     auto * worldspaceUI = new WorldspaceUI();
     addChild(worldspaceUI);
-    worldspaceUI->shouldScale = true;
+    worldspaceUI->shouldScale = true;;
     worldspaceUI->setTarget(jellyfish);
 
     auto * label = new UILabel();
@@ -82,8 +87,44 @@ void UnterwasserszeneWesen::init() {
 
     auto* questHUD = new QuestHUD();
     addChild(questHUD);
-    auto * questManager = new UnterwasserszeneQuests();
-    addChild(questManager);
+
+    Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
+
+    addChild(new InventarHUD());
+    addChild(new HandwerkHUD());
+    addChild(new WerkbankHUD());
+    addChild(new AusruestungsLeiste());
+
+    auto* seilPickup = new Aufhebbar(GegenstandID::SEIL, 2);
+    seilPickup->transform.position = glm::vec3(-695.0f, 14.0f, -215.0f);
+    addChild(seilPickup);
+
+    auto* steinPickup = new Aufhebbar(GegenstandID::STEIN, 3);
+    steinPickup->transform.position = glm::vec3(-705.0f, 14.0f, -225.0f);
+    addChild(steinPickup);
+
+    auto* flaschePickup = new Aufhebbar(GegenstandID::FLASCHE, 1);
+    flaschePickup->transform.position = glm::vec3(-700.0f, 20.0f, -210.0f);
+    addChild(flaschePickup);
+
+    Quest chopTreeQuest;
+    chopTreeQuest.title = "Wood";
+
+    QuestObjective digObjective;
+    digObjective.tag = "chop_tree";
+    digObjective.description = "Chop down the tree";
+    digObjective.requiredCount = 1;
+
+    chopTreeQuest.objectives.push_back(digObjective);
+
+    chopTreeQuest.onComplete = [this]() {
+        std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
+        auto* banner = new QuestCompletedBanner("The tree is no more");
+        this->addChild(banner);
+        AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
+    };
+
+    QuestManager::getInstance().acceptQuest(chopTreeQuest);
 
     auto sceneData = getGodotSceneData();
     for (const auto& [className, transforms] : sceneData) {
@@ -99,5 +140,6 @@ void UnterwasserszeneWesen::init() {
     }
 
     addChild(new Thunderstorm());
+
     addChild(new UnterwasserszeneAudioHelper());
 }

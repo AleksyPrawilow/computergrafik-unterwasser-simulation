@@ -37,9 +37,12 @@ private:
     double lastY = 0.0;
     bool firstMouse = true;
 
+    bool kannPlatzieren = true;
+
     void handleRotations(GLFWwindow* window, float deltaTime);
     void updateCameraTransform(Transform& cameraTransform, float deltaTime) const;
     void updateRaycast();
+    void handleItemAction(GLFWwindow* window);
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_PLAYER_H

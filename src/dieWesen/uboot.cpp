@@ -123,7 +123,7 @@ void Uboot::setIsActive(const bool active) {
 }
 
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
-    if (Input::isKeyJustPressed(GLFW_KEY_3)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_F3)) {
         isActive = !isActive;
     }
 

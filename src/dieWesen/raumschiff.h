@@ -8,6 +8,7 @@
 #include "../werkzeuge/transform.h"
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/audio/audioPlayer.h"
+#include <unordered_set>
 
 enum class AnsichtModus {
     ERSTE_PERSON,
@@ -46,7 +47,8 @@ private:
     bool istAktiv = true;
     bool canShoot = true;
     bool shootLeft = true;
-    float collisionCooldown = 0.0f;
+    float spawnSchutz = 0.0f;
+    std::unordered_set<Wesen*> aktiveKollisionen;
 
     double letzteX = 0.0;
     double letzteY = 0.0;
