@@ -141,13 +141,6 @@ void UnterwasserszeneQuests::setupChopDown() {
     Quest chopTreeQuest;
     chopTreeQuest.title = "Wood";
 
-    QuestObjective chopObjective;
-    chopObjective.tag = "chop_tree";
-    chopObjective.description = "Chop down the tree";
-    chopObjective.requiredCount = 1;
-
-    chopTreeQuest.objectives.push_back(chopObjective);
-
     chopTreeQuest.onComplete = [this]() {
         auto * banner = new QuestCompletedBanner("The tree is no more");
         parent->addChild(banner);
@@ -163,11 +156,23 @@ void UnterwasserszeneQuests::setupDigOut() {
     Quest digOutQuest;
     digOutQuest.title = "Treasure";
 
+    QuestObjective chopObjective;
+    chopObjective.tag = "chop_tree";
+    chopObjective.description = "Chop down the tree for wood";
+    chopObjective.requiredCount = 1;
+
+    QuestObjective craftObjective;
+    craftObjective.tag = "craft_Shovel";
+    craftObjective.description = "Craft a shovel";
+    craftObjective.requiredCount = 1;
+
     QuestObjective digObjective;
     digObjective.tag = "dig_out";
     digObjective.description = "Dig out the treasure";
     digObjective.requiredCount = 1;
 
+    digOutQuest.objectives.push_back(chopObjective);
+    digOutQuest.objectives.push_back(craftObjective);
     digOutQuest.objectives.push_back(digObjective);
 
     digOutQuest.onComplete = [this]() {

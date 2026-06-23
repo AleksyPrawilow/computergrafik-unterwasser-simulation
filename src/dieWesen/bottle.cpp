@@ -148,11 +148,15 @@ void Bottle::beginSwim() {
 
 void Bottle::pickup() {
     isPicked = true;
-    map->unwrap(2.0f);
+    uiMarker->enabled = false;
     createTween()
         ->tweenProperty(&cork->transform.position.y, 0.5f, 1.0f, EaseType::EASE_OUT_BACK)
         ->parallel()
         ->tweenProperty(&euler, glm::vec3(0.0f), 1.0f, EaseType::EASE_OUT_SINE)
         ->tweenProperty(&cork->transform.position.z, -0.5f, 1.0f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&map->transform.position.y, 4.0f, 1.0f, EaseType::EASE_OUT_BACK);
+        ->tweenProperty(&map->transform.position.y, 4.0f, 1.0f, EaseType::EASE_OUT_BACK)
+        ->tweenCallback([this]() {
+            map->unwrap(1.0f);
+            QuestManager::getInstance().progressObjective("collect_bottle", 1);
+        });
 }

@@ -13,6 +13,7 @@
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/audio/audioManager.h"
+#include "werkzeuge/visual/questManager.h"
 
 void Player::init() {
     transform.scale = glm::vec3(1.0f);
@@ -186,6 +187,7 @@ void Player::handleItemAction(GLFWwindow* window) {
         parent->addChild(erde);
 
         AudioManager::getInstance().play2D("assets/audio/pickup.mp3", false, true);
+        QuestManager::getInstance().progressObjective("dig_out", 1);
         return;
     }
 

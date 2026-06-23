@@ -76,6 +76,8 @@ void Tree::fall(glm::vec3 hitDir) {
                 holz->transform.position = dropPos;
                 parent->parent->addChild(holz);
             }
+
+            QuestManager::getInstance().progressObjective("chop_tree", 1);
         })
         ->tweenProperty(&treeEuler.z, 88.0f, 0.40f, EaseType::EASE_OUT_BACK)
         ->parallel()
