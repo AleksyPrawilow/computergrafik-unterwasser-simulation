@@ -30,6 +30,7 @@ void Raumschiff::init() {
     boundingRadius = 4.0f;
 
     addToGroup("spieler");
+    spawnSchutz = 1.5f;
 
     fadenkreuz = new Fadenkreuz();
     fadenkreuz->init(16.0f / 9.0f);
@@ -77,21 +78,24 @@ void Raumschiff::onUpdate(GLFWwindow* window, float deltaTime, Transform& camera
         triebwerk->active = glm::abs(tatsaechlicheGeschwindigkeit) > 1.0f;
     }
 
-    if (collisionCooldown > 0.0f) {
-        collisionCooldown -= deltaTime;
+    if (spawnSchutz > 0.0f) {
+        spawnSchutz -= deltaTime;
     } else {
         const auto& feinde = getNodesInGroup("feinde");
         for (auto* ziel : feinde) {
             float abstand = glm::distance(getGlobalTransform().position, ziel->getGlobalTransform().position);
-            if (abstand < boundingRadius + ziel->boundingRadius) {
+            bool drin = abstand < boundingRadius + ziel->boundingRadius;
+
+            if (drin && aktiveKollisionen.find(ziel) == aktiveKollisionen.end()) {
+                aktiveKollisionen.insert(ziel);
                 if (auto* feind = dynamic_cast<Feindschiff*>(ziel)) {
                     feind->schadenNehmen(1.0f);
                 }
                 schadenNehmen(25.0f);
                 if (parent != nullptr)
                     parent->addChild(new Explosion(getGlobalTransform().position, 3.0f));
-                collisionCooldown = 1.0f;
-                break;
+            } else if (!drin) {
+                aktiveKollisionen.erase(ziel);
             }
         }
     }
@@ -280,5 +284,7 @@ void Raumschiff::schadenNehmen(float schaden) {
         transform.position = glm::vec3(0.0f);
         transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
         tatsaechlicheGeschwindigkeit = 0.0f;
+        spawnSchutz = 2.0f;
+        aktiveKollisionen.clear();
     }
 }

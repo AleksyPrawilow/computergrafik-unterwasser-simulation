@@ -73,6 +73,13 @@ public:
 
     bool showDebugAABBs = false;
     void drawDebugAABBs(const glm::mat4& view, const glm::mat4& projection) const;
+    void drawDebugOBB(
+        const glm::vec3& localMin,
+        const glm::vec3& localMax,
+        const glm::mat4& modelMatrix,
+        const glm::mat4& view,
+        const glm::mat4& projection
+    ) const;
 
 private:
     void drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const;

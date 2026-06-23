@@ -26,6 +26,10 @@ void Island::init() {
 
     addToGroup("Island");
     addChild(new Tree());
+
+    auto* baum2 = new Tree();
+    baum2->transform.position = glm::vec3(5.0f, 6.0f, -3.0f);
+    addChild(baum2);
 }
 
 float Island::getHeight(const float x, const float z) const {
@@ -46,4 +50,36 @@ float Island::getHeight(const float x, const float z) const {
     }
 
     return groundHeight;
+}
+
+void Island::graben(glm::vec3 weltPos, float radius, float tiefe) {
+    auto [position, rotation, scale] = getGlobalTransform();
+    glm::quat invRot = glm::inverse(rotation);
+
+    glm::vec3 lokalPos = invRot * (weltPos - position) / scale;
+
+    bool geaendert = false;
+
+    float lokalRadius = radius / scale.x;
+
+    for (auto& vert : vertices) {
+        float dx = vert.x - lokalPos.x;
+        float dz = vert.z - lokalPos.z;
+        float distSq = dx * dx + dz * dz;
+        float rSq = lokalRadius * lokalRadius;
+
+        if (distSq < rSq) {
+            float faktor = 1.0f - (distSq / rSq);
+            vert.y -= (tiefe / scale.y) * faktor;
+            geaendert = true;
+        }
+    }
+
+    if (geaendert) {
+        glBindBuffer(GL_ARRAY_BUFFER, mesh.vertexBuffer);
+        glBufferSubData(GL_ARRAY_BUFFER, 0,
+            static_cast<GLsizeiptr>(vertices.size() * sizeof(glm::vec3)),
+            vertices.data());
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+    }
 }

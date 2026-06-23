@@ -1,7 +1,7 @@
 #include "flockManager.h"
 #include "fishBolid.h"
-#include "../werkzeuge/TextureManager.h"
-#include "../werkzeuge/ShaderManager.h"
+#include "../werkzeuge/textureManager.h"
+#include "../werkzeuge/shaderManager.h"
 
 void FishFlock::init() {
     for (int i = 0; i < numFishes; i++) {

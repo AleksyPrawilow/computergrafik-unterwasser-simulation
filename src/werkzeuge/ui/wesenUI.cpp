@@ -10,6 +10,7 @@ GLuint UIElement::sharedFontTexture = 0;
 GLuint UIElement::sharedVAO = 0;
 GLuint UIElement::sharedVBO = 0;
 GLuint UIElement::sharedShader = 0;
+float UIElement::dpiScale = 1.0f;
 
 void UIElement::initUISystem() {
     if (sharedShader != 0) return;
@@ -72,12 +73,13 @@ Transform UIElement::getGlobalTransform() const {
     if (parent == nullptr) {
         Transform t = transform;
 
-        // --- UPDATED: Centers both X and Y automatically! ---
+        float scaleFactor = getUIScaleFactor();
+
         if (expansion == UIExpansion::CENTER) {
-            t.position.x -= transform.scale.x / 2.0f;
-            t.position.y -= transform.scale.y / 2.0f;
+            t.position.x -= (transform.scale.x * scaleFactor) / 2.0f;
+            t.position.y -= (transform.scale.y * scaleFactor) / 2.0f;
         } else if (expansion == UIExpansion::LEFT) {
-            t.position.x -= transform.scale.x;
+            t.position.x -= (transform.scale.x * scaleFactor);
         }
         return t;
     }
@@ -121,6 +123,13 @@ void UIElement::customRender(const glm::mat4& view, const glm::mat4& projection)
     Kern::DrawQuad(sharedVAO);
 
     glUseProgram(0);
+}
+
+float UIElement::getUIScaleFactor() const {
+    if (parent == nullptr || dynamic_cast<const UIElement*>(parent) == nullptr) {
+        return dpiScale;
+    }
+    return parent->getUIScaleFactor();
 }
 
 void UIElement::updateGlobalTransforms() {

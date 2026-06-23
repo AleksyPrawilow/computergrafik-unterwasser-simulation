@@ -9,6 +9,25 @@
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/audio/musicManager.h"
+#include "werkzeuge/groupManager.h"
+
+static glm::vec3 sichereSpawnPosition(float minRadius, float maxRadius, float minHoehe, float maxHoehe, float sicherheitsAbstand) {
+    const auto& spielerGruppe = GroupManager::getInstance().getEntitiesInGroup("spieler");
+    glm::vec3 spielerPos(0.0f);
+    if (!spielerGruppe.empty())
+        spielerPos = spielerGruppe[0]->getGlobalTransform().position;
+
+    for (int versuch = 0; versuch < 20; versuch++) {
+        float winkel = Random::range(0.0f, 6.28f);
+        float radius = Random::range(minRadius, maxRadius);
+        float hoehe = Random::range(minHoehe, maxHoehe);
+        glm::vec3 pos(glm::cos(winkel) * radius, hoehe, glm::sin(winkel) * radius);
+        if (glm::distance(pos, spielerPos) >= sicherheitsAbstand)
+            return pos;
+    }
+    // Fallback: place far behind the player's facing direction
+    return spielerPos - glm::vec3(0.0f, 0.0f, maxRadius);
+}
 
 void WeltraumszeneWesen::init() {
     addChild(new HimmelsboxWesen({
@@ -55,12 +74,11 @@ void WeltraumszeneWesen::spawnWave(Timer * timer, int numA, int numB) {
 
     for (int i = 0; i < numB; i++) {
         auto * feind = new Feindschiff();
-        float winkel = static_cast<float>(i) * 6.28f / 12.0f;
-        float radius = Random::range(40.0f, 120.0f);
-        float hoehe = Random::range(-30.0f, 30.0f);
-        glm::vec3 startPos(glm::cos(winkel) * radius, hoehe, glm::sin(winkel) * radius);
+        constexpr float sicherheit = 15.0f; // boundingRadius player(4) + enemy(6) + margin
+        glm::vec3 startPos = sichereSpawnPosition(40.0f, 120.0f, -30.0f, 30.0f, sicherheit);
         feind->transform.position = startPos;
 
+        float winkel = glm::atan(startPos.z, startPos.x);
         for (int w = 0; w < 4; w++) {
             float wWinkel = winkel + static_cast<float>(w + 1) * 1.57f;
             float wRadius = Random::range(30.0f, 100.0f);
@@ -76,13 +94,10 @@ void WeltraumszeneWesen::spawnWave(Timer * timer, int numA, int numB) {
     auto * boss = new Feindschiff();
     boss->leben = 20.0f;
     boss->laserSchaden = 30.0f;
-    float bossWinkel = Random::range(0.0f, 6.28f);
-    float bossRadius = Random::range(80.0f, 150.0f);
-    boss->transform.position = glm::vec3(
-        glm::cos(bossWinkel) * bossRadius,
-        Random::range(-20.0f, 20.0f),
-        glm::sin(bossWinkel) * bossRadius
-    );
+    constexpr float bossSicherheit = 180.0f; // boundingRadius player(4) + boss(120) + margin
+    glm::vec3 bossPos = sichereSpawnPosition(200.0f, 300.0f, -20.0f, 20.0f, bossSicherheit);
+    boss->transform.position = bossPos;
+    float bossWinkel = glm::atan(bossPos.z, bossPos.x);
     for (int w = 0; w < 4; w++) {
         float wWinkel = bossWinkel + static_cast<float>(w + 1) * 1.57f;
         float wRadius = Random::range(50.0f, 130.0f);

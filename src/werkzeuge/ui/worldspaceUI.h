@@ -14,6 +14,7 @@ public:
     glm::vec3 worldOffset = glm::vec3(0.0f);
 
     bool shouldScale = true;
+    bool enabled = true;
 
     void setTarget(Wesen* target, const glm::vec3& offset = glm::vec3(0.0f));
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;

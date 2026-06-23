@@ -15,7 +15,7 @@ void WorldspaceUI::setTarget(Wesen* target, const glm::vec3& offset) {
 }
 
 void WorldspaceUI::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (targetEntity == nullptr || targetEntity->isQueuedDestroyed) {
+    if (!enabled || targetEntity == nullptr || targetEntity->isQueuedDestroyed) {
         visible = false;
         return;
     }

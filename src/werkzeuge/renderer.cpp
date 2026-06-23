@@ -202,6 +202,79 @@ void Renderer::drawDebugAABBs(const glm::mat4& view, const glm::mat4& projection
     glUseProgram(0);
 }
 
+void Renderer::drawDebugOBB(
+    const glm::vec3& localMin,
+    const glm::vec3& localMax,
+    const glm::mat4& modelMatrix,
+    const glm::mat4& view,
+    const glm::mat4& projection
+) const {
+    // 1. Generate 8 local-space corners (they never stretch or change scale in model-space)
+    glm::vec3 vertices[8] = {
+        glm::vec3(localMin.x, localMin.y, localMin.z),
+        glm::vec3(localMin.x, localMin.y, localMax.z),
+        glm::vec3(localMin.x, localMax.y, localMin.z),
+        glm::vec3(localMin.x, localMax.y, localMax.z),
+        glm::vec3(localMax.x, localMin.y, localMin.z),
+        glm::vec3(localMax.x, localMin.y, localMax.z),
+        glm::vec3(localMax.x, localMax.y, localMin.z),
+        glm::vec3(localMax.x, localMax.y, localMax.z)
+    };
+
+    // 12 lines (24 indices) connecting the corners
+    unsigned int indices[24] = {
+        0, 1,  1, 3,  3, 2,  2, 0, // Bottom outline
+        4, 5,  5, 7,  7, 6,  6, 4, // Top outline
+        0, 4,  1, 5,  2, 6,  3, 7  // Vertical pillars
+    };
+
+    static GLuint obbVAO = 0;
+    static GLuint obbVBO = 0;
+    static GLuint obbEBO = 0;
+
+    // Generate static buffers once on first call
+    if (obbVAO == 0) {
+        glGenVertexArrays(1, &obbVAO);
+        glGenBuffers(1, &obbVBO);
+        glGenBuffers(1, &obbEBO);
+    }
+
+    glBindVertexArray(obbVAO);
+
+    // Upload vertices and indices to dynamic GPU buffers on the fly
+    glBindBuffer(GL_ARRAY_BUFFER, obbVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
+
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, obbEBO);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(glm::vec3), (void*)0);
+
+    // Get the debug shader
+    static GLuint debugShader = 0;
+    if (debugShader == 0) {
+        debugShader = ShaderManager::getInstance().loadShader(
+            "debug",
+            "assets/shaders/debug.vert",
+            "assets/shaders/debug.frag"
+        );
+    }
+
+    glUseProgram(debugShader);
+
+    // Calculate Model-View-Projection matrix on the GPU
+    glm::mat4 mvp = projection * view * modelMatrix;
+    Kern::setUniform(debugShader, "transformation", mvp);
+    Kern::setUniform(debugShader, "u_color", glm::vec4(1.0f, 0.5f, 0.0f, 1.0f)); // Draw OBB in bright orange
+
+    // Draw using GL_LINES
+    glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, 0);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+}
+
 void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) const {
     if (e.hasCustomRender()) {
         e.customRender(view, projection);
