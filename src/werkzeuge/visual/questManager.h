@@ -46,6 +46,13 @@ public:
 
     [[nodiscard]] const std::vector<Quest>& getActiveQuests() const { return activeQuests; }
 
+    bool hatQuest(const std::string& title) const {
+        for (const auto& q : activeQuests) {
+            if (q.title == title) return true;
+        }
+        return false;
+    }
+
     void setOnProgressChangedCallback(std::function<void()> callback) {
         onProgressChanged = std::move(callback);
     }

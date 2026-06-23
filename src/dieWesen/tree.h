@@ -12,7 +12,7 @@ class Tree : public Wesen {
 public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
-    void hit(glm::vec3 hitDir);
+    void hit(glm::vec3 hitDir, int schaden = 1);
     void fall(glm::vec3 hitDir);
 private:
     AudioPlayer * fallSound = nullptr;

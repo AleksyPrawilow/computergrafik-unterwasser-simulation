@@ -29,6 +29,8 @@
 #include "werkzeuge/bloom.h"
 #include "werkzeuge/modelManager.h"
 #include "werkzeuge/audio/musicManager.h"
+#include "werkzeuge/gegenstandDaten.h"
+#include "werkzeuge/inventar.h"
 
 Renderer renderer;
 Kamera kamera;
@@ -37,6 +39,7 @@ WorldEnvironment * WorldEnvironment::activeEnv = nullptr;
 Wesen * scene = nullptr;
 int aktuelleSzene = 0;
 bool cursorDisabled = true;
+bool inventarOffen = false;
 
 void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
 {
@@ -47,6 +50,7 @@ void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const
 void Scene::szeneWechseln(int index) {
 	if (scene != nullptr) {
 		AudioManager::getInstance().allesStoppen();
+		Inventar::getInstance().reset();
 		GroupManager::getInstance().cleanup();
 		delete scene;
 		scene = nullptr;
@@ -76,6 +80,7 @@ void Scene::init(GLFWwindow* window)
 	renderer.init();
 	UIElement::initUISystem();
 	AudioManager::getInstance().init();
+	GegenstandDaten::getInstance().init();
 	Input::init(window);
 
 	int fbW, fbH;
@@ -113,7 +118,7 @@ void Scene::processInput(GLFWwindow* window) {
 		glfwSetWindowShouldClose(window, true);
 	}
 
-	if (Input::isKeyJustPressed(GLFW_KEY_TAB)) {
+	if (Input::isKeyJustPressed(GLFW_KEY_TAB) && !inventarOffen) {
 		cursorDisabled = !cursorDisabled;
 		glfwSetInputMode(window, GLFW_CURSOR, cursorDisabled ? GLFW_CURSOR_DISABLED : GLFW_CURSOR_NORMAL);
 	}
@@ -175,7 +180,7 @@ void Scene::renderLoop(GLFWwindow* window) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
-		if (WorldEnvironment::activeEnv != nullptr && !cursorDisabled) {
+		if (WorldEnvironment::activeEnv != nullptr && !cursorDisabled && !inventarOffen) {
             ImGui::Begin("World Environment Tweaker");
 
             EnvParameters& params = WorldEnvironment::activeEnv->params;

@@ -7,6 +7,8 @@
 #include "tree.h"
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/audio/audioPlayer.h"
+#include "werkzeuge/gegenstandDaten.h"
+#include "werkzeuge/modelManager.h"
 
 
 class Timer;
@@ -18,6 +20,7 @@ public:
 private:
     bool isPlayingAnimation = false;
     bool recoveringAnimation = false;
+    bool istAxt = false;
     glm::vec3 weaponEuler;
     glm::vec3 hitNormal;
     Tree * treeToHit = nullptr;
@@ -25,9 +28,19 @@ private:
     AudioPlayer * hitSound = nullptr;
     AudioPlayer * swingSound = nullptr;
 
+    GLuint defaultAlbedo = 0;
+    GLuint upgradedAlbedo = 0;
+    GegenstandID letzteAktivesItem = GegenstandID::KEINE;
+
+    Kern::RenderContext axeModelMesh;
+    AABB axeModelAABB;
+    Kern::RenderContext cubeModelMesh;
+    AABB cubeModelAABB;
+
     void swing();
     void recoverAnimation();
     void hitTree();
+    void ausruestungAktualisieren();
 };
 
 

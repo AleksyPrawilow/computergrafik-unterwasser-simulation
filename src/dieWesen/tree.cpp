@@ -3,6 +3,7 @@
 //
 
 #include "tree.h"
+#include "aufhebbar.h"
 
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
@@ -32,14 +33,14 @@ void Tree::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransf
     transform.rotation = glm::quat(glm::radians(treeEuler));
 }
 
-void Tree::hit(const glm::vec3 hitDir) {
+void Tree::hit(const glm::vec3 hitDir, int schaden) {
     if (hp <= 0) {
         return;
     }
 
     const auto originalPos = glm::vec3(transform.position);
     constexpr float displacement = 0.15f;
-    hp -= 1;
+    hp -= schaden;
 
     createTween()
         ->tweenProperty(&transform.position.x, transform.position.x + hitDir.x * displacement, 0.05f, EaseType::EASE_OUT_CUBIC)
@@ -69,22 +70,32 @@ void Tree::fall(glm::vec3 hitDir) {
             kamera.addShake(0.25f, 0.4f);
             QuestManager::getInstance().progressObjective("chop_tree", 1);
 
-            Quest craftingQuest;
-            craftingQuest.title = "Crafty time";
+            if (parent != nullptr && parent->parent != nullptr) {
+                auto* holz = new Aufhebbar(GegenstandID::HOLZ, 3);
+                glm::vec3 dropPos = getGlobalTransform().position;
+                dropPos.y += 3.0f;
+                holz->transform.position = dropPos;
+                parent->parent->addChild(holz);
+            }
 
-            QuestObjective digObjective;
-            digObjective.tag = "craft_shovel";
-            digObjective.description = "Craft a shovel";
-            digObjective.requiredCount = 1;
+            if (!QuestManager::getInstance().hatQuest("Crafty time")) {
+                Quest craftingQuest;
+                craftingQuest.title = "Crafty time";
 
-            craftingQuest.objectives.push_back(digObjective);
+                QuestObjective digObjective;
+                digObjective.tag = "craft_Schaufel";
+                digObjective.description = "Craft a shovel";
+                digObjective.requiredCount = 1;
 
-            craftingQuest.onComplete = []() {
-                std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
-                AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
-            };
+                craftingQuest.objectives.push_back(digObjective);
 
-            QuestManager::getInstance().acceptQuest(craftingQuest);
+                craftingQuest.onComplete = []() {
+                    std::cout << "QUEST COMPLETED: Shovel crafted!" << std::endl;
+                    AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
+                };
+
+                QuestManager::getInstance().acceptQuest(craftingQuest);
+            }
         })
         ->tweenProperty(&treeEuler.z, 88.0f, 0.40f, EaseType::EASE_OUT_BACK)
         ->parallel()

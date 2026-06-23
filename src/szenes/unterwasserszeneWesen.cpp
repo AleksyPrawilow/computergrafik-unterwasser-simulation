@@ -26,7 +26,14 @@
 #include "dieWesen/unterwasserszeneAudioHelper.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/questHUD.h"
+#include "dieWesen/ui/inventarHUD.h"
+#include "dieWesen/ui/handwerkHUD.h"
+#include "dieWesen/ui/werkbankHUD.h"
+#include "dieWesen/ui/ausruestungsLeiste.h"
+#include "dieWesen/aufhebbar.h"
 #include "werkzeuge/audio/musicManager.h"
+#include "werkzeuge/gegenstandDaten.h"
+#include "werkzeuge/inventar.h"
 #include "werkzeuge/visual/questManager.h"
 
 void UnterwasserszeneWesen::init() {
@@ -80,6 +87,25 @@ void UnterwasserszeneWesen::init() {
 
     auto* questHUD = new QuestHUD();
     addChild(questHUD);
+
+    Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
+
+    addChild(new InventarHUD());
+    addChild(new HandwerkHUD());
+    addChild(new WerkbankHUD());
+    addChild(new AusruestungsLeiste());
+
+    auto* seilPickup = new Aufhebbar(GegenstandID::SEIL, 2);
+    seilPickup->transform.position = glm::vec3(-695.0f, 14.0f, -215.0f);
+    addChild(seilPickup);
+
+    auto* steinPickup = new Aufhebbar(GegenstandID::STEIN, 3);
+    steinPickup->transform.position = glm::vec3(-705.0f, 14.0f, -225.0f);
+    addChild(steinPickup);
+
+    auto* flaschePickup = new Aufhebbar(GegenstandID::FLASCHE, 1);
+    flaschePickup->transform.position = glm::vec3(-700.0f, 20.0f, -210.0f);
+    addChild(flaschePickup);
 
     Quest chopTreeQuest;
     chopTreeQuest.title = "Wood";

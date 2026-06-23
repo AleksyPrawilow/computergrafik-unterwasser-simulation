@@ -172,6 +172,26 @@ set(IMGUI_SOURCES
         src/dieWesen/fishBolid.cpp
         src/dieWesen/flockManager.h
         src/dieWesen/flockManager.cpp
+        src/werkzeuge/gegenstandDaten.cpp
+        src/werkzeuge/gegenstandDaten.h
+        src/werkzeuge/inventar.cpp
+        src/werkzeuge/inventar.h
+        src/dieWesen/aufhebbar.cpp
+        src/dieWesen/aufhebbar.h
+        src/dieWesen/ui/inventarSlotUI.cpp
+        src/dieWesen/ui/inventarSlotUI.h
+        src/dieWesen/ui/inventarHUD.cpp
+        src/dieWesen/ui/inventarHUD.h
+        src/dieWesen/ui/handwerkHUD.cpp
+        src/dieWesen/ui/handwerkHUD.h
+        src/dieWesen/ui/ausruestungsLeiste.cpp
+        src/dieWesen/ui/ausruestungsLeiste.h
+        src/dieWesen/ui/werkbankHUD.cpp
+        src/dieWesen/ui/werkbankHUD.h
+        src/dieWesen/platzierbaresObjekt.cpp
+        src/dieWesen/platzierbaresObjekt.h
+        src/dieWesen/grabLoch.cpp
+        src/dieWesen/grabLoch.h
 )
 
 add_executable(${PROJECT_NAME}
