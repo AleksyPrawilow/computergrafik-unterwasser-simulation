@@ -31,6 +31,7 @@
 #include "dieWesen/ui/werkbankHUD.h"
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/aufhebbar.h"
+#include "dieWesen/unterwasserszeneQuests.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/gegenstandDaten.h"
 #include "werkzeuge/inventar.h"
@@ -107,25 +108,6 @@ void UnterwasserszeneWesen::init() {
     flaschePickup->transform.position = glm::vec3(-700.0f, 20.0f, -210.0f);
     addChild(flaschePickup);
 
-    Quest chopTreeQuest;
-    chopTreeQuest.title = "Wood";
-
-    QuestObjective digObjective;
-    digObjective.tag = "chop_tree";
-    digObjective.description = "Chop down the tree";
-    digObjective.requiredCount = 1;
-
-    chopTreeQuest.objectives.push_back(digObjective);
-
-    chopTreeQuest.onComplete = [this]() {
-        std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
-        auto* banner = new QuestCompletedBanner("The tree is no more");
-        this->addChild(banner);
-        AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
-    };
-
-    QuestManager::getInstance().acceptQuest(chopTreeQuest);
-
     auto sceneData = getGodotSceneData();
     for (const auto& [className, transforms] : sceneData) {
         for (const auto& t : transforms) {
@@ -139,6 +121,7 @@ void UnterwasserszeneWesen::init() {
         }
     }
 
+    addChild(new UnterwasserszeneQuests());
     addChild(new Thunderstorm());
 
     addChild(new UnterwasserszeneAudioHelper());
