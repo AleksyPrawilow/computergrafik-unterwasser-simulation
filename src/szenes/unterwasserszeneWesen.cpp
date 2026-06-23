@@ -20,10 +20,12 @@
 #include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "unterwasserszeneProps.h"
+#include "dieWesen/backrooms.h"
 #include "dieWesen/bottle.h"
 #include "dieWesen/rock.h"
 #include "dieWesen/thunderstorm.h"
 #include "dieWesen/unterwasserszeneAudioHelper.h"
+#include "dieWesen/unterwasserszeneQuests.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/questHUD.h"
 #include "werkzeuge/audio/musicManager.h"
@@ -53,7 +55,7 @@ void UnterwasserszeneWesen::init() {
     flock->transform.position = glm::vec3(-12.f, -10.f, 0.f);
     addChild(flock);
     auto * bottle = new Bottle();
-    bottle->transform.position = glm::vec3(-700, 20.0f, -210.0f);
+    bottle->transform.position = glm::vec3(-650.0, 0.0f, 0.0f);
     addChild(bottle);
 
     auto * worldEnv = new WorldEnvironment();
@@ -69,7 +71,7 @@ void UnterwasserszeneWesen::init() {
     // TEST
     auto * worldspaceUI = new WorldspaceUI();
     addChild(worldspaceUI);
-    worldspaceUI->shouldScale = true;;
+    worldspaceUI->shouldScale = true;
     worldspaceUI->setTarget(jellyfish);
 
     auto * label = new UILabel();
@@ -80,25 +82,8 @@ void UnterwasserszeneWesen::init() {
 
     auto* questHUD = new QuestHUD();
     addChild(questHUD);
-
-    Quest chopTreeQuest;
-    chopTreeQuest.title = "Wood";
-
-    QuestObjective digObjective;
-    digObjective.tag = "chop_tree";
-    digObjective.description = "Chop down the tree";
-    digObjective.requiredCount = 1;
-
-    chopTreeQuest.objectives.push_back(digObjective);
-
-    chopTreeQuest.onComplete = [this]() {
-        std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
-        auto* banner = new QuestCompletedBanner("The tree is no more");
-        this->addChild(banner);
-        AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
-    };
-
-    QuestManager::getInstance().acceptQuest(chopTreeQuest);
+    auto * questManager = new UnterwasserszeneQuests();
+    addChild(questManager);
 
     auto sceneData = getGodotSceneData();
     for (const auto& [className, transforms] : sceneData) {
@@ -114,6 +99,5 @@ void UnterwasserszeneWesen::init() {
     }
 
     addChild(new Thunderstorm());
-
     addChild(new UnterwasserszeneAudioHelper());
 }

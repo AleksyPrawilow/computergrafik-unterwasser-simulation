@@ -135,6 +135,10 @@ set(PROJECT_SOURCES
         src/dieWesen/bubbleEmitter.h
         src/dieWesen/rainEmitter.cpp
         src/dieWesen/rainEmitter.h
+        src/dieWesen/unterwasserszeneQuests.cpp
+        src/dieWesen/unterwasserszeneQuests.h
+        src/dieWesen/map.cpp
+        src/dieWesen/map.h
 )
 
 set(SOIL_SOURCES

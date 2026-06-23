@@ -73,13 +73,20 @@ void Scene::init(GLFWwindow* window)
 		glfwSetInputMode(window, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
 	}
 
+	int fbW, fbH;
+	glfwGetFramebufferSize(window, &fbW, &fbH);
+
+	int winW, winH;
+	glfwGetWindowSize(window, &winW, &winH);
+
+	// Store globally in the UI system
+	UIElement::dpiScale = static_cast<float>(fbW) / static_cast<float>(winW) * 0.5f;
+
 	renderer.init();
 	UIElement::initUISystem();
 	AudioManager::getInstance().init();
 	Input::init(window);
 
-	int fbW, fbH;
-	glfwGetFramebufferSize(window, &fbW, &fbH);
 	bloom.init(fbW, fbH);
 
 	szeneWechseln(0);

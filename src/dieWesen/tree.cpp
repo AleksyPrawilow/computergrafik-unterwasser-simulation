@@ -67,24 +67,6 @@ void Tree::fall(glm::vec3 hitDir) {
         ->tweenProperty(&treeEuler.x, -35.0f, 2.20f, EaseType::EASE_IN_CUBIC)
         ->tweenCallback([this]() {
             kamera.addShake(0.25f, 0.4f);
-            QuestManager::getInstance().progressObjective("chop_tree", 1);
-
-            Quest craftingQuest;
-            craftingQuest.title = "Crafty time";
-
-            QuestObjective digObjective;
-            digObjective.tag = "craft_shovel";
-            digObjective.description = "Craft a shovel";
-            digObjective.requiredCount = 1;
-
-            craftingQuest.objectives.push_back(digObjective);
-
-            craftingQuest.onComplete = []() {
-                std::cout << "QUEST COMPLETED: You found the sunken treasure!" << std::endl;
-                AudioManager::getInstance().play2D("assets/audio/quest_complete.wav", false, true);
-            };
-
-            QuestManager::getInstance().acceptQuest(craftingQuest);
         })
         ->tweenProperty(&treeEuler.z, 88.0f, 0.40f, EaseType::EASE_OUT_BACK)
         ->parallel()

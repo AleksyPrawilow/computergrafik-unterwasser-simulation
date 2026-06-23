@@ -18,6 +18,7 @@ class UIElement : public Wesen {
 public:
     bool visible = true;
     UIExpansion expansion = UIExpansion::RIGHT;
+    static float dpiScale;
 
     static GLuint sharedFontTexture;
     static GLuint sharedVAO;
@@ -36,7 +37,7 @@ public:
     [[nodiscard]] bool hasCustomRender() const override { return true; }
     Transform getGlobalTransform() const override;
     void customRender(const glm::mat4& view, const glm::mat4& projection) const override;
-
+    float getUIScaleFactor() const override;
 protected:
     void updateGlobalTransforms() override;
 };

@@ -30,12 +30,14 @@ void Player::init() {
     parent->addChild(rayTargetHelper);
 
     raycast = new RayCast();
-    raycast->targetPosition = glm::vec3(0.0f, 0.0f, -2.5f);
+    raycast->targetPosition = glm::vec3(0.0f, 0.0f, -3.5f);
     addChild(raycast);
 
     raycastTimer = new Timer();
     addChild(raycastTimer);
     raycastTimer->startTimer(0.1f, [this]() { updateRaycast(); });
+
+    addToGroup("playerWalking");
 }
 
 void Player::onUpdate(GLFWwindow* window, const float deltaTime, Transform& cameraTransform) {
@@ -138,7 +140,7 @@ void Player::updateRaycast() {
     if (raycast != nullptr && raycast->isColliding()) {
         const glm::vec3 hitPoint = raycast->getCollisionPoint();
         rayTargetHelper->transform.position = hitPoint;
-        rayTargetHelper->visible = true;
+        rayTargetHelper->visible = false;
     } else {
         rayTargetHelper->visible = false;
     }
