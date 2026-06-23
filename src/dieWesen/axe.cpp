@@ -59,7 +59,8 @@ void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     if (treeToHit != nullptr) {
         GegenstandID aktiv = Inventar::getInstance().getAktivesItem();
-        int schaden = (aktiv == GegenstandID::AXT) ? 5 : 1;
+        const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
+        int schaden = (info.werkzeugSchaden > 0) ? info.werkzeugSchaden : 1;
         treeToHit->hit(-hitNormal, schaden);
         treeToHit = nullptr;
     }
@@ -78,21 +79,15 @@ void Axe::ausruestungAktualisieren() {
     }
 
     visible = true;
+    const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
 
-    if (aktiv == GegenstandID::HOLZAXT) {
+    if (info.werkzeugTyp == WerkzeugTyp::AXT) {
         mesh = axeModelMesh;
         localAABB = axeModelAABB;
-        material.albedo = defaultAlbedo;
-        transform.scale = glm::vec3(0.8f);
-        istAxt = true;
-    } else if (aktiv == GegenstandID::AXT) {
-        mesh = axeModelMesh;
-        localAABB = axeModelAABB;
-        material.albedo = upgradedAlbedo;
+        material.albedo = (aktiv == GegenstandID::HOLZAXT) ? defaultAlbedo : upgradedAlbedo;
         transform.scale = glm::vec3(0.8f);
         istAxt = true;
     } else {
-        const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
         mesh = cubeModelMesh;
         localAABB = cubeModelAABB;
         material.albedo = info.iconTextur;

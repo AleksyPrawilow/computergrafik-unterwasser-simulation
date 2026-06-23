@@ -20,11 +20,10 @@ private:
     UILabel* titelLabel = nullptr;
     UILabel* hinweisLabel = nullptr;
 
-    std::vector<HandwerkRezept> rezepte;
+    std::vector<Rezept> rezepte;
     std::vector<RezeptZeileUI*> zeilen;
 
     void umschalten(GLFWwindow* window);
-    void rezepteRegistrieren();
     void herstellen();
     void aktualisieren();
     void scrollAktualisieren();

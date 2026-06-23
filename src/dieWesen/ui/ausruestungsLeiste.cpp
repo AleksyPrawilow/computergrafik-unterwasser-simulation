@@ -31,7 +31,7 @@ void AusruestungsLeiste::onInit() {
 }
 
 void AusruestungsLeiste::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    glm::vec2 viewport = Kern::GetViewportSize();
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
     float barW = leisteContainer->transform.scale.x;
     transform.position = glm::vec3((viewport.x - barW) * 0.5f, viewport.y - 90.0f, 0.0f);
 

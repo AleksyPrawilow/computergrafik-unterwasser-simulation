@@ -9,6 +9,7 @@
 #include "platzierbaresObjekt.h"
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/gegenstandDaten.h"
 #include "werkzeuge/inventar.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
@@ -173,10 +174,12 @@ void Player::handleItemAction(GLFWwindow* window) {
     if (aktiv == GegenstandID::KEINE) return;
     if (parent == nullptr) return;
 
+    const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
+
     glm::vec3 platzPos = transform.position + transform.forward() * 3.0f;
     platzPos.y = island->getHeight(platzPos.x, platzPos.z) + 0.5f;
 
-    if (aktiv == GegenstandID::SCHAUFEL) {
+    if (info.werkzeugTyp == WerkzeugTyp::SCHAUFEL) {
         if (island != nullptr) {
             island->graben(platzPos, 2.0f, 1.5f);
         }
@@ -191,12 +194,7 @@ void Player::handleItemAction(GLFWwindow* window) {
         return;
     }
 
-    bool istPlatzierbar = (aktiv == GegenstandID::WERKBANK ||
-                           aktiv == GegenstandID::ZAUN ||
-                           aktiv == GegenstandID::TRUHE ||
-                           aktiv == GegenstandID::FACKEL);
-
-    if (istPlatzierbar) {
+    if (info.istPlatzierbar) {
         int hotbarIdx = Inventar::getInstance().getAktiverSlot();
         Inventar::getInstance().hotbarEntfernen(hotbarIdx);
 

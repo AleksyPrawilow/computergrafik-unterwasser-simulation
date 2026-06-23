@@ -32,7 +32,7 @@ void WerkbankHUD::onInit() {
     titelLabel->color = glm::vec4(1.0f, 0.8f, 0.4f, 1.0f);
     container->addChild(titelLabel);
 
-    rezepteRegistrieren();
+    rezepte = GegenstandDaten::getInstance().getRezepteFuer(RezeptQuelle::WERKBANK);
 
     for (auto& rezept : rezepte) {
         auto* zeile = new RezeptZeileUI();
@@ -67,7 +67,7 @@ void WerkbankHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& camer
 
     if (!offen) return;
 
-    glm::vec2 viewport = Kern::GetViewportSize();
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
     int sichtbar = glm::min(MAX_SICHTBAR, static_cast<int>(zeilen.size()));
     float zeilenH = sichtbar > 0 ? (zeilen[0]->transform.scale.y + container->spacing) * sichtbar : 0.0f;
     float contentH = titelLabel->transform.scale.y + container->spacing + zeilenH + container->spacing + hinweisLabel->transform.scale.y;
@@ -151,15 +151,7 @@ void WerkbankHUD::aktualisieren() {
     }
 }
 
-void WerkbankHUD::rezepteRegistrieren() {
-    rezepte.push_back({GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 2});
-    rezepte.push_back({GegenstandID::HOLZ, GegenstandID::STEIN, GegenstandID::AXT, 1});
-    rezepte.push_back({GegenstandID::PLANKE, GegenstandID::STEIN, GegenstandID::SCHAUFEL, 1});
-    rezepte.push_back({GegenstandID::PLANKE, GegenstandID::SEIL, GegenstandID::FLOSS, 1});
-    rezepte.push_back({GegenstandID::HOLZ, GegenstandID::SEIL, GegenstandID::FACKEL, 2});
-    rezepte.push_back({GegenstandID::PLANKE, GegenstandID::PLANKE, GegenstandID::ZAUN, 3});
-    rezepte.push_back({GegenstandID::PLANKE, GegenstandID::AXT, GegenstandID::TRUHE, 1});
-}
+
 
 void WerkbankHUD::herstellen() {
     if (zeilen.empty()) return;
