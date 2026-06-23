@@ -6,6 +6,7 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_FISHFLOCK_H
 
 #include "werkzeuge/wesen.h"
+#include "path3D.h"
 
 class FishFlock : public Wesen {
 public:
@@ -14,6 +15,9 @@ public:
 
     int numFishes = 30;
     float spawnRadius = 10.0f;
+
+    Path3D* targetPath = nullptr;
+    void generatePath();
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_FISHFLOCK_H

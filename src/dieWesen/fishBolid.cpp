@@ -1,6 +1,8 @@
 #include "fishBolid.h"
 #include "werkzeuge/groupManager.h"
 #include "gtc/matrix_transform.hpp"
+#include "flockManager.h"
+#include "path3D.h"
 
 void FishBoid::init() {
     addToGroup("Boids");
@@ -13,7 +15,6 @@ void FishBoid::init() {
     if (glm::length(velocity) > 0.001f) {
         velocity = glm::normalize(velocity) * maxSpeed;
     }
-    randTimeOffset = rand() % 100 / 100.0f;
 }
 
 void FishBoid::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
@@ -23,12 +24,18 @@ void FishBoid::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTr
     glm::vec3 sep = calculateSeparation(flock);
     glm::vec3 ali = calculateAlignment(flock);
     glm::vec3 coh = calculateCohesion(flock);
+
+    glm::vec3 surfAvo = calculateSurfaceAvoidance();
     glm::vec3 playerForce = calculatePlayerInteraction(cameraTransform);
+
+    glm::vec3 pathForce = calculatePathFollowing();
 
     acceleration += sep * separationWeight;
     acceleration += ali * alignmentWeight;
     acceleration += coh * cohesionWeight;
+    acceleration += surfAvo * surfaceAvoidanceWeight;
     acceleration += playerForce;
+    acceleration += pathForce * pathFollowingWeight;
 
     velocity += acceleration * deltaTime;
     velocity = limit(velocity, maxSpeed);
@@ -43,8 +50,69 @@ void FishBoid::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTr
     }
 }
 
-void FishBoid::prepareUniforms() const {
-    Kern::setUniform(material.shader, "time", static_cast<float>(glfwGetTime() + randTimeOffset));
+glm::vec3 FishBoid::calculatePathFollowing() {
+    glm::vec3 steer(0.0f);
+    glm::vec3 globalPos = getGlobalTransform().position;
+
+    FishFlock* flockManager = dynamic_cast<FishFlock*>(parent);
+
+    if (!flockManager || !flockManager->targetPath || flockManager->targetPath->frames.empty()) return steer;
+
+    const auto& path = flockManager->targetPath->frames;
+
+    float minDist = 999999.0f;
+    int closestIndex = 0;
+
+    for (int i = 0; i < path.size(); i++) {
+        float d = glm::distance(globalPos, path[i].position);
+        if (d < minDist) {
+            minDist = d;
+            closestIndex = i;
+        }
+    }
+
+    int lookAheadSteps = 5;
+    int targetIndex = (closestIndex + lookAheadSteps) % path.size();
+    const PathFrame& targetFrame = path[targetIndex];
+
+    glm::vec3 desiredVelocity = targetFrame.position - globalPos;
+    if (glm::length(desiredVelocity) > 0.001f) {
+        desiredVelocity = glm::normalize(desiredVelocity) * maxSpeed;
+        steer = limit(desiredVelocity - velocity, maxForce);
+    }
+
+    return steer;
+}
+
+glm::vec3 FishBoid::calculateSurfaceAvoidance() {
+    glm::vec3 steer(0.0f);
+    glm::vec3 globalPos = getGlobalTransform().position;
+
+    float distanceToSurface = waterLevel - globalPos.y;
+
+    if (distanceToSurface < 3.0f && distanceToSurface > -5.0f) {
+        glm::vec3 desired = glm::vec3(velocity.x, -maxSpeed, velocity.z);
+        if (glm::length(desired) > 0.001f) {
+            desired = glm::normalize(desired) * maxSpeed;
+            glm::vec3 steerDown = desired - velocity;
+            float strength = glm::clamp(1.0f - (distanceToSurface / 3.0f), 0.0f, 1.0f);
+            steer += limit(steerDown, maxForce * 2.5f) * strength;
+        }
+    }
+
+    float oceanFloorLevel = -40.0f;
+    float distanceToFloor = globalPos.y - oceanFloorLevel;
+    if (distanceToFloor < 3.0f) {
+         glm::vec3 desired = glm::vec3(velocity.x, maxSpeed, velocity.z);
+         if (glm::length(desired) > 0.001f) {
+             desired = glm::normalize(desired) * maxSpeed;
+             glm::vec3 steerUp = desired - velocity;
+             float strength = glm::clamp(1.0f - (distanceToFloor / 3.0f), 0.0f, 1.0f);
+             steer += limit(steerUp, maxForce * 2.5f) * strength;
+         }
+    }
+
+    return steer;
 }
 
 glm::vec3 FishBoid::calculatePlayerInteraction(Transform& cameraTransform) {
@@ -71,16 +139,18 @@ glm::vec3 FishBoid::calculatePlayerInteraction(Transform& cameraTransform) {
         return steer;
     }
 
-    if (distance > targetOrbitRadius + 5.0f) {
-        glm::vec3 desiredAttract = dirToPlayer * maxSpeed;
-        steer += limit(desiredAttract - velocity, maxForce) * playerAttractionWeight;
-    }
+    FishFlock* flockManager = dynamic_cast<FishFlock*>(parent);
+    if (!flockManager || !flockManager->targetPath) {
+        if (distance > targetOrbitRadius + 5.0f) {
+            glm::vec3 desiredAttract = dirToPlayer * maxSpeed;
+            steer += limit(desiredAttract - velocity, maxForce) * playerAttractionWeight;
+        }
 
-    glm::vec3 orbitDir = glm::normalize(glm::cross(dirToPlayer, glm::vec3(0, 1, 0)));
-
-    if (glm::length(orbitDir) > 0.001f) {
-        glm::vec3 desiredOrbit = orbitDir * maxSpeed;
-        steer += limit(desiredOrbit - velocity, maxForce) * playerOrbitWeight;
+        glm::vec3 orbitDir = glm::normalize(glm::cross(dirToPlayer, glm::vec3(0, 1, 0)));
+        if (glm::length(orbitDir) > 0.001f) {
+            glm::vec3 desiredOrbit = orbitDir * maxSpeed;
+            steer += limit(desiredOrbit - velocity, maxForce) * playerOrbitWeight;
+        }
     }
 
     return steer;
@@ -118,7 +188,7 @@ glm::vec3 FishBoid::calculateAlignment(const std::vector<Wesen*>& neighbors) {
     for (Wesen* other : neighbors) {
         if (other == this) continue;
         float d = glm::distance(transform.position, other->transform.position);
-        if (d > 0 && d < neighborRadius) {
+        if (d > 0.001f && d < neighborRadius) {
             FishBoid* boid = dynamic_cast<FishBoid*>(other);
             if (boid) {
                 sum += boid->velocity;
@@ -143,7 +213,7 @@ glm::vec3 FishBoid::calculateCohesion(const std::vector<Wesen*>& neighbors) {
     for (Wesen* other : neighbors) {
         if (other == this) continue;
         float d = glm::distance(transform.position, other->transform.position);
-        if (d > 0 && d < neighborRadius) {
+        if (d > 0.001f && d < neighborRadius) {
             sum += other->transform.position;
             count++;
         }

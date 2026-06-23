@@ -9,6 +9,8 @@
 #include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
 #include "dieWesen/flockManager.h"
+#include "dieWesen/path3D.h"
+#include "dieWesen/pathFollower.h"
 #include "dieWesen/oceanFloor.h"
 #include "dieWesen/player.h"
 #include "dieWesen/raft.h"
@@ -50,6 +52,7 @@ void UnterwasserszeneWesen::init() {
     uboot = new Uboot();
     auto * jellyfish = new Jellyfish();
     FishFlock* flock = new FishFlock();
+    Path3D* fishPath = new Path3D();
     addChild(uboot);
     addChild(new Earth());
     addChild(new OceanFloor());
@@ -58,8 +61,16 @@ void UnterwasserszeneWesen::init() {
     addChild(new Island());
     addChild(new Player());
     addChild(jellyfish);
-    flock->transform.position = glm::vec3(-12.f, -10.f, 0.f);
+
+    // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
+    fishPath->transform.position = glm::vec3(-12.f, -10.f, 0.f);
+    fishPath->generateFigureEight(40.0f, 10.0f, 40.0f);
+    addChild(fishPath);
+    flock->transform.position = fishPath->transform.position;
+    flock->targetPath = fishPath;
+    // flock->transform.position = glm::vec3(-12.f, -10.f, 0.f);
     addChild(flock);
+
     auto * bottle = new Bottle();
     bottle->transform.position = glm::vec3(-700, 20.0f, -210.0f);
     addChild(bottle);

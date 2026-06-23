@@ -196,6 +196,10 @@ set(IMGUI_SOURCES
         src/dieWesen/platzierbaresObjekt.h
         src/dieWesen/grabLoch.cpp
         src/dieWesen/grabLoch.h
+        src/dieWesen/path3d.cpp
+        src/dieWesen/path3d.h
+        src/dieWesen/pathFollower.cpp
+        src/dieWesen/pathFollower.h
 )
 
 add_executable(${PROJECT_NAME}
