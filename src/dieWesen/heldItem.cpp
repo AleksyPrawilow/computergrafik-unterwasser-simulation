@@ -386,9 +386,9 @@ void HeldItem::throwSub() {
     MusicManager::getInstance().playMusic("assets/audio/sub_intro.mp3", 2.0f);
     auto * uboot = new Uboot();
     parent->parent->addChild(uboot);
+    uboot->transform = getGlobalTransform();
     uboot->shouldFloat = false;
     uboot->setIsActive(false);
-    uboot->transform = getGlobalTransform();
 
     float throwDistance = 20.0f;
     glm::vec3 startPos = getGlobalTransform().position;
@@ -441,8 +441,9 @@ void HeldItem::showcaseSub(Uboot * uboot) {
         })
         ->tweenProperty(&kamera.transform.position, stage3pos, 3.0f, EaseType::EASE_OUT_SINE)
         ->tweenInterval(0.5f)
-        ->tweenCallback([this]() {
+        ->tweenCallback([this, uboot]() {
             dynamic_cast<Player * >(parent)->setActive(true);
+            uboot->addToGroup("player");
             MusicManager::getInstance().playMusic("assets/audio/dramatic.mp3");
             auto * thunderstorm = dynamic_cast<Thunderstorm * >(getNodesInGroup("thunderstorm")[0]);
             thunderstorm->beginThunderstorm();

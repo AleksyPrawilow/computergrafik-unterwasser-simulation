@@ -8,8 +8,6 @@
 #include "werkzeuge/ui/uiLabel.h"
 
 void HudPanel::onInit() {
-	uboot = dynamic_cast<Uboot* >(getNodesInGroup("player")[0]);
-
     const GLuint heartTex = Kern::LoadTexture("assets/textures/heart.png", true);
     const GLuint waveTex = Kern::LoadTexture("assets/textures/heart.png", true);
     const GLuint propTex = Kern::LoadTexture("assets/textures/heart.png", true);

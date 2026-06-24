@@ -4,6 +4,7 @@
 #pragma once
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_LEVIATHAN_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_LEVIATHAN_H
+#include "lightsaber.h"
 #include "unterwasserszeneAudioHelper.h"
 #include "werkzeuge/wesen.h"
 
@@ -24,7 +25,13 @@ public:
     float u_neckPivotZ = 0.0;   // Local Z-coordinate where the neck begins bending
     float u_neckLength = 2.5;   // Total length of the neck/head section
     float u_emissionPulse = 1.0f;
+    Wesen * lightsabers[4] = { nullptr };
+    glm::vec3 startClawPositions[4];
 
+    float clawXOffset = 8.5f;
+    float clawYOffset = 3.3f;
+    float clawZOffset = 20.7f;
+    float lightsabersYOffset = -5.0f;
 private:
     UnterwasserszeneAudioHelper * music = nullptr;
 
