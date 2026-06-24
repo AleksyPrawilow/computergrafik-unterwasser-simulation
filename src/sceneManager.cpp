@@ -38,6 +38,7 @@ Kamera kamera;
 Bloom bloom;
 WorldEnvironment * WorldEnvironment::activeEnv = nullptr;
 Wesen * scene = nullptr;
+Leviathan * leviathan = nullptr;
 int aktuelleSzene = 0;
 bool cursorDisabled = true;
 bool inventarOffen = false;
@@ -66,6 +67,7 @@ void Scene::szeneWechseln(int index) {
 		scene = new WeltraumszeneWesen();
 	}
 	scene->init();
+	leviathan = dynamic_cast<Leviathan*>(GroupManager::getInstance().getEntitiesInGroup("Leviathan")[0]);
 }
 
 void Scene::init(GLFWwindow* window)
@@ -210,6 +212,13 @@ void Scene::renderLoop(GLFWwindow* window) {
 			ImGui::Text("Debug Tools");
 			ImGui::Checkbox("Show Mesh AABBs", &renderer.showDebugAABBs);
 			ImGui::Separator();
+
+			if (leviathan) {
+				ImGui::SliderFloat("offset X", &leviathan->clawXOffset, 0.0f, 100.0f);
+				ImGui::SliderFloat("offset Y", &leviathan->clawYOffset, 0.0f, 100.0f);
+				ImGui::SliderFloat("offset Z", &leviathan->clawZOffset, 0.0f, 100.0f);
+				ImGui::SliderFloat("offset Y general", &leviathan->lightsabersYOffset, -100.0f, 100.0f);
+			}
 
             if (ImGui::CollapsingHeader("Sun / Star Light", ImGuiTreeNodeFlags_DefaultOpen)) {
                 ImGui::SliderFloat3("Sun Direction", &params.sunDirection[0], -1.0f, 1.0f);

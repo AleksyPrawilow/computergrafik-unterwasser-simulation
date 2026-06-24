@@ -35,6 +35,26 @@ void Leviathan::init() {
 
     basePosition = transform.position;
     patrolCenter = transform.position;
+
+    startClawPositions[0] = glm::vec3( clawXOffset,  clawYOffset, clawZOffset); // Upper Right
+    startClawPositions[1] = glm::vec3( clawXOffset, -clawYOffset, clawZOffset); // Lower Right
+    startClawPositions[2] = glm::vec3(-clawXOffset,  clawYOffset, clawZOffset); // Upper Left
+    startClawPositions[3] = glm::vec3(-clawXOffset, -clawYOffset, clawZOffset); // Lower Left
+
+    for (int i = 0; i < 4; i++) {
+        auto* saber = new Wesen();
+        saber->name = "lightsaber";
+        saber->loadModel("assets/models/lightsaber.obj");
+
+        saber->material.shader = ShaderManager::getInstance().getShader("default");
+        saber->material.albedo = Kern::LoadTexture("assets/textures/default_opacity.png");
+        saber->material.emission = Kern::LoadTexture("assets/textures/default_opacity.png");
+        saber->material.isTransparent = true;
+        saber->material.bloomStrength = 4.0f;
+
+        addChild(saber);
+        lightsabers[i] = saber;
+    }
 }
 
 Wesen* Leviathan::findClosestTarget() const {
@@ -65,6 +85,11 @@ Wesen* Leviathan::findClosestTarget() const {
 }
 
 void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    startClawPositions[0] = glm::vec3( clawXOffset,  clawYOffset, clawZOffset); // Upper Right
+    startClawPositions[1] = glm::vec3( clawXOffset, -clawYOffset, clawZOffset); // Lower Right
+    startClawPositions[2] = glm::vec3(-clawXOffset,  clawYOffset, clawZOffset); // Upper Left
+    startClawPositions[3] = glm::vec3(-clawXOffset, -clawYOffset, clawZOffset); // Lower Left
+
     elapsedTime += deltaTime;
 
     if (attackCooldown > 0.0f) {
@@ -102,6 +127,26 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
         }
         music->stopChasing();
         patrol(deltaTime);
+    }
+
+    glm::quat neckRot = glm::angleAxis(u_neckYaw, glm::vec3(0.0f, 1.0f, 0.0f)) *
+                    glm::angleAxis(u_neckPitch, glm::vec3(1.0f, 0.0f, 0.0f));
+
+    for (int i = 0; i < 4; i++) {
+        if (lightsabers[i] == nullptr) continue;
+
+        // Translate the lightsaber relative to the neck's pivot point (u_neckPivotZ = 1.5m)
+        glm::vec3 localOffset = startClawPositions[i] - glm::vec3(0.0f, 0.0f, u_neckPivotZ) + glm::vec3(0.0f, lightsabersYOffset, 0.0f);
+
+        // Rotate the offset using the neck's quaternion
+        glm::vec3 rotatedOffset = neckRot * localOffset;
+
+        // Translate back
+        glm::vec3 finalLocalPos = glm::vec3(0.0f, 0.0f, u_neckPivotZ) + rotatedOffset;
+
+        // Commit the positions and orientations to the child lightsaber transforms
+        lightsabers[i]->transform.position = finalLocalPos;
+        lightsabers[i]->transform.rotation = neckRot;
     }
 }
 

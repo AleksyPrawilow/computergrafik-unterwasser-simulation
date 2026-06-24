@@ -95,6 +95,7 @@ void UnterwasserszeneWesen::init() {
     addChild(questHUD);
 
     Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
+    Inventar::getInstance().hinzufuegen(GegenstandID::MINIUBOOT, 1);
 
     addChild(new InventarHUD());
     addChild(new HandwerkHUD());

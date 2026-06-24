@@ -24,7 +24,13 @@ public:
     float u_neckPivotZ = 0.0;   // Local Z-coordinate where the neck begins bending
     float u_neckLength = 2.5;   // Total length of the neck/head section
     float u_emissionPulse = 1.0f;
+    Wesen * lightsabers[4] = { nullptr };
+    glm::vec3 startClawPositions[4];
 
+    float clawXOffset = 0.65f;
+    float clawYOffset = 0.45f;
+    float clawZOffset = 8.5f;
+    float lightsabersYOffset = 0.0f;
 private:
     UnterwasserszeneAudioHelper * music = nullptr;
 
