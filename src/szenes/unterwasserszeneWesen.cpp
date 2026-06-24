@@ -33,7 +33,7 @@
 #include "dieWesen/ui/werkbankHUD.h"
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/aufhebbar.h"
-#include "dieWesen/vergrabeneSchatztruhe.h"
+#include "dieWesen/chest.h"
 #include "dieWesen/unterwasserszeneQuests.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/gegenstandDaten.h"
@@ -120,20 +120,9 @@ void UnterwasserszeneWesen::init() {
     flaschePickup->transform.position = glm::vec3(-700.0f, 20.0f, -210.0f);
     addChild(flaschePickup);
 
-    auto* schatz = new VergrabeneSchatztruhe();
-    schatz->transform.position = glm::vec3(-690.0f, 12.0f, -225.0f);
-    addChild(schatz);
-
-    auto* schatzMarkierung = new Wesen();
-    schatzMarkierung->loadModel("assets/models/cube.obj");
-    schatzMarkierung->material.albedo = Kern::LoadTexture("assets/textures/laser_rot.png");
-    schatzMarkierung->material.emission = Kern::LoadTexture("assets/textures/laser_rot.png");
-    schatzMarkierung->material.shader = ShaderManager::getInstance().getShader("default");
-    schatzMarkierung->transform.scale = glm::vec3(2.0f);
-    schatzMarkierung->transform.position = glm::vec3(-690.0f, 60.0f, -225.0f);
-    schatzMarkierung->name = "schatzMarkierung";
-    addChild(schatzMarkierung);
-    schatz->setMarkierung(schatzMarkierung);
+    auto * chest = new Chest();
+    chest->transform.position = glm::vec3(-690.0f, 11.5f, -225.0f);
+    addChild(chest);
 
     auto sceneData = getGodotSceneData();
     for (const auto& [className, transforms] : sceneData) {

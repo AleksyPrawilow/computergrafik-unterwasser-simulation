@@ -44,6 +44,13 @@ void Axe::init() {
     mapShader = ShaderManager::getInstance().loadShader(
         "map_fold", "assets/shaders/map_fold.vert", "assets/shaders/default.frag");
 
+    CachedModel shovelModel = ModelManager::getInstance().getModel("assets/models/shovel.obj");
+    shovelModelMesh = shovelModel.mesh;
+    shovelModelAABB = shovelModel.localAABB;
+    shovelAlbedo = Kern::LoadTexture("assets/textures/shovel_albedo.png");
+    shovelNormal = Kern::LoadTexture("assets/textures/shovel_normal.png");
+    shovelMetallic = Kern::LoadTexture("assets/textures/shovel_metallic.png");
+
     recoveryTimer = new Timer();
     addChild(recoveryTimer);
 
@@ -53,6 +60,11 @@ void Axe::init() {
     swingSound = new AudioPlayer("assets/audio/axe_swing.mp3", false, 10.0f);
     addChild(swingSound);
 
+    shovelHitSound = new AudioPlayer("assets/audio/shovel.mp3", false, 10.0f);
+    addChild(shovelHitSound);
+
+    island = dynamic_cast<Island *>(getNodesInGroup("Island")[0]);
+
     visible = false;
 }
 
@@ -61,32 +73,46 @@ void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
 
     if (!visible) return;
 
-    if (letzteAktivesItem == GegenstandID::KARTE) {
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && !karteOffen && !karteAnimiert) {
-            karteAnimiert = true;
-            karteOffen = true;
-            createTween()
-                ->tweenProperty(&transform.position, karteLesePos, 0.4f, EaseType::EASE_OUT_CUBIC)
-                ->parallel()
-                ->tweenProperty(&weaponEuler, karteLeseEuler, 0.4f, EaseType::EASE_OUT_CUBIC)
-                ->tweenCallback([this]() { karteAnimiert = false; });
-        } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_PRESS && karteOffen && !karteAnimiert) {
-            karteAnimiert = true;
-            karteOffen = false;
-            createTween()
-                ->tweenProperty(&transform.position, karteIdlePos, 0.3f, EaseType::EASE_OUT_CUBIC)
-                ->parallel()
-                ->tweenProperty(&weaponEuler, karteIdleEuler, 0.3f, EaseType::EASE_OUT_CUBIC)
-                ->tweenCallback([this]() { karteAnimiert = false; });
-        }
-        transform.rotation = glm::quat(glm::radians(weaponEuler));
-        return;
+    switch (letzteAktivesItem) {
+        case GegenstandID::KARTE:
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS && !karteOffen && !karteAnimiert) {
+                karteAnimiert = true;
+                karteOffen = true;
+                createTween()
+                    ->tweenProperty(&transform.position, karteLesePos, 0.4f, EaseType::EASE_OUT_CUBIC)
+                    ->parallel()
+                    ->tweenProperty(&weaponEuler, karteLeseEuler, 0.4f, EaseType::EASE_OUT_CUBIC)
+                    ->tweenCallback([this]() { karteAnimiert = false; });
+            } else if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) != GLFW_PRESS && karteOffen && !karteAnimiert) {
+                karteAnimiert = true;
+                karteOffen = false;
+                createTween()
+                    ->tweenProperty(&transform.position, karteIdlePos, 0.3f, EaseType::EASE_OUT_CUBIC)
+                    ->parallel()
+                    ->tweenProperty(&weaponEuler, karteIdleEuler, 0.3f, EaseType::EASE_OUT_CUBIC)
+                    ->tweenCallback([this]() { karteAnimiert = false; });
+            }
+            break;
+        case GegenstandID::AXT:
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
+                isPlayingAnimation = true;
+                swing();
+            }
+            break;
+        case GegenstandID::HOLZAXT:
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
+                isPlayingAnimation = true;
+                swing();
+            }
+            break;
+        case GegenstandID::SCHAUFEL:
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
+                isPlayingAnimation = true;
+                shovelDig();
+            }
+            break;
     }
 
-    if (istAxt && glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
-        isPlayingAnimation = true;
-        swing();
-    }
     transform.rotation = glm::quat(glm::radians(weaponEuler));
 
     if (treeToHit != nullptr) {
@@ -141,6 +167,18 @@ void Axe::ausruestungAktualisieren() {
         transform.scale = glm::vec3(0.4f);
         transform.position = karteIdlePos;
         weaponEuler = glm::vec3(0.0f);
+        istAxt = false;
+    } else if (aktiv == GegenstandID::SCHAUFEL) {
+        mesh = shovelModelMesh;
+        localAABB = shovelModelAABB;
+        material.albedo = shovelAlbedo;
+        material.normal = shovelNormal;
+        material.roughness = shovelMetallic;
+        material.metallic = shovelMetallic;
+        material.shader = ShaderManager::getInstance().getShader("default");
+        weaponEuler = glm::vec3(0.0f);
+        transform.scale = glm::vec3(0.8f);
+        transform.position = glm::vec3(0.75f, -0.3f, -1.25f);
         istAxt = false;
     } else if (!info.modellPfad.empty()) {
         CachedModel custom = ModelManager::getInstance().getModel(info.modellPfad);
@@ -240,4 +278,96 @@ void Axe::hitTree() {
             kamera.addShake(0.12f, 0.2f);
         }
     }
+}
+
+void Axe::hitGround() const {
+    shovelHitSound->play();
+    island->graben(parent->getGlobalTransform().position, 2.0f, 1.5f);
+}
+
+void Axe::shovelDig() {
+    const bool wasAwaitingRecovery = !recoveryTimer->active;
+    recoveryTimer->stopTimer();
+    Tween* tween = createTween();
+
+    if (wasAwaitingRecovery) {
+        tween
+            ->tweenProperty(&transform.position.x, 0.75f, 0.28f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&transform.position.z, -0.80f, 0.28f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&transform.position.y, -0.15f, 0.28f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&weaponEuler.x, -10.0f, 0.28f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&weaponEuler.y, 15.0f, 0.28f, EaseType::EASE_OUT_SINE)
+            ->tweenInterval(0.04f);
+    }
+
+    tween
+        ->tweenCallback([this]() {
+            swingSound->play();
+        })
+        ->tweenProperty(&transform.position.x, 0.20f, 0.16f, EaseType::EASE_IN)
+        ->parallel()
+        ->tweenProperty(&transform.position.z, -1.50f, 0.16f, EaseType::EASE_IN)
+        ->parallel()
+        ->tweenProperty(&transform.position.y, -0.85f, 0.16f, EaseType::EASE_IN)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.x, -45.0f, 0.16f, EaseType::EASE_IN)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.y, -10.0f, 0.16f, EaseType::EASE_IN)
+
+        ->tweenCallback([this]() {
+            hitGround();
+        })
+        ->tweenProperty(&transform.position.x, -0.15f, 0.22f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&transform.position.z, -1.65f, 0.22f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&transform.position.y, -0.10f, 0.22f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.x, 40.0f, 0.25f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.y, -25.0f, 0.25f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.z, -45.0f, 0.22f, EaseType::EASE_OUT_CUBIC)
+        ->tweenInterval(0.08f)
+
+        ->tweenProperty(&transform.position.x, 0.45f, 0.35f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&transform.position.z, -1.15f, 0.35f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&transform.position.y, -0.40f, 0.35f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.x, 0.0f, 0.35f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.y, 0.0f, 0.35f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.z, 0.0f, 0.35f, EaseType::EASE_OUT_SINE)
+
+        ->tweenCallback([this]() {
+            isPlayingAnimation = false;
+            recoveryTimer->startTimer(0.25f, [this]() { recoverAnimation(); });
+        });
+}
+void Axe::shovelRecover() {
+    recoveringAnimation = true;
+
+    createTween()
+        ->tweenProperty(&transform.position.x, 0.75f, 0.5f, EaseType::EASE_OUT_BACK)
+        ->parallel()
+        ->tweenProperty(&transform.position.y, -0.4f, 0.5f, EaseType::EASE_OUT_BACK)
+        ->parallel()
+        ->tweenProperty(&transform.position.z, -1.25f, 0.5f, EaseType::EASE_OUT_BACK)
+
+        ->parallel()
+        ->tweenProperty(&weaponEuler.x, 0.0f, 0.35f, EaseType::EASE_OUT_BACK)
+        ->parallel()
+        ->tweenProperty(&weaponEuler.z, 0.0f, 0.35f, EaseType::EASE_OUT_BACK)
+
+        ->tweenCallback([this]() {
+            isPlayingAnimation = false;
+            recoveringAnimation = false;
+        });
 }

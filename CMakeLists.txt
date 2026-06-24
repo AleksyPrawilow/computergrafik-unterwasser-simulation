@@ -139,6 +139,8 @@ set(PROJECT_SOURCES
         src/dieWesen/unterwasserszeneQuests.h
         src/dieWesen/map.cpp
         src/dieWesen/map.h
+        src/dieWesen/chest.cpp
+        src/dieWesen/chest.h
 )
 
 set(SOIL_SOURCES
@@ -200,8 +202,6 @@ set(IMGUI_SOURCES
         src/dieWesen/path3d.h
         src/dieWesen/pathFollower.cpp
         src/dieWesen/pathFollower.h
-        src/dieWesen/vergrabeneSchatztruhe.cpp
-        src/dieWesen/vergrabeneSchatztruhe.h
 )
 
 add_executable(${PROJECT_NAME}

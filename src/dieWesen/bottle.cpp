@@ -38,7 +38,7 @@ void Bottle::init() {
     beginSwim();
 
     interactLabel = new UILabel();
-    interactLabel->text = "Press 'E' to pick up";
+    interactLabel->text = "Press [E] to pick up";
     interactLabel->fontSize = 48.0f;
     interactLabel->expansion = UIExpansion::CENTER;
     parent->addChild(interactLabel);

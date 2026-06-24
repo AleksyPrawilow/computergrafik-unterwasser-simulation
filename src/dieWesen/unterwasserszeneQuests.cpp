@@ -187,13 +187,37 @@ void UnterwasserszeneQuests::setupDigOut() {
         auto * banner = new QuestCompletedBanner("The treasure is yours!");
         parent->addChild(banner);
         audio->play();
+        setQuest(THROW_SUB);
     };
 
     QuestManager::getInstance().acceptQuest(digOutQuest);
 }
 
 void UnterwasserszeneQuests::setupThrowSub() {
+    Quest submarineQuest;
+    submarineQuest.title = "Submarine";
 
+    QuestObjective collectObjective;
+    collectObjective.tag = "collect_Mini U-Boot";
+    collectObjective.description = "Pick up the submarine";
+    collectObjective.requiredCount = 1;
+
+    QuestObjective throwObjective;
+    throwObjective.tag = "submarine_throw";
+    throwObjective.description = "It is quite small... Maybe it needs water?";
+    throwObjective.requiredCount = 1;
+
+    submarineQuest.objectives.push_back(collectObjective);
+    submarineQuest.objectives.push_back(throwObjective);
+
+    submarineQuest.onComplete = [this]() {
+        auto * banner = new QuestCompletedBanner("Let the adventure begin!");
+        parent->addChild(banner);
+        audio->play();
+        setQuest(EXPLORE_THE_SEA);
+    };
+
+    QuestManager::getInstance().acceptQuest(submarineQuest);
 }
 
 void UnterwasserszeneQuests::setupExploreTheSea() {
