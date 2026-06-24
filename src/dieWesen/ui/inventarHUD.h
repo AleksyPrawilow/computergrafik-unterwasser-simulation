@@ -16,6 +16,7 @@ public:
 
 private:
     bool offen = false;
+    bool playerWarAktiv = true;
     int ausgewaehlterIndex = 0;
 
     UIElement* hintergrund = nullptr;

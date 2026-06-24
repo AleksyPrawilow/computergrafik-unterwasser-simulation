@@ -60,68 +60,39 @@ float sdDome(vec3 p, float radius) {
 float mapScene(vec3 p) {
     vec3 localP = p * 1.5;
 
-    localP.y += sin(u_time * 2.0 + localP.x * 3.0) * 0.05;
+    float outerDome = sdDome(localP - vec3(0.0, 0.2, 0.0), 0.7);
+    float innerDome = sdDome(localP - vec3(0.0, 0.17, 0.0), 0.64);
+    float dome = max(outerDome, -innerDome);
 
-    float dome = sdDome(localP - vec3(0.0, 0.3, 0.0), 0.8);
+    vec3 coreP = localP;
+    coreP.x += sin(coreP.y * 5.0 - u_time * 3.5) * 0.08;
+    coreP.z += cos(coreP.y * 4.0 - u_time * 3.0) * 0.08;
+    float centerCore = sdCappedCylinder(coreP - vec3(0.0, -0.25, 0.0), 0.45, 0.08);
+
+    float body = smin(dome, centerCore, 0.12);
 
     vec3 tentacleP = localP;
-    tentacleP.x += sin(tentacleP.y * 5.0 + u_time * 3.0) * 0.1;
-    tentacleP.z += cos(tentacleP.y * 4.0 + u_time * 2.5) * 0.1;
 
-    float centerTentacle = sdCappedCylinder(tentacleP - vec3(0.0, -0.4, 0.0), 0.7, 0.15);
+    float angle = 2.0 * PI / 8.0;
+    float a = atan(tentacleP.z, tentacleP.x) + angle / 2.0;
+    float r = length(tentacleP.xz);
+    float c = floor(a / angle);
+    a = mod(a, angle) - angle / 2.0;
 
-    return smin(dome, centerTentacle, 0.3) / 1.5;
+    tentacleP.xz = vec2(cos(a), sin(a)) * r;
+
+    tentacleP.x -= 0.46;
+
+    float waveFactor = clamp(0.2 - tentacleP.y, 0.0, 1.5);
+    tentacleP.x += sin(tentacleP.y * 7.0 - u_time * 4.5) * 0.06 * waveFactor;
+    tentacleP.z += cos(tentacleP.y * 6.0 - u_time * 4.0) * 0.06 * waveFactor;
+
+    float dynamicRadius = 0.025 * clamp((tentacleP.y + 0.6) / 1.0, 0.15, 1.0);
+
+    float outerTentacles = sdCappedCylinder(tentacleP - vec3(0.0, -0.4, 0.0), 0.6, dynamicRadius);
+
+    return smin(body, outerTentacles, 0.12) / 1.5;
 }
-
-//float mapScene(vec3 p) {
-//    // Scale the local coordinate space
-//    vec3 localP = p * 1.5;
-//
-//    // A. HOLLOW TRANSLUCENT BELL (The Head)
-//    // We subtract a smaller dome from an outer dome to make it hollow!
-//    float outerDome = sdDome(localP - vec3(0.0, 0.2, 0.0), 0.7);
-//    float innerDome = sdDome(localP - vec3(0.0, 0.17, 0.0), 0.64);
-//    float dome = max(outerDome, -innerDome); // Hollow subtraction
-//
-//    // B. ANATOMICAL ORAL ARMS (Thicker, highly wavy center tentacles)
-//    vec3 coreP = localP;
-//    coreP.x += sin(coreP.y * 5.0 - time * 3.5) * 0.08;
-//    coreP.z += cos(coreP.y * 4.0 - time * 3.0) * 0.08;
-//    float centerCore = sdCappedCylinder(coreP - vec3(0.0, -0.25, 0.0), 0.45, 0.08);
-//
-//    // Combine head and oral arms smoothly
-//    float body = smin(dome, centerCore, 0.12);
-//
-//    // C. 8 TAPERED, OUTER TENTACLES (Polar Repetition!)
-//    vec3 tentacleP = localP;
-//
-//    // Rotate the 3D space around the Y-axis into 8 repeating circular slices
-//    float angle = 2.0 * PI / 8.0; // 8 tentacles
-//    float a = atan(tentacleP.z, tentacleP.x) + angle / 2.0;
-//    float r = length(tentacleP.xz);
-//    float c = floor(a / angle);
-//    a = mod(a, angle) - angle / 2.0;
-//
-//    // Re-assemble the rotated XZ coordinates
-//    tentacleP.xz = vec2(cos(a), sin(a)) * r;
-//
-//    // Offset the tentacles outwards so they hang from the rim of the dome (radius ~0.45)
-//    tentacleP.x -= 0.46;
-//
-//    // Tip-Waving: Tentacles wave mostly at the bottom (tips) and remain stable at the top
-//    float waveFactor = clamp(0.2 - tentacleP.y, 0.0, 1.5); // Increases as Y goes down (negative)
-//    tentacleP.x += sin(tentacleP.y * 7.0 - time * 4.5) * 0.06 * waveFactor;
-//    tentacleP.z += cos(tentacleP.y * 6.0 - time * 4.0) * 0.06 * waveFactor;
-//
-//    // Tapering: Make the tentacles get progressively thinner toward the bottom
-//    float dynamicRadius = 0.025 * clamp((tentacleP.y + 0.6) / 1.0, 0.15, 1.0);
-//
-//    float outerTentacles = sdCappedCylinder(tentacleP - vec3(0.0, -0.4, 0.0), 0.6, dynamicRadius);
-//
-//    // D. SMOOTHLY BLEND EVERYTHING TOGETHER
-//    // 1.5 divisor compensates for the coordinate scaling done at the top
-//    return smin(body, outerTentacles, 0.12) / 1.5;
-//}
 
 vec3 getNormal(vec3 p) {
     vec2 e = vec2(0.001, 0.0);

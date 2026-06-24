@@ -24,13 +24,18 @@ enum class GegenstandID {
     ZAUN,
     TRUHE,
     KARTE,
-    MINIUBOOT
+    MINIUBOOT,
+    ANGEL,
+    FISCH,
+    SEETANG,
+    SUSHI
 };
 
 enum class WerkzeugTyp {
     KEINS,
     AXT,
-    SCHAUFEL
+    SCHAUFEL,
+    ANGEL
 };
 
 enum class RezeptQuelle {

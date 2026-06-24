@@ -120,6 +120,13 @@ void Inventar::hotbarEntfernen(int hotbarIndex) {
     benachrichtigen();
 }
 
+void Inventar::hotbarVerbrauchen(int hotbarIndex) {
+    if (hotbarIndex < 0 || hotbarIndex >= HOTBAR_GROESSE) return;
+    hotbar[hotbarIndex].id = GegenstandID::KEINE;
+    hotbar[hotbarIndex].anzahl = 0;
+    benachrichtigen();
+}
+
 void Inventar::setAktiverSlot(int index) {
     if (index >= 0 && index < HOTBAR_GROESSE) {
         aktiverSlot = index;

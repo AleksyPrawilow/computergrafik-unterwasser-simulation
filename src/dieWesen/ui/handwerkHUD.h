@@ -16,9 +16,10 @@ public:
 
 private:
     bool offen = false;
+    bool playerWarAktiv = true;
     int ausgewaehlteZeile = 0;
     int scrollOffset = 0;
-    static constexpr int MAX_SICHTBAR = 5;
+    static constexpr int MAX_SICHTBAR = 8;
 
     void scrollAktualisieren();
 

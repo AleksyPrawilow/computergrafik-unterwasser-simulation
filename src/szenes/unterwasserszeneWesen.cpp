@@ -52,7 +52,6 @@ void UnterwasserszeneWesen::init() {
     }));
 
     addChild(new UnterwasserszeneAudioHelper());
-    auto * jellyfish = new Jellyfish();
     FishFlock* flock = new FishFlock();
     Path3D* fishPath = new Path3D();
     addChild(new Earth());
@@ -64,10 +63,33 @@ void UnterwasserszeneWesen::init() {
     leviathan->transform.position = glm::vec3(0.0f, -120.0f, 0.0f);
     leviathan->transform.scale = glm::vec3(4.0f);
     addChild(leviathan);
-    addChild(jellyfish);
 
+    // JELLYFISHES
+    // auto * jellyfish = new Jellyfish();
+    // addChild(jellyfish);
+    Path3D* jellyPath = new Path3D();
+    jellyPath->transform.position = glm::vec3(-650.0f, -10.0f, -175.0f);
+    jellyPath->generateCircle(25.0f, 100);
+    addChild(jellyPath);
+
+    for (int i = 0; i < 4; i++) {
+        PathFollower* carrier = new PathFollower();
+        carrier->targetPath = jellyPath;
+        carrier->moveSpeed = 1.5f;
+
+        carrier->currentNodeIndex = i * 25;
+        carrier->transform.position = jellyPath->frames[carrier->currentNodeIndex].position;
+
+        Jellyfish* jelly = new Jellyfish();
+
+        jelly->transform.scale = glm::vec3(1.5f + (rand() % 100 / 100.0f));
+        carrier->addChild(jelly);
+        addChild(carrier);
+    }
+
+    // FISHES
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
-    fishPath->transform.position = glm::vec3(-12.f, -10.f, 0.f);
+    fishPath->transform.position = glm::vec3(-650.0f, -10.0f, -175.0f);
     fishPath->generateFigureEight(40.0f, 10.0f, 40.0f);
     addChild(fishPath);
     flock->transform.position = fishPath->transform.position;
@@ -107,16 +129,12 @@ void UnterwasserszeneWesen::init() {
     addChild(new AusruestungsLeiste());
 
     auto* seilPickup = new Aufhebbar(GegenstandID::SEIL, 2);
-    seilPickup->transform.position = glm::vec3(-695.0f, 14.0f, -215.0f);
+    seilPickup->transform.position = glm::vec3(-695.0f, 20.0f, -215.0f);
     addChild(seilPickup);
 
     auto* steinPickup = new Aufhebbar(GegenstandID::STEIN, 3);
-    steinPickup->transform.position = glm::vec3(-705.0f, 14.0f, -225.0f);
+    steinPickup->transform.position = glm::vec3(-705.0f, 16.0f, -225.0f);
     addChild(steinPickup);
-
-    auto* flaschePickup = new Aufhebbar(GegenstandID::FLASCHE, 1);
-    flaschePickup->transform.position = glm::vec3(-700.0f, 20.0f, -210.0f);
-    addChild(flaschePickup);
 
     auto * chest = new Chest();
     chest->transform.position = glm::vec3(-690.0f, 11.5f, -225.0f);

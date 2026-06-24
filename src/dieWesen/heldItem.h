@@ -5,6 +5,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_HELD_ITEM_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_HELD_ITEM_H
 #include "island.h"
+#include "raft.h"
 #include "tree.h"
 #include "uboot.h"
 #include "werkzeuge/wesen.h"
@@ -70,6 +71,7 @@ private:
     void shovelRecover();
     void throwSub();
     void showcaseSub(Uboot * uboot);
+    void throwRaft();
     void ausruestungAktualisieren();
 };
 

@@ -39,6 +39,7 @@ public:
     const InventarPlatz& getHotbar(int index) const;
     void ausruesten(int hotbarIndex, GegenstandID id);
     void hotbarEntfernen(int hotbarIndex);
+    void hotbarVerbrauchen(int hotbarIndex);
     int getAktiverSlot() const { return aktiverSlot; }
     void setAktiverSlot(int index);
     GegenstandID getAktivesItem() const;

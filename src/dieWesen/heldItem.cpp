@@ -121,6 +121,12 @@ void HeldItem::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTr
                 throwSub();
             }
             break;
+    case GegenstandID::FLOSS:
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
+                isPlayingAnimation = false;
+                throwRaft();
+            }
+            break;
     }
 
     transform.rotation = glm::quat(glm::radians(weaponEuler));
@@ -189,6 +195,18 @@ void HeldItem::ausruestungAktualisieren() {
         weaponEuler = glm::vec3(0.0f);
         transform.scale = glm::vec3(0.8f);
         transform.position = glm::vec3(0.75f, -0.3f, -1.25f);
+        istAxt = false;
+    } else if (info.werkzeugTyp == WerkzeugTyp::ANGEL) {
+        mesh = cubeModelMesh;
+        localAABB = cubeModelAABB;
+        material.albedo = Kern::LoadTexture("assets/textures/Raft_baseColor.png");
+        material.normal = 0;
+        material.roughness = 0;
+        material.metallic = 0;
+        material.shader = ShaderManager::getInstance().getShader("default");
+        transform.scale = glm::vec3(0.04f, 0.04f, 1.2f);
+        transform.position = glm::vec3(0.4f, -0.2f, -0.8f);
+        weaponEuler = glm::vec3(15.0f, 0.0f, 0.0f);
         istAxt = false;
     } else if (!info.modellPfad.empty()) {
         CachedModel custom = ModelManager::getInstance().getModel(info.modellPfad);
@@ -382,6 +400,36 @@ void HeldItem::shovelRecover() {
         });
 }
 
+void HeldItem::throwRaft() {
+    auto * raft = new Raft();
+    parent->parent->addChild(raft);
+    raft->transform = getGlobalTransform();
+    raft->transform.scale = glm::vec3(0.1f);
+    raft->shouldFloat = false;
+    raft->player = dynamic_cast<Player *>(parent);
+
+    float throwDistance = 15.0f;
+    glm::vec3 startPos = getGlobalTransform().position;
+    glm::vec3 worldForward = getGlobalTransform().forward();
+    glm::vec3 targetPos = startPos + worldForward * throwDistance;
+    targetPos.y = 0.0f;
+
+    int targetSlotIndex = Inventar::getInstance().getAktiverSlot();
+    Inventar::getInstance().hotbarVerbrauchen(targetSlotIndex);
+    createTween()
+        ->tweenProperty(&raft->transform.position.x, targetPos.x, 1.0f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&raft->transform.position.z, targetPos.z, 1.0f, EaseType::EASE_OUT_CUBIC);
+    createTween()
+        ->tweenProperty(&raft->transform.position.y, startPos.y + 2.0f, 0.4f, EaseType::EASE_OUT)
+        ->tweenProperty(&raft->transform.position.y, targetPos.y, 0.4f, EaseType::EASE_IN)
+        ->tweenProperty(&raft->transform.scale, glm::vec3(0.5f), 0.3f, EaseType::EASE_OUT_BOUNCE)
+        ->tweenCallback([raft]() {
+            raft->shouldFloat = true;
+            raft->addToGroup("player");
+        });
+}
+
 void HeldItem::throwSub() {
     MusicManager::getInstance().playMusic("assets/audio/sub_intro.mp3", 2.0f);
     auto * uboot = new Uboot();
@@ -389,6 +437,7 @@ void HeldItem::throwSub() {
     uboot->transform = getGlobalTransform();
     uboot->shouldFloat = false;
     uboot->setIsActive(false);
+    uboot->player = dynamic_cast<Player *>(parent);
 
     float throwDistance = 20.0f;
     glm::vec3 startPos = getGlobalTransform().position;
@@ -397,7 +446,7 @@ void HeldItem::throwSub() {
     targetPos.y = 0.0f;
 
     int targetSlotIndex = Inventar::getInstance().getAktiverSlot();
-    Inventar::getInstance().hotbarEntfernen(targetSlotIndex);
+    Inventar::getInstance().hotbarVerbrauchen(targetSlotIndex);
     createTween()
         ->tweenProperty(&uboot->transform.position.x, targetPos.x, 1.2f, EaseType::EASE_OUT_CUBIC)
         ->parallel()

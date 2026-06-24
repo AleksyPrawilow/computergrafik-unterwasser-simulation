@@ -5,6 +5,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_SUBMARINE_H
 #include "particleEmitter.h"
+#include "player.h"
 #include "../werkzeuge/physics/raycast.h"
 #include "timer.h"
 #include "ubootHeadlight.h"
@@ -13,6 +14,7 @@
 #include "../werkzeuge/transform.h"
 #include "../werkzeuge/visual/lightManager.h"
 #include "ui/fadenkreuz.h"
+#include "werkzeuge/ui/uiLabel.h"
 
 class HudPanel;
 
@@ -43,10 +45,12 @@ public:
     static float getWaterHeight(float x, float z, float t);
 
     bool shouldFloat = true;
+    Player * player = nullptr;
 private:
     float leben = 100.0f;
     float spawnSchutz = 0.0f;
 
+    UILabel * interactLabel = nullptr;
     Fadenkreuz * crosshair = nullptr;
     HudPanel * hudPanel = nullptr;
     ViewMode viewMode = ViewMode::THIRD_PERSON;

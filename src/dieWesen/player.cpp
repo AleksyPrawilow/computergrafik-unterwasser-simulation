@@ -3,6 +3,7 @@
 //
 
 #include "player.h"
+#include "uboot.h"
 #include "heldItem.h"
 #include "aufhebbar.h"
 #include "grabLoch.h"
@@ -62,13 +63,26 @@ void Player::processInput(const float deltaTime) {
 
     if (!isActive) return;
 
-    constexpr float moveSpeed = 6.0f;
-    constexpr float sprintMultiplier = 2.0f;
-    constexpr float gravity = 30.0f;
-    constexpr float jumpForce = 10.0f;
+    float islandHeight = island->getHeight(transform.position.x, transform.position.z);
 
+    const auto time = static_cast<float>(glfwGetTime());
+    float waterHeight = Uboot::getWaterHeight(transform.position.x, transform.position.z, time) * 2.0f;
+
+    constexpr float standEyeHeight = 3.0f;
+    constexpr float swimEyeHeight = 1.1f;
+
+    float standingY = islandHeight + standEyeHeight;
+    float floatingY = waterHeight + swimEyeHeight;
+
+    bool isSwimming = floatingY > standingY;
+
+    float baseMoveSpeed = isSwimming ? 2.5f : 6.0f;
+    float activeJumpForce = isSwimming ? 4.0f : 10.0f;
+    float gravity = 30.0f;
+
+    constexpr float sprintMultiplier = 2.0f;
     bool sprinting = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT);
-    float currentSpeed = sprinting ? moveSpeed * sprintMultiplier : moveSpeed;
+    float currentSpeed = sprinting ? baseMoveSpeed * sprintMultiplier : baseMoveSpeed;
 
     glm::vec3 forward = transform.forward();
     forward.y = 0.0f;
@@ -77,20 +91,13 @@ void Player::processInput(const float deltaTime) {
     verticalVelocity -= gravity * deltaTime;
     direction = glm::vec3(0.0f);
 
-    if (Input::isKeyPressed(GLFW_KEY_W)) {
-        direction += forward;
-    }
-    if (Input::isKeyPressed(GLFW_KEY_S)) {
-        direction -= forward;
-    }
-    if (Input::isKeyPressed(GLFW_KEY_A)) {
-        direction -= transform.right();
-    }
-    if (Input::isKeyPressed(GLFW_KEY_D)) {
-        direction += transform.right();
-    }
+    if (Input::isKeyPressed(GLFW_KEY_W)) direction += forward;
+    if (Input::isKeyPressed(GLFW_KEY_S)) direction -= forward;
+    if (Input::isKeyPressed(GLFW_KEY_A)) direction -= transform.right();
+    if (Input::isKeyPressed(GLFW_KEY_D)) direction += transform.right();
+
     if (Input::isKeyJustPressed(GLFW_KEY_SPACE) && grounded) {
-        verticalVelocity = jumpForce;
+        verticalVelocity = activeJumpForce;
         grounded = false;
     }
 
@@ -100,10 +107,17 @@ void Player::processInput(const float deltaTime) {
 
     transform.position += direction * currentSpeed * deltaTime;
 
+    if (isSwimming) {
+        float swayX = glm::sin(time * 1.5f) * 0.25f;
+        float swayZ = glm::cos(time * 1.2f) * 0.25f;
+        transform.position += glm::vec3(swayX, 0.0f, swayZ) * deltaTime;
+    }
+
+    float finalTargetY = glm::max(standingY, floatingY);
     constexpr float yAcceleration = 2.0f;
     const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);
 
-    targetY = glm::mix(targetY, island->getHeight(transform.position.x, transform.position.z) + 3.0f, tSpeed);
+    targetY = glm::mix(targetY, finalTargetY, tSpeed);
     transform.position.y += verticalVelocity * deltaTime;
 
     if (transform.position.y <= targetY) {

@@ -207,6 +207,21 @@ void Scene::renderLoop(GLFWwindow* window) {
 		ImGui_ImplGlfw_NewFrame();
 		ImGui::NewFrame();
 
+		if (!cursorDisabled) {
+			ImGui::SetNextWindowPos(ImVec2(10.0f, 10.0f), ImGuiCond_Always);
+			ImGui::SetNextWindowBgAlpha(0.35f);
+
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav | ImGuiWindowFlags_NoMove;
+
+			ImGui::Begin("Player Coordinates", nullptr, window_flags);
+			ImGui::TextColored(ImVec4(1.0f, 1.0f, 0.0f, 1.0f), "Player Position");
+			ImGui::Separator();
+			ImGui::Text("X: %.2f", kamera.transform.position.x);
+			ImGui::Text("Y: %.2f", kamera.transform.position.y);
+			ImGui::Text("Z: %.2f", kamera.transform.position.z);
+			ImGui::End();
+		}
+
 		if (WorldEnvironment::activeEnv != nullptr && !cursorDisabled && !inventarOffen) {
             ImGui::Begin("World Environment Tweaker");
 

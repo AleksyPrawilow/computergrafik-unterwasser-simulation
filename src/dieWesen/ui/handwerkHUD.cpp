@@ -127,7 +127,14 @@ void HandwerkHUD::umschalten(GLFWwindow* window) {
     const auto& spieler = getNodesInGroup("spielerInsel");
     if (!spieler.empty()) {
         auto* player = dynamic_cast<Player*>(spieler[0]);
-        if (player) player->setActive(!offen);
+        if (player) {
+            if (offen) {
+                playerWarAktiv = player->getActive();
+                player->setActive(false);
+            } else {
+                player->setActive(playerWarAktiv);
+            }
+        }
     }
 }
 

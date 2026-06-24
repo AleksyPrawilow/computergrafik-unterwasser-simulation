@@ -43,12 +43,20 @@ void GegenstandDaten::init() {
     registry[static_cast<int>(GegenstandID::MINIUBOOT)].modellPfad = "assets/models/uboot.obj";
     registry[static_cast<int>(GegenstandID::MINIUBOOT)].modellAlbedoPfad = "assets/textures/sub_albedo.png";
 
+    registrieren(GegenstandID::ANGEL, "Fishing Rod", "assets/textures/icon_angel.png", 1);
+    registry[static_cast<int>(GegenstandID::ANGEL)].werkzeugTyp = WerkzeugTyp::ANGEL;
+
+    registrieren(GegenstandID::FISCH, "Fish", "assets/textures/icon_fisch.png", 16);
+    registrieren(GegenstandID::SEETANG, "Seaweed", "assets/textures/icon_seetang.png", 16);
+    registrieren(GegenstandID::SUSHI, "Sushi", "assets/textures/icon_sushi.png", 16);
+
     // --- Hand recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::STEIN, GegenstandID::AXT, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::SEIL, GegenstandID::FLOSS, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::PLANKE, GegenstandID::WERKBANK, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::STEIN, GegenstandID::SCHAUFEL, 1, RezeptQuelle::HAND);
+    rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::SEIL, GegenstandID::ANGEL, 1, RezeptQuelle::HAND);
 
     // --- Workbench recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 2, RezeptQuelle::WERKBANK);
@@ -58,6 +66,7 @@ void GegenstandDaten::init() {
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::SEIL, GegenstandID::FACKEL, 2, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::PLANKE, GegenstandID::ZAUN, 3, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::AXT, GegenstandID::TRUHE, 1, RezeptQuelle::WERKBANK);
+    rezeptHinzufuegen(GegenstandID::FISCH, GegenstandID::SEETANG, GegenstandID::SUSHI, 1, RezeptQuelle::WERKBANK);
 }
 
 const GegenstandInfo& GegenstandDaten::getInfo(GegenstandID id) const {

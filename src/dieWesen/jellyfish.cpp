@@ -16,5 +16,5 @@ void Jellyfish::init() {
 }
 
 void Jellyfish::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    transform.position.y = sin(static_cast<float>(glfwGetTime())) * 0.5f - 50.0f;
+    transform.position.y = sin(static_cast<float>(glfwGetTime())) * 0.5f;
 }
