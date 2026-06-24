@@ -120,6 +120,11 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
         targetWaveInfluence = 0.0f;
     }
 
+    if (glm::length2(knockbackVelocity) > 0.01f) {
+        transform.position += knockbackVelocity * deltaTime;
+        knockbackVelocity *= glm::exp(-3.0f * deltaTime);
+    }
+
     if (isActive) updateCameraTransform(cameraTransform, deltaTime);
 
     if (hudPanel != nullptr) {
@@ -142,6 +147,8 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
 
     if (!isActive) return;
 
+    float sprintMult = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
+
     if (Input::isKeyJustPressed(GLFW_KEY_F5)) {
         viewMode = ViewMode::FIRST_PERSON;
     }
@@ -153,36 +160,36 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
     }
 
     if (Input::isKeyPressed(GLFW_KEY_W)) {
-        targetMoveSpeed = moveSpeed;
-        targetRotorSpeed = rotorSpeed;
+        targetMoveSpeed = moveSpeed * sprintMult;
+        targetRotorSpeed = rotorSpeed * sprintMult;
         transform.position += transform.forward() * actualMoveSpeed * deltaTime;
     }
 
     if (Input::isKeyPressed(GLFW_KEY_S)) {
-        targetMoveSpeed = moveSpeedBackward;
-        targetRotorSpeed = rotorSpeedBackward;
+        targetMoveSpeed = moveSpeedBackward * sprintMult;
+        targetRotorSpeed = rotorSpeedBackward * sprintMult;
         transform.position -= transform.forward() * actualMoveSpeed * deltaTime;
     }
 
     if (Input::isKeyPressed(GLFW_KEY_A)) {
-        targetMoveSpeed = moveSpeedBackward;
-        targetRotorSpeed = rotorSpeedBackward;
+        targetMoveSpeed = moveSpeedBackward * sprintMult;
+        targetRotorSpeed = rotorSpeedBackward * sprintMult;
         targetRollVelocity = -angleSpeed;
         transform.position -= transform.right() * actualMoveSpeed / 2.0f * deltaTime;
     }
     if (Input::isKeyPressed(GLFW_KEY_D)) {
-        targetMoveSpeed = moveSpeedBackward;
-        targetRotorSpeed = rotorSpeedBackward;
+        targetMoveSpeed = moveSpeedBackward * sprintMult;
+        targetRotorSpeed = rotorSpeedBackward * sprintMult;
         targetRollVelocity = angleSpeed;
         transform.position += transform.right() * actualMoveSpeed / 2.0f * deltaTime;
     }
 
     if (Input::isKeyPressed(GLFW_KEY_SPACE)) {
-        transform.position += transform.up() * 4.f * deltaTime;
+        transform.position += transform.up() * 4.f * sprintMult * deltaTime;
     }
 
     if (Input::isKeyPressed(GLFW_KEY_C)) {
-        transform.position -= transform.up() * 4.f * deltaTime;
+        transform.position -= transform.up() * 4.f * sprintMult * deltaTime;
         isSubmerging = true;
         targetWaveInfluence = 0.0f;
     } else {
@@ -310,6 +317,11 @@ void Uboot::schadenNehmen(float schaden) {
         transform.position = glm::vec3(0.0f);
         transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
         actualMoveSpeed = 0.0f;
+        knockbackVelocity = glm::vec3(0.0f);
         spawnSchutz = 3.0f;
     }
+}
+
+void Uboot::knockback(const glm::vec3& direction, float force) {
+    knockbackVelocity = direction * force;
 }

@@ -45,6 +45,7 @@ public:
     void benachrichtigen();
 
     void addOnChanged(std::function<void()> callback);
+    void clearCallbacks() { onChangedCallbacks.clear(); }
     void reset();
 
 private:

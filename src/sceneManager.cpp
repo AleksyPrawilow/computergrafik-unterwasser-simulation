@@ -16,6 +16,7 @@
 #include "werkzeuge/textur.h"
 #include "werkzeuge/transform.h"
 #include "werkzeuge/renderer.h"
+#include "werkzeuge/visual/questManager.h"
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
@@ -52,7 +53,10 @@ void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const
 void Scene::szeneWechseln(int index) {
 	if (scene != nullptr) {
 		AudioManager::getInstance().allesStoppen();
-		Inventar::getInstance().reset();
+		MusicManager::getInstance().stopAll();
+		TweenManager::getInstance().cleanup();
+		QuestManager::getInstance().cleanup();
+		Inventar::getInstance().clearCallbacks();
 		GroupManager::getInstance().cleanup();
 		delete scene;
 		scene = nullptr;
@@ -67,7 +71,8 @@ void Scene::szeneWechseln(int index) {
 		scene = new WeltraumszeneWesen();
 	}
 	scene->init();
-	leviathan = dynamic_cast<Leviathan*>(GroupManager::getInstance().getEntitiesInGroup("Leviathan")[0]);
+	const auto& leviathanGroup = GroupManager::getInstance().getEntitiesInGroup("Leviathan");
+	leviathan = leviathanGroup.empty() ? nullptr : dynamic_cast<Leviathan*>(leviathanGroup[0]);
 }
 
 void Scene::init(GLFWwindow* window)

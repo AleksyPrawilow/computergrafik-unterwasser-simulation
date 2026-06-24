@@ -56,15 +56,19 @@ void Player::onUpdate(GLFWwindow* window, const float deltaTime, Transform& came
 }
 
 void Player::processInput(const float deltaTime) {
-    if (Input::isKeyJustPressed(GLFW_KEY_F3)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_F3) && !getNodesInGroup("player").empty()) {
         setActive(!isActive);
     }
 
     if (!isActive) return;
 
     constexpr float moveSpeed = 6.0f;
+    constexpr float sprintMultiplier = 2.0f;
     constexpr float gravity = 30.0f;
     constexpr float jumpForce = 10.0f;
+
+    bool sprinting = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT);
+    float currentSpeed = sprinting ? moveSpeed * sprintMultiplier : moveSpeed;
 
     glm::vec3 forward = transform.forward();
     forward.y = 0.0f;
@@ -94,7 +98,7 @@ void Player::processInput(const float deltaTime) {
         direction = glm::normalize(direction);
     }
 
-    transform.position += direction * moveSpeed * deltaTime;
+    transform.position += direction * currentSpeed * deltaTime;
 
     constexpr float yAcceleration = 2.0f;
     const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);

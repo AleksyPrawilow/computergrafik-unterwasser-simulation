@@ -38,6 +38,7 @@ public:
     }
     [[nodiscard]] float getLeben() const { return leben; }
     void schadenNehmen(float schaden);
+    void knockback(const glm::vec3& direction, float force);
     void setIsActive(bool active);
     static float getWaterHeight(float x, float z, float t);
 
@@ -72,6 +73,8 @@ private:
     double lastX = 0.0;
     double lastY = 0.0;
     bool firstMouse = true;
+
+    glm::vec3 knockbackVelocity = glm::vec3(0.0f);
 
     // Movement velocities (inertia)
     float pitchVelocity = 0.0f;

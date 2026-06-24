@@ -9,6 +9,8 @@
 #include "werkzeuge/wesen.h"
 
 
+class Uboot;
+
 class Leviathan : public Wesen {
 public:
     void init() override;
@@ -50,7 +52,16 @@ private:
     float attackDamage = 25.0f;
     float attackInterval = 2.0f;
 
+    float collisionPadding = 4.0f;
+    float headZThreshold = 15.0f;
+    glm::quat neckRot = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+    float grabCooldown = 0.0f;
+    float grabInterval = 8.0f;
+    float grabDamage = 40.0f;
+    float knockbackForce = 150.0f;
+
     Wesen* findClosestTarget() const;
+    void grabAndThrow(Uboot* uboot);
     void chase(float deltaTime, const glm::vec3& toTarget, float distance);
     void patrol(float deltaTime);
 };

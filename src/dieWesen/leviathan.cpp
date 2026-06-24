@@ -1,6 +1,7 @@
 #include "leviathan.h"
 #include "uboot.h"
 #include "werkzeuge/kamera.h"
+#include "werkzeuge/visual/tween.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/groupManager.h"
@@ -29,7 +30,7 @@ void Leviathan::init() {
     addToGroup("feinde");
     addToGroup("Leviathan");
 
-    boundingRadius = 40.0f;
+    boundingRadius = 0.0f;
 
     music = dynamic_cast<UnterwasserszeneAudioHelper * >(getNodesInGroup("Music")[0]);
 
@@ -79,6 +80,7 @@ Wesen* Leviathan::findClosestTarget() const {
     return closest;
 }
 
+
 void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     startClawPositions[0] = glm::vec3( clawXOffset,  clawYOffset, clawZOffset); // Upper Right
     startClawPositions[1] = glm::vec3( clawXOffset, -clawYOffset, clawZOffset); // Lower Right
@@ -104,12 +106,44 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     if (distance < 300.0f) {
         chase(deltaTime, toTargetWorld, distance);
 
-        float actualDist = glm::distance(getGlobalTransform().position, targetPos);
-        float hitDist = boundingRadius + target->boundingRadius;
-        if (actualDist < hitDist && attackCooldown <= 0.0f) {
-            if (auto* uboot = dynamic_cast<Uboot*>(target)) {
-                uboot->schadenNehmen(attackDamage);
-                attackCooldown = attackInterval;
+        if (grabCooldown > 0.0f) grabCooldown -= deltaTime;
+
+        if (auto* uboot = dynamic_cast<Uboot*>(target)) {
+            glm::mat4 invModel = glm::inverse(getGlobalModelMatrix());
+            glm::vec3 localPt = glm::vec3(invModel * glm::vec4(targetPos, 1.0f));
+
+            glm::vec3 padMin = localAABB.min - glm::vec3(collisionPadding);
+            glm::vec3 padMax = localAABB.max + glm::vec3(collisionPadding);
+
+            bool inside = localPt.x > padMin.x && localPt.x < padMax.x
+                       && localPt.y > padMin.y && localPt.y < padMax.y
+                       && localPt.z > padMin.z && localPt.z < padMax.z;
+
+            if (inside) {
+                float dists[6] = {
+                    localPt.x - padMin.x, padMax.x - localPt.x,
+                    localPt.y - padMin.y, padMax.y - localPt.y,
+                    localPt.z - padMin.z, padMax.z - localPt.z
+                };
+                glm::vec3 normals[6] = {
+                    {-1,0,0}, {1,0,0}, {0,-1,0}, {0,1,0}, {0,0,-1}, {0,0,1}
+                };
+
+                int minIdx = 0;
+                for (int i = 1; i < 6; i++) {
+                    if (dists[i] < dists[minIdx]) minIdx = i;
+                }
+
+                glm::mat3 normalMat = glm::mat3(getGlobalModelMatrix());
+                glm::vec3 worldNormal = glm::normalize(normalMat * normals[minIdx]);
+
+                if (localPt.z > headZThreshold && grabCooldown <= 0.0f) {
+                    grabAndThrow(uboot);
+                } else if (attackCooldown <= 0.0f) {
+                    uboot->schadenNehmen(attackDamage);
+                    uboot->knockback(worldNormal, knockbackForce);
+                    attackCooldown = attackInterval;
+                }
             }
         }
 
@@ -125,8 +159,8 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
         patrol(deltaTime);
     }
 
-    glm::quat neckRot = glm::angleAxis(u_neckYaw, glm::vec3(0.0f, 1.0f, 0.0f)) *
-                    glm::angleAxis(u_neckPitch, glm::vec3(1.0f, 0.0f, 0.0f));
+    neckRot = glm::angleAxis(u_neckYaw, glm::vec3(0.0f, 1.0f, 0.0f)) *
+              glm::angleAxis(u_neckPitch, glm::vec3(1.0f, 0.0f, 0.0f));
 
     for (int i = 0; i < 4; i++) {
         if (lightsabers[i] == nullptr) continue;
@@ -146,8 +180,47 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     }
 }
 
+void Leviathan::grabAndThrow(Uboot* uboot) {
+    grabCooldown = grabInterval;
+    attackCooldown = grabInterval;
+    uboot->schadenNehmen(grabDamage);
+
+    glm::mat4 model = getGlobalModelMatrix();
+    glm::vec3 headLocal = glm::vec3(0.0f, 0.0f, localAABB.max.z);
+    glm::vec3 mouthPos = glm::vec3(model * glm::vec4(headLocal, 1.0f));
+
+    glm::vec3 headOutward = glm::normalize(
+        glm::vec3(model * glm::vec4(0.0f, 0.0f, 1.0f, 0.0f)));
+
+    glm::vec3 right = glm::normalize(
+        glm::vec3(model * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f)));
+
+    kamera.addShake(1.0f, 0.8f);
+
+    float s = 10.0f;
+    createTween()
+        ->tweenProperty(&uboot->transform.position, mouthPos, 0.25f, EaseType::EASE_IN_CUBIC)
+        ->tweenProperty(&uboot->transform.position, mouthPos + right * s, 0.1f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos - right * s, 0.1f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 1.2f, 0.1f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 1.2f, 0.1f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 0.8f, 0.1f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 0.8f, 0.1f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 1.5f, 0.12f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 1.5f, 0.12f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 0.5f, 0.08f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 0.5f, 0.08f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&uboot->transform.position, mouthPos, 0.15f, EaseType::EASE_OUT_SINE)
+        ->tweenInterval(0.2f)
+        ->tweenCallback([uboot, headOutward]() {
+            uboot->knockback(headOutward, 200.0f);
+        });
+}
+
 void Leviathan::chase(float deltaTime, const glm::vec3& toTarget, float distance) {
     music->initiateChase();
+
+    if (distance < 0.5f) return;
 
     glm::vec3 targetDir = glm::normalize(toTarget);
     glm::quat baseOrientation = Transform::quatLookAt(-targetDir, glm::vec3(0.0f, 1.0f, 0.0f));

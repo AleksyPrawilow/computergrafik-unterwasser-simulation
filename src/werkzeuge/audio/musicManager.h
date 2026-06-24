@@ -19,6 +19,7 @@ public:
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     [[nodiscard]] bool hasCustomRender() const override { return true; };
     void playMusic(const std::string& filepath, float fadeDuration = 2.0f, bool loop = true);
+    void stopAll();
     void setMasterVolume(float volume);
     [[nodiscard]] float getMasterVolume() const { return masterVolume; }
 

@@ -27,6 +27,7 @@ public:
     void setQuest(QUESTS newQuest);
 
     QUESTS currentQuest = TUTORIAL;
+    static QUESTS savedQuest;
 private:
     QuestManager * manager = nullptr;
     AudioPlayer * audio = nullptr;

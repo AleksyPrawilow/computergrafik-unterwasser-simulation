@@ -41,8 +41,8 @@ public:
     }
 
     void acceptQuest(const Quest& quest);
-
     void progressObjective(const std::string& tag, int amount = 1);
+    void cleanup() { activeQuests.clear(); onProgressChanged = nullptr; }
 
     [[nodiscard]] const std::vector<Quest>& getActiveQuests() const { return activeQuests; }
 

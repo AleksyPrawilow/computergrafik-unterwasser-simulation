@@ -42,7 +42,6 @@ void UIElement::initUISystem() {
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), reinterpret_cast<void*>(2 * sizeof(float)));
     glBindVertexArray(0);
 
-    std::cout<< "Loaded UI";
 }
 
 void UIElement::cleanupUISystem() {

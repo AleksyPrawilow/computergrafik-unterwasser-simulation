@@ -63,6 +63,22 @@ void MusicManager::playMusic(const std::string& filepath, float fadeDuration, bo
     }
 }
 
+void MusicManager::stopAll() {
+    if (playerA != nullptr) {
+        playerA->stop();
+        playerA->queueDestroy();
+        playerA = nullptr;
+    }
+    if (playerB != nullptr) {
+        playerB->stop();
+        playerB->queueDestroy();
+        playerB = nullptr;
+    }
+    volumeA = 0.0f;
+    volumeB = 0.0f;
+    isChannelAActive = true;
+}
+
 void MusicManager::setMasterVolume(float volume) {
     masterVolume = glm::clamp(volume, 0.0f, 1.0f);
 }

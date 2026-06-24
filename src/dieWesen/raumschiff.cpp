@@ -110,13 +110,15 @@ void Raumschiff::eingabeVerarbeiten(GLFWwindow* window, const float deltaTime) {
 
     if (!istAktiv) return;
 
+    float sprintMult = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
+
     if (Input::isKeyPressed(GLFW_KEY_W)) {
-        zielGeschwindigkeit = bewegungsGeschwindigkeit;
+        zielGeschwindigkeit = bewegungsGeschwindigkeit * sprintMult;
         transform.position += transform.forward() * tatsaechlicheGeschwindigkeit * deltaTime;
     }
 
     if (Input::isKeyPressed(GLFW_KEY_S)) {
-        zielGeschwindigkeit = rueckwaertsGeschwindigkeit;
+        zielGeschwindigkeit = rueckwaertsGeschwindigkeit * sprintMult;
         transform.position -= transform.forward() * tatsaechlicheGeschwindigkeit * deltaTime;
     }
 

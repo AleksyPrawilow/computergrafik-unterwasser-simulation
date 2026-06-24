@@ -9,6 +9,8 @@
 #include "werkzeuge/input.h"
 #include "werkzeuge/visual/questManager.h"
 
+UnterwasserszeneQuests::QUESTS UnterwasserszeneQuests::savedQuest = TUTORIAL;
+
 void UnterwasserszeneQuests::init() {
     visible = false;
     name = "Quests";
@@ -17,7 +19,7 @@ void UnterwasserszeneQuests::init() {
     manager = &QuestManager::getInstance();
     audio = new AudioPlayer("assets/audio/quest_complete.wav", false, 2.0f, true, false);
     addChild(audio);
-    setQuest(TUTORIAL);
+    setQuest(savedQuest);
 }
 
 void UnterwasserszeneQuests::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
@@ -50,6 +52,7 @@ void UnterwasserszeneQuests::onUpdate(GLFWwindow* window, float deltaTime, Trans
 
 void UnterwasserszeneQuests::setQuest(QUESTS newQuest) {
     currentQuest = newQuest;
+    savedQuest = newQuest;
     switch (currentQuest) {
         case TUTORIAL:
             setupTutorial();
