@@ -50,15 +50,12 @@ void UnterwasserszeneWesen::init() {
         "assets/textures/skybox/nz.png"
     }));
 
-    uboot = new Uboot();
     auto * jellyfish = new Jellyfish();
     FishFlock* flock = new FishFlock();
     Path3D* fishPath = new Path3D();
-    addChild(uboot);
     addChild(new Earth());
     addChild(new OceanFloor());
     addChild(new Wasser());
-    addChild(new HudPanel());
     addChild(new Island());
     addChild(new Player());
     addChild(jellyfish);
@@ -84,24 +81,15 @@ void UnterwasserszeneWesen::init() {
     worldEnv->params.heightFogColor = glm::vec3(0.0f, 0.22f, 0.28f);
     worldEnv->params.fogDensity = 0.025f;
     worldEnv->params.depthDimmingCoefficient = 0.01;
+    worldEnv->params.bloomThreshold = 0.0f;
+    worldEnv->params.bloomIntensity = 3.0f;
     addChild(worldEnv);
-
-    // TEST
-    auto * worldspaceUI = new WorldspaceUI();
-    addChild(worldspaceUI);
-    worldspaceUI->shouldScale = true;;
-    worldspaceUI->setTarget(jellyfish);
-
-    auto * label = new UILabel();
-    label->setExpansion(UIExpansion::CENTER);
-    label->setText("Hello world!", 64.0f);
-    worldspaceUI->addChild(label);
-    // TEST
 
     auto* questHUD = new QuestHUD();
     addChild(questHUD);
 
     Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
+    Inventar::getInstance().hinzufuegen(GegenstandID::MINIUBOOT, 1);
 
     addChild(new InventarHUD());
     addChild(new HandwerkHUD());

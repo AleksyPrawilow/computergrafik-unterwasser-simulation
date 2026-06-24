@@ -5,12 +5,16 @@
 #include "axe.h"
 
 #include "player.h"
+#include "thunderstorm.h"
 #include "timer.h"
 #include "tree.h"
+#include "uboot.h"
 #include "werkzeuge/inventar.h"
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/audio/musicManager.h"
+#include "werkzeuge/visual/questManager.h"
 #include "werkzeuge/visual/tween.h"
 
 extern Kamera kamera;
@@ -109,6 +113,12 @@ void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
             if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
                 isPlayingAnimation = true;
                 shovelDig();
+            }
+            break;
+    case GegenstandID::MINIUBOOT:
+            if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS && !isPlayingAnimation && !recoveringAnimation) {
+                isPlayingAnimation = false;
+                throwSub();
             }
             break;
     }
@@ -369,5 +379,72 @@ void Axe::shovelRecover() {
         ->tweenCallback([this]() {
             isPlayingAnimation = false;
             recoveringAnimation = false;
+        });
+}
+
+void Axe::throwSub() {
+    MusicManager::getInstance().playMusic("assets/audio/sub_intro.mp3", 2.0f);
+    auto * uboot = new Uboot();
+    parent->parent->addChild(uboot);
+    uboot->shouldFloat = false;
+    uboot->setIsActive(false);
+    uboot->transform = getGlobalTransform();
+
+    float throwDistance = 20.0f;
+    glm::vec3 startPos = getGlobalTransform().position;
+    glm::vec3 worldForward = getGlobalTransform().forward();
+    glm::vec3 targetPos = startPos + worldForward * throwDistance;
+    targetPos.y = 0.0f;
+
+    int targetSlotIndex = Inventar::getInstance().getAktiverSlot();
+    Inventar::getInstance().hotbarEntfernen(targetSlotIndex);
+    createTween()
+        ->tweenProperty(&uboot->transform.position.x, targetPos.x, 1.2f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&uboot->transform.position.z, targetPos.z, 1.2f, EaseType::EASE_OUT_CUBIC);
+    createTween()
+        ->tweenProperty(&uboot->transform.position.y, startPos.y + 2.5f, 0.5f, EaseType::EASE_OUT)
+        ->tweenProperty(&uboot->transform.position.y, targetPos.y, 0.5f, EaseType::EASE_IN)
+        ->tweenCallback([this, uboot]() {
+            QuestManager::getInstance().progressObjective("submarine_throw");
+            uboot->shouldFloat = true;
+        })
+        ->tweenInterval(1.0f)
+        ->tweenCallback([this, targetPos]() {
+            auto * thunderstorm = dynamic_cast<Thunderstorm * >(getNodesInGroup("thunderstorm")[0]);
+            thunderstorm->triggerLightning(targetPos, 2);
+        })
+        ->tweenProperty(&uboot->transform.scale, glm::vec3(3.0f), 0.1f, EaseType::EASE_OUT_BOUNCE)
+        ->tweenInterval(1.0f)
+        ->tweenCallback([this, uboot]() {
+            showcaseSub(uboot);
+        });
+}
+
+void Axe::showcaseSub(Uboot * uboot) {
+    dynamic_cast<Player * >(parent)->setActive(false);
+    kamera.transform.position = uboot->getGlobalTransform().position - uboot->transform.right() * 2.0f - uboot->transform.forward() * 4.0f;
+    kamera.transform.lookAt(uboot->transform.position - uboot->transform.forward() * 4.0f);
+    auto stage2pos = uboot->getGlobalTransform().position + uboot->transform.up() * 2.0f + uboot->transform.forward() * 4.0f;
+    auto stage3pos = uboot->getGlobalTransform().position + uboot->transform.forward() * 8.0f;
+    createTween()
+        ->tweenInterval(0.5f)
+        ->tweenProperty(&kamera.transform.position, kamera.transform.position + uboot->transform.forward() * 4.0f, 3.0f, EaseType::LINEAR)
+        ->tweenCallback([this, uboot]() {
+            kamera.transform.position = uboot->getGlobalTransform().position + uboot->transform.up() * 2.0f;
+            kamera.transform.lookAt(uboot->transform.position);
+        })
+        ->tweenProperty(&kamera.transform.position, stage2pos, 3.0f, EaseType::LINEAR)
+        ->tweenCallback([this, uboot]() {
+            kamera.transform.position = uboot->getGlobalTransform().position + uboot->transform.forward() * 4.0f;
+            kamera.transform.lookAt(uboot->transform.position);
+        })
+        ->tweenProperty(&kamera.transform.position, stage3pos, 3.0f, EaseType::EASE_OUT_SINE)
+        ->tweenInterval(0.5f)
+        ->tweenCallback([this]() {
+            dynamic_cast<Player * >(parent)->setActive(true);
+            MusicManager::getInstance().playMusic("assets/audio/dramatic.mp3");
+            auto * thunderstorm = dynamic_cast<Thunderstorm * >(getNodesInGroup("thunderstorm")[0]);
+            thunderstorm->beginThunderstorm();
         });
 }

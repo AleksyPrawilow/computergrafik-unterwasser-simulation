@@ -16,10 +16,10 @@ class Thunderstorm : public Wesen {
 public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
-    void triggerLightning();
-
+    void triggerLightning(glm::vec3 customPos = glm::vec3(0.0f), int soundId = -1);
+    void beginThunderstorm();
 private:
-    void playThunderSound();
+    void playThunderSound(int soundId = -1);
 
     Timer* strikeTimer = nullptr;
     AudioPlayer* thunderSounds[3] = { nullptr };

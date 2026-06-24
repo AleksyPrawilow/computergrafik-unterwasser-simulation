@@ -6,6 +6,7 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_AXE_H
 #include "island.h"
 #include "tree.h"
+#include "uboot.h"
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/audio/audioPlayer.h"
 #include "werkzeuge/gegenstandDaten.h"
@@ -67,6 +68,8 @@ private:
     void hitGround() const;
     void shovelDig();
     void shovelRecover();
+    void throwSub();
+    void showcaseSub(Uboot * uboot);
     void ausruestungAktualisieren();
 };
 

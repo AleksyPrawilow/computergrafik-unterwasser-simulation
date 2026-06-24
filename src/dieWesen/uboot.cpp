@@ -7,6 +7,7 @@
 #include "ubootRotor.h"
 #include "../werkzeuge/textur.h"
 #include "ui/fadenkreuz.h"
+#include "ui/hudPanel.h"
 #include "werkzeuge/input.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/audio/audioPlayer.h"
@@ -22,8 +23,9 @@ void Uboot::init() {
         "assets/shaders/default.frag"
         );
     loadModel("assets/models/uboot.obj");
-    transform.position = glm::vec3(-12.f, -1.f, 0.f);
     transform.scale = glm::vec3(3.0f);
+
+    std::cout << "Uboot" << std::endl;
 
     addToGroup("player");
 
@@ -48,6 +50,7 @@ void Uboot::init() {
     crosshair = new Fadenkreuz();
     crosshair->init(16.0f / 9.0f);
     addChild(crosshair);
+    parent->addChild(new HudPanel());
 
     auto * audio = new AudioPlayer("assets/audio/submarine.mp3", true, 4, true);
     addChild(audio);
@@ -100,7 +103,7 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     const float waveTSpeed = 1.0f - glm::exp(-waveInfluenceAccelerationSpeed * deltaTime);
     actualWaveInfluence = glm::mix(actualWaveInfluence, targetWaveInfluence * static_cast<float>(!isSubmerging), waveTSpeed);
 
-    if (const float maxSurfaceY = waveHeight + floatOffset; transform.position.y >= maxSurfaceY - 0.15f) {
+    if (const float maxSurfaceY = waveHeight + floatOffset; transform.position.y >= maxSurfaceY - 0.15f && shouldFloat) {
         targetWaveInfluence = 1.0f;
         transform.position.y = glm::mix(transform.position.y, maxSurfaceY, actualWaveInfluence);
 

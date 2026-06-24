@@ -42,6 +42,7 @@ public:
     int getAktiverSlot() const { return aktiverSlot; }
     void setAktiverSlot(int index);
     GegenstandID getAktivesItem() const;
+    void benachrichtigen();
 
     void addOnChanged(std::function<void()> callback);
     void reset();
@@ -52,7 +53,6 @@ private:
     std::array<InventarPlatz, HOTBAR_GROESSE> hotbar{};
     int aktiverSlot = 0;
     std::vector<std::function<void()>> onChangedCallbacks;
-    void benachrichtigen();
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_INVENTAR_H

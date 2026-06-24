@@ -31,6 +31,7 @@ public:
 
 void Thunderstorm::init() {
     name = "ThunderstormController";
+    addToGroup("thunderstorm");
 
     thunderSounds[0] = new AudioPlayer("assets/audio/thunder1.mp3", false, 1.0f, false, false);
     addChild(thunderSounds[0]);
@@ -45,12 +46,8 @@ void Thunderstorm::init() {
     strikeTimer = new Timer();
     addChild(strikeTimer);
 
-    strikeTimer->startTimer(Random::range(5.0f, 12.0f), [this]() {
-        this->triggerLightning();
-    });
-
     rainEmitter = new RainEmitter(6000);
-    rainEmitter->active = true;
+    rainEmitter->active = false;
     addChild(rainEmitter);
 
     // 4. Configure the procedural lightning bolt billboard
@@ -82,69 +79,60 @@ void Thunderstorm::onUpdate(GLFWwindow* window, float deltaTime, Transform& came
     rainEmitter->transform.scale = glm::vec3(30.0f, 1.0f, 30.0f);
 }
 
-void Thunderstorm::triggerLightning() {
+void Thunderstorm::triggerLightning(glm::vec3 customPos, int soundId) {
     if (WorldEnvironment::activeEnv == nullptr || lightningBolt == nullptr) return;
 
     auto& params = WorldEnvironment::activeEnv->params;
 
-
-    // 1. Cache the active environment's baseline dark/stormy values
     baseAmbientEnergy = params.ambientEnergy;
     baseSunEnergy = params.sunEnergy;
     baseFogColor = params.fogColor;
 
-    // 2. Calculate a random offset position in front of the camera
     glm::vec3 camPos = kamera.transform.position;
     glm::vec3 camForward = kamera.transform.forward();
     glm::vec3 camRight = kamera.transform.right();
 
     float sideOffset = Random::range(-90.0f, 90.0f);
-    float heightOffset = Random::range(40.0f, 100.0f);
-    glm::vec3 boltPos = camPos + (camForward * 260.0f) + (camRight * sideOffset) + glm::vec3(0.0f, heightOffset, 0.0f);
+    float quadHeight = 220.0f;
+    glm::vec3 boltPos;
+
+    if (glm::length2(customPos) == 0) {
+        boltPos = camPos + (camForward * 260.0f) + (camRight * sideOffset) + glm::vec3(0.0f, quadHeight / 2.0f, 0.0f);
+    } else {
+        boltPos = customPos + glm::vec3(0.0f, quadHeight / 2.0f, 0.0f);
+    }
 
     lightningBolt->transform.position = boltPos;
     lightningBolt->transform.lookAt(camPos, glm::vec3(0.0f, 1.0f, 0.0f));
     lightningBolt->transform.scale = glm::vec3(80.0f, 220.0f, 1.0f);
 
-    // 3. Reset the timeline progression
     lightningProgress = 0.0f;
     lightningBolt->visible = true;
 
-    // Instantly spike environmental lighting to simulate the blinding flash
     params.ambientEnergy = 1.3f;
     params.sunEnergy = 6.0f;
     params.fogColor = glm::vec3(0.85f, 0.90f, 1.0f);
 
     kamera.addShake(0.35f, 0.40f);
 
-    // 4. FIX: Smoothed, slightly longer durations to prevent "jaggy" frame-skipping
     createTween()
-        // Step 1: Bolt strikes down to the ground in 0.15 seconds (EASE_OUT_SINE)
         ->tweenProperty(&lightningProgress, 1.0f, 0.15f, EaseType::EASE_OUT_SINE)
-
-        // Step 2: Flicker 1 - Decay down to 40% over 0.10 seconds
         ->tweenProperty(&params.ambientEnergy, 0.40f, 0.10f, EaseType::EASE_OUT_SINE)
         ->parallel()
         ->tweenProperty(&params.sunEnergy, 1.5f, 0.10f, EaseType::EASE_OUT_SINE)
-
-        // Step 3: Flicker 2 - Secondary re-spike back up to 80% over 0.08 seconds
         ->tweenProperty(&params.ambientEnergy, 0.85f, 0.08f, EaseType::EASE_OUT_SINE)
         ->parallel()
         ->tweenProperty(&params.sunEnergy, 4.0f, 0.08f, EaseType::EASE_OUT_SINE)
-
-        // Step 4: Hide the bolt mesh once the hot channel deionizes
         ->tweenCallback([this]() {
             this->lightningBolt->visible = false;
         })
-
-            ->tweenCallback([this]() {
-            this->playThunderSound();
-
-            float nextStrike = Random::range(1.0f, 2.0f);
-            strikeTimer->startTimer(nextStrike, [this]() { this->triggerLightning(); });
+            ->tweenCallback([this, soundId]() {
+                this->playThunderSound(soundId);
+                float nextStrike = Random::range(3.0f, 6.0f);
+                if (soundId == -1) {
+                    strikeTimer->startTimer(nextStrike, [this]() { this->triggerLightning(); });
+                }
         })
-
-        // Step 5: Smooth final decay back to baseline storm colors over 0.65 seconds
         ->tweenProperty(&params.ambientEnergy, baseAmbientEnergy, 0.65f, EaseType::EASE_OUT_SINE)
         ->parallel()
         ->tweenProperty(&params.sunEnergy, baseSunEnergy, 0.65f, EaseType::EASE_OUT_SINE)
@@ -154,12 +142,22 @@ void Thunderstorm::triggerLightning() {
         ->tweenProperty(&params.fogColor.g, baseFogColor.g, 0.65f, EaseType::EASE_OUT_SINE)
         ->parallel()
         ->tweenProperty(&params.fogColor.b, baseFogColor.b, 0.65f, EaseType::EASE_OUT_SINE);
-
-        // Step 6: Speed-of-sound delayed thunder cue
 }
 
-void Thunderstorm::playThunderSound() {
-    int idx = static_cast<int>(Random::range(0.0f, 3.0f));
+void Thunderstorm::beginThunderstorm() {
+    rainEmitter->active = true;
+    auto& params = WorldEnvironment::activeEnv->params;
+
+    createTween()
+        ->tweenProperty(&params.sunEnergy, 0.1f, 5.0f, EaseType::EASE_OUT_SINE);
+
+    strikeTimer->startTimer(Random::range(5.0f, 12.0f), [this]() {
+        this->triggerLightning();
+    });
+}
+
+void Thunderstorm::playThunderSound(int soundId) {
+    int idx = (soundId == -1) ? static_cast<int>(Random::range(0.0f, 3.0f)) : soundId;
     if (thunderSounds[idx] != nullptr) {
         thunderSounds[idx]->play();
     }

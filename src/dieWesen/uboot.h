@@ -35,6 +35,8 @@ public:
     }
     void setIsActive(bool active);
     static float getWaterHeight(float x, float z, float t);
+
+    bool shouldFloat = true;
 private:
     Fadenkreuz * crosshair = nullptr;
     ViewMode viewMode = ViewMode::THIRD_PERSON;

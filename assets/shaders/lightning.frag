@@ -2,7 +2,6 @@
 layout(location = 0) out vec4 FragColor;
 layout(location = 1) out vec4 bloomColor;
 
-// FIX: Renamed from TexCoords to match common_transform.glsl's output exactly
 in vec2 texCoord;
 
 uniform float time;
@@ -35,7 +34,6 @@ float fbm(vec2 p) {
 }
 
 void main() {
-    // FIX: Read from texCoord
     vec2 uv = texCoord;
 
     // 1. Animate the bolt striking downwards based on progress
@@ -46,18 +44,22 @@ void main() {
 
     // 2. Generate highly jagged offset path using FBM noise
     float jag = fbm(vec2(uv.y * 8.0, time * 1.5)) * 0.35;
-    jag      += fbm(vec2(uv.y * 24.0, time * 3.5)) * 0.08; // High-frequency micro-jaggedness
+    jag      += fbm(vec2(uv.y * 24.0, time * 3.5)) * 0.08;
 
     // Add a low-frequency curving factor to make the bolt snake organically
     float curve = sin(uv.y * 3.0 + time * 0.5) * 0.12;
 
-    // Center of the bolt is 0.5 (middle of the quad)
-    float centerOffset = 0.5 + jag + curve;
+    // --- FIX: PINCH THE NOISE AT THE GROUND ---
+    // Smoothly dampens the noise offsets to 0.0 as we approach the bottom (uv.y = 0.0).
+    // This forces the bolt to strike with pixel-perfect accuracy at the exact center.
+    float pinch = smoothstep(0.0, 0.35, uv.y);
+
+    float centerOffset = 0.5 + (jag + curve) * pinch;
     float dist = abs(uv.x - centerOffset);
 
     // 3. Render a white-hot core and a soft surrounding electric glow
-    float core = exp(-dist * 130.0);       // Tight, blinding white center
-    float glow = exp(-dist * 15.0) * 0.45; // Soft atmospheric halo
+    float core = exp(-dist * 130.0);
+    float glow = exp(-dist * 15.0) * 0.45;
 
     vec3 finalGlow = u_color.rgb * (core + glow);
 
