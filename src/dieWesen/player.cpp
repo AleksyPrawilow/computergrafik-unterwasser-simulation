@@ -105,7 +105,20 @@ void Player::processInput(const float deltaTime) {
         direction = glm::normalize(direction);
     }
 
+    glm::vec3 oldPos = transform.position;
     transform.position += direction * currentSpeed * deltaTime;
+
+    const auto& waende = getNodesInGroup("hauswand");
+    for (auto* wand : waende) {
+        glm::mat4 invModel = glm::inverse(wand->getGlobalModelMatrix());
+        glm::vec3 localPt = glm::vec3(invModel * glm::vec4(transform.position, 1.0f));
+        if (localPt.x > wand->localAABB.min.x && localPt.x < wand->localAABB.max.x
+            && localPt.y > wand->localAABB.min.y && localPt.y < wand->localAABB.max.y
+            && localPt.z > wand->localAABB.min.z && localPt.z < wand->localAABB.max.z) {
+            transform.position = oldPos;
+            break;
+        }
+    }
 
     if (isSwimming) {
         float swayX = glm::sin(time * 1.5f) * 0.25f;
@@ -114,10 +127,15 @@ void Player::processInput(const float deltaTime) {
     }
 
     float finalTargetY = glm::max(standingY, floatingY);
-    constexpr float yAcceleration = 2.0f;
-    const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);
-
-    targetY = glm::mix(targetY, finalTargetY, tSpeed);
+    if (finalTargetY > targetY) {
+        constexpr float upAcceleration = 12.0f;
+        const float tUp = 1.0f - glm::exp(-upAcceleration * deltaTime);
+        targetY = glm::mix(targetY, finalTargetY, tUp);
+    } else {
+        constexpr float yAcceleration = 2.0f;
+        const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);
+        targetY = glm::mix(targetY, finalTargetY, tSpeed);
+    }
     transform.position.y += verticalVelocity * deltaTime;
 
     if (transform.position.y <= targetY) {
@@ -199,7 +217,7 @@ void Player::handleItemAction(GLFWwindow* window) {
 
     if (info.istPlatzierbar) {
         int hotbarIdx = Inventar::getInstance().getAktiverSlot();
-        Inventar::getInstance().hotbarEntfernen(hotbarIdx);
+        Inventar::getInstance().hotbarVerbrauchen(hotbarIdx);
 
         auto* objekt = new PlatzierbaresObjekt(aktiv);
         objekt->transform.position = platzPos;

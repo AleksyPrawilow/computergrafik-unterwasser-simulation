@@ -28,7 +28,8 @@ enum class GegenstandID {
     ANGEL,
     FISCH,
     SEETANG,
-    SUSHI
+    SUSHI,
+    HAUS
 };
 
 enum class WerkzeugTyp {

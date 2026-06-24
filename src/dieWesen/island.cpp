@@ -22,14 +22,46 @@ void Island::init() {
 
 
     transform.position = glm::vec3(-700.0f, -10.0f, -220.0f);
-    transform.scale = glm::vec3(4.0f, 4.0f, 4.0f);
+    transform.scale = glm::vec3(6.0f, 6.0f, 6.0f);
 
     addToGroup("Island");
-    addChild(new Tree());
+
+    auto* baum1 = new Tree();
+    addChild(baum1);
+    baum1->transform.position = glm::vec3(0.0f, 6.3f, 0.0f);
 
     auto* baum2 = new Tree();
-    baum2->transform.position = glm::vec3(5.0f, 6.0f, -3.0f);
     addChild(baum2);
+    baum2->transform.position = glm::vec3(5.0f, 5.2f, -3.0f);
+
+    auto* baum3 = new Tree();
+    addChild(baum3);
+    baum3->transform.position = glm::vec3(-6.0f, 4.9f, -4.0f);
+
+    auto* baum4 = new Tree();
+    addChild(baum4);
+    baum4->transform.position = glm::vec3(5.0f, 4.78f, 3.0f);
+
+    auto* baum5 = new Tree();
+    addChild(baum5);
+    baum5->transform.position = glm::vec3(-3.0f, 4.87f, 4.0f);
+
+    auto* baum6 = new Tree();
+    addChild(baum6);
+    baum6->transform.position = glm::vec3(-6.0f, 5.37f, 0.0f);
+
+    auto* baum7 = new Tree();
+    addChild(baum7);
+    baum7->transform.position = glm::vec3(2.0f, 4.95f, -5.0f);
+
+    auto* baum8 = new Tree();
+    addChild(baum8);
+    baum8->transform.position = glm::vec3(6.0f, 5.06f, -3.0f);
+
+    auto* baum9 = new Tree();
+    addChild(baum9);
+    baum9->transform.position = glm::vec3(-3.0f, 4.75f, -6.0f);
+
     isCollidable = true;
 }
 

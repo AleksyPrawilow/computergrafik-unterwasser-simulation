@@ -50,6 +50,9 @@ void GegenstandDaten::init() {
     registrieren(GegenstandID::SEETANG, "Seaweed", "assets/textures/icon_seetang.png", 16);
     registrieren(GegenstandID::SUSHI, "Sushi", "assets/textures/icon_sushi.png", 16);
 
+    registrieren(GegenstandID::HAUS, "House", "assets/textures/icon_haus.png", 1);
+    registry[static_cast<int>(GegenstandID::HAUS)].istPlatzierbar = true;
+
     // --- Hand recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::STEIN, GegenstandID::AXT, 1, RezeptQuelle::HAND);
@@ -67,6 +70,7 @@ void GegenstandDaten::init() {
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::PLANKE, GegenstandID::ZAUN, 3, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::AXT, GegenstandID::TRUHE, 1, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::FISCH, GegenstandID::SEETANG, GegenstandID::SUSHI, 1, RezeptQuelle::WERKBANK);
+    rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::HOLZ, GegenstandID::HAUS, 1, RezeptQuelle::WERKBANK);
 }
 
 const GegenstandInfo& GegenstandDaten::getInfo(GegenstandID id) const {

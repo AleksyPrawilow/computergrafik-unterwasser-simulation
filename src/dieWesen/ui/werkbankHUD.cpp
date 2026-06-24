@@ -23,8 +23,7 @@ void WerkbankHUD::onInit() {
     addChild(hintergrund);
     hintergrund->material.albedo = Kern::LoadTexture("assets/textures/inventar_hintergrund.png");
 
-    container = new VBoxUI(6.0f);
-    container->setAlignment(UIAlignment::CENTER);
+    container = new UIElement();
     addChild(container);
 
     titelLabel = new UILabel();
@@ -67,25 +66,6 @@ void WerkbankHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& camer
 
     if (!offen) return;
 
-    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
-    int sichtbar = glm::min(MAX_SICHTBAR, static_cast<int>(zeilen.size()));
-    float zeilenH = sichtbar > 0 ? (zeilen[0]->transform.scale.y + container->spacing) * sichtbar : 0.0f;
-    float contentH = titelLabel->transform.scale.y + container->spacing + zeilenH + container->spacing + hinweisLabel->transform.scale.y;
-    float contentW = container->transform.scale.x;
-    float pad = 20.0f;
-    float bgW = glm::max(contentW + pad * 2.0f, 300.0f);
-    float bgH = contentH + pad * 3.0f;
-
-    float left = (viewport.x - bgW) * 0.5f;
-    float top = (viewport.y - bgH) * 0.5f;
-
-    hintergrund->transform.position = glm::vec3(left, top, 0.0f);
-    hintergrund->transform.scale = glm::vec3(bgW, bgH, 1.0f);
-
-    float contentLeft = left + (bgW - contentW) * 0.5f;
-    float contentTop = top + pad;
-    container->transform.position = glm::vec3(contentLeft, contentTop, 0.0f);
-
     if (Input::isKeyJustPressed(GLFW_KEY_UP)) {
         if (!zeilen.empty()) {
             zeilen[ausgewaehlteZeile]->setHervorgehoben(false);
@@ -107,6 +87,44 @@ void WerkbankHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& camer
     if (Input::isKeyJustPressed(GLFW_KEY_E)) {
         herstellen();
     }
+
+    constexpr float spacing = 6.0f;
+    constexpr float pad = 20.0f;
+    float rowH = zeilen.empty() ? 30.0f : zeilen[0]->transform.scale.y;
+    int sichtbar = glm::min(MAX_SICHTBAR, static_cast<int>(zeilen.size()));
+
+    float y = 0.0f;
+    titelLabel->transform.position = glm::vec3(0.0f, y, 0.0f);
+    y += titelLabel->transform.scale.y + spacing;
+
+    for (int i = 0; i < static_cast<int>(zeilen.size()); i++) {
+        if (i >= scrollOffset && i < scrollOffset + MAX_SICHTBAR) {
+            zeilen[i]->visible = true;
+            for (auto* kind : zeilen[i]->children) kind->visible = true;
+            zeilen[i]->transform.position = glm::vec3(0.0f, y, 0.0f);
+            y += rowH + spacing;
+        } else {
+            zeilen[i]->visible = false;
+            for (auto* kind : zeilen[i]->children) kind->visible = false;
+        }
+    }
+
+    hinweisLabel->transform.position = glm::vec3(0.0f, y, 0.0f);
+    y += hinweisLabel->transform.scale.y;
+
+    float contentH = y;
+    float contentW = 300.0f;
+    float bgW = contentW + pad * 2.0f;
+    float bgH = contentH + pad * 2.0f;
+
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
+    float left = (viewport.x - bgW) * 0.5f;
+    float top = (viewport.y - bgH) * 0.5f;
+
+    hintergrund->transform.position = glm::vec3(left, top, 0.0f);
+    hintergrund->transform.scale = glm::vec3(bgW, bgH, 1.0f);
+
+    container->transform.position = glm::vec3(left + pad, top + pad, 0.0f);
 }
 
 bool WerkbankHUD::spielerNaheWerkbank() const {
@@ -133,6 +151,7 @@ void WerkbankHUD::umschalten(GLFWwindow* window) {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         cursorDisabled = false;
         aktualisieren();
+        scrollAktualisieren();
     } else {
         glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         cursorDisabled = true;
@@ -194,13 +213,5 @@ void WerkbankHUD::scrollAktualisieren() {
         scrollOffset = ausgewaehlteZeile;
     } else if (ausgewaehlteZeile >= scrollOffset + MAX_SICHTBAR) {
         scrollOffset = ausgewaehlteZeile - MAX_SICHTBAR + 1;
-    }
-
-    for (int i = 0; i < static_cast<int>(zeilen.size()); i++) {
-        bool sichtbar = (i >= scrollOffset && i < scrollOffset + MAX_SICHTBAR);
-        zeilen[i]->visible = sichtbar;
-        for (auto* kind : zeilen[i]->children) {
-            kind->visible = sichtbar;
-        }
     }
 }

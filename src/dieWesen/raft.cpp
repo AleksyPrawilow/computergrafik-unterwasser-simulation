@@ -14,6 +14,7 @@
 #include "werkzeuge/modelManager.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/visual/tween.h"
+#include "werkzeuge/visual/questManager.h"
 
 void Raft::init() {
     loadModel("assets/models/raft.obj");
@@ -219,6 +220,7 @@ void Raft::fish() {
                 Inventar::getInstance().hinzufuegen(GegenstandID::SEETANG, 1);
             }
             fishSound->play();
+            QuestManager::getInstance().progressObjective("catch_fish");
             isFishing = false;
         });
 }

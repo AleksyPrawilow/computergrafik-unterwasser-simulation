@@ -29,7 +29,9 @@ void UnterwasserszeneQuests::onUpdate(GLFWwindow* window, float deltaTime, Trans
         break;
     case COLLECT_BOTTLE:
         break;
-    case CHOP_DOWN:
+    case THE_BEGINNING:
+        break;
+    case SURVIVAL:
         break;
     case DIG_OUT:
         break;
@@ -60,8 +62,11 @@ void UnterwasserszeneQuests::setQuest(QUESTS newQuest) {
         case COLLECT_BOTTLE:
             setupCollectBottle();
             break;
-        case CHOP_DOWN:
-            setupChopDown();
+        case THE_BEGINNING:
+            setupTheBeginning();
+            break;
+        case SURVIVAL:
+            setupSurvival();
             break;
         case DIG_OUT:
             setupDigOut();
@@ -148,39 +153,46 @@ void UnterwasserszeneQuests::setupCollectBottle() {
         parent->addChild(banner);
         audio->play();
 
-        setQuest(DIG_OUT);
+        setQuest(THE_BEGINNING);
     };
 
     QuestManager::getInstance().acceptQuest(collectBottleQuest);
 }
 
-void UnterwasserszeneQuests::setupChopDown() {
-    Quest chopTreeQuest;
-    chopTreeQuest.title = "Wood";
+void UnterwasserszeneQuests::setupTheBeginning() {
+    Quest quest;
+    quest.title = "The Beginning";
 
-    chopTreeQuest.onComplete = [this]() {
-        auto * banner = new QuestCompletedBanner("The tree is no more");
+    QuestObjective axeObjective;
+    axeObjective.tag = "craft_Axe";
+    axeObjective.description = "Craft an axe";
+    axeObjective.requiredCount = 1;
+
+    QuestObjective workbenchObjective;
+    workbenchObjective.tag = "craft_Workbench";
+    workbenchObjective.description = "Craft a workbench";
+    workbenchObjective.requiredCount = 1;
+
+    quest.objectives.push_back(axeObjective);
+    quest.objectives.push_back(workbenchObjective);
+
+    quest.onComplete = [this]() {
+        auto * banner = new QuestCompletedBanner("Now you can build!");
         parent->addChild(banner);
         audio->play();
-
-        setQuest(DIG_OUT);
+        setQuest(SURVIVAL);
     };
 
-    QuestManager::getInstance().acceptQuest(chopTreeQuest);
+    QuestManager::getInstance().acceptQuest(quest);
 }
 
 void UnterwasserszeneQuests::setupDigOut() {
     Quest digOutQuest;
     digOutQuest.title = "Treasure";
 
-    QuestObjective chopObjective;
-    chopObjective.tag = "chop_tree";
-    chopObjective.description = "Chop down the tree for wood";
-    chopObjective.requiredCount = 1;
-
     QuestObjective craftObjective;
     craftObjective.tag = "craft_Shovel";
-    craftObjective.description = "Craft a shovel";
+    craftObjective.description = "Craft a shovel at the workbench";
     craftObjective.requiredCount = 1;
 
     QuestObjective digObjective;
@@ -188,7 +200,6 @@ void UnterwasserszeneQuests::setupDigOut() {
     digObjective.description = "Dig out the treasure";
     digObjective.requiredCount = 1;
 
-    digOutQuest.objectives.push_back(chopObjective);
     digOutQuest.objectives.push_back(craftObjective);
     digOutQuest.objectives.push_back(digObjective);
 
@@ -200,6 +211,39 @@ void UnterwasserszeneQuests::setupDigOut() {
     };
 
     QuestManager::getInstance().acceptQuest(digOutQuest);
+}
+
+void UnterwasserszeneQuests::setupSurvival() {
+    Quest quest;
+    quest.title = "Survival";
+
+    QuestObjective raftObjective;
+    raftObjective.tag = "craft_Raft";
+    raftObjective.description = "Craft a raft";
+    raftObjective.requiredCount = 1;
+
+    QuestObjective rodObjective;
+    rodObjective.tag = "craft_Fishing Rod";
+    rodObjective.description = "Craft a fishing rod";
+    rodObjective.requiredCount = 1;
+
+    QuestObjective fishObjective;
+    fishObjective.tag = "catch_fish";
+    fishObjective.description = "Catch something from the sea";
+    fishObjective.requiredCount = 1;
+
+    quest.objectives.push_back(raftObjective);
+    quest.objectives.push_back(rodObjective);
+    quest.objectives.push_back(fishObjective);
+
+    quest.onComplete = [this]() {
+        auto * banner = new QuestCompletedBanner("Time to find the treasure!");
+        parent->addChild(banner);
+        audio->play();
+        setQuest(DIG_OUT);
+    };
+
+    QuestManager::getInstance().acceptQuest(quest);
 }
 
 void UnterwasserszeneQuests::setupThrowSub() {

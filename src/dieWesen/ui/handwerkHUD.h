@@ -24,7 +24,7 @@ private:
     void scrollAktualisieren();
 
     UIElement* hintergrund = nullptr;
-    VBoxUI* container = nullptr;
+    UIElement* container = nullptr;
     UILabel* titelLabel = nullptr;
     UILabel* hinweisLabel = nullptr;
 
