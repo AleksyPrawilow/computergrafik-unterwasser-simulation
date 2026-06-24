@@ -6,6 +6,7 @@
 #include "werkzeuge/textur.h"
 #include "werkzeuge/visual/tween.h"
 #include "werkzeuge/audio/audioManager.h"
+#include "werkzeuge/visual/questManager.h"
 
 Aufhebbar::Aufhebbar(GegenstandID gegenstandId, int anzahl)
     : gegenstandId(gegenstandId), anzahl(anzahl) {}
@@ -57,6 +58,8 @@ void Aufhebbar::einsammeln() {
     }
 
     eingesammelt = true;
+    const auto& info = GegenstandDaten::getInstance().getInfo(gegenstandId);
+    QuestManager::getInstance().progressObjective("collect_" + info.name, 1);
     AudioManager::getInstance().play2D("assets/audio/pickup.mp3", false, true);
 
     createTween()

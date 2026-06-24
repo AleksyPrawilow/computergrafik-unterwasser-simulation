@@ -10,16 +10,16 @@
 
 void Island::init() {
     loadModel("assets/models/island.obj", &vertices);
-    material.albedo = Kern::LoadTexture("assets/textures/Ground_baseColor.png");
-    material.normal = Kern::LoadTexture("assets/textures/Ground_normal.png");
-    material.metallic = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
-    material.roughness = Kern::LoadTexture("assets/textures/Ground_metallicRoughness.png");
+    material.albedo = Kern::LoadTexture("assets/textures/sand_albedo.png");
+    material.normal = Kern::LoadTexture("assets/textures/sand_normal.png");
+    material.roughness = Kern::LoadTexture("assets/textures/sand_roughness.png");
 
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
+
 
     transform.position = glm::vec3(-700.0f, -10.0f, -220.0f);
     transform.scale = glm::vec3(4.0f, 4.0f, 4.0f);
@@ -30,6 +30,7 @@ void Island::init() {
     auto* baum2 = new Tree();
     baum2->transform.position = glm::vec3(5.0f, 6.0f, -3.0f);
     addChild(baum2);
+    isCollidable = true;
 }
 
 float Island::getHeight(const float x, const float z) const {

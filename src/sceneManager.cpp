@@ -80,9 +80,23 @@ void Scene::init(GLFWwindow* window)
 	int fbW, fbH;
 	glfwGetFramebufferSize(window, &fbW, &fbH);
 
-	float xscale, yscale;
-	glfwGetWindowContentScale(window, &xscale, &yscale);
-	UIElement::dpiScale = xscale;
+	bool apple = false;
+
+#ifdef __APPLE__
+	apple = true;
+#endif
+
+	if (apple) {
+		int winW, winH;
+		glfwGetWindowSize(window, &winW, &winH);
+
+		// Store globally in the UI system
+		UIElement::dpiScale = static_cast<float>(fbW) / static_cast<float>(winW) * 0.5f;
+	} else {
+		float xscale, yscale;
+		glfwGetWindowContentScale(window, &xscale, &yscale);
+		UIElement::dpiScale = xscale;
+	}
 
 	renderer.init();
 	UIElement::initUISystem();

@@ -4,6 +4,7 @@
 #pragma once
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_AXE_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_AXE_H
+#include "island.h"
 #include "tree.h"
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/audio/audioPlayer.h"
@@ -27,13 +28,19 @@ private:
     Tree * treeToHit = nullptr;
     Timer * recoveryTimer = nullptr;
     AudioPlayer * hitSound = nullptr;
+    AudioPlayer * shovelHitSound = nullptr;
     AudioPlayer * swingSound = nullptr;
+    Island * island = nullptr;
 
     GLuint defaultAlbedo = 0;
     GLuint upgradedAlbedo = 0;
     GLuint axeNormal = 0;
     GLuint axeRoughness = 0;
     GLuint axeMetallic = 0;
+
+    GLuint shovelAlbedo = 0;
+    GLuint shovelNormal = 0;
+    GLuint shovelMetallic = 0;
     GegenstandID letzteAktivesItem = GegenstandID::KEINE;
 
     Kern::RenderContext axeModelMesh;
@@ -42,6 +49,8 @@ private:
     AABB cubeModelAABB;
     Kern::RenderContext mapModelMesh;
     AABB mapModelAABB;
+    Kern::RenderContext shovelModelMesh;
+    AABB shovelModelAABB;
     GLuint mapAlbedo = 0;
     GLuint mapShader = 0;
 
@@ -55,6 +64,9 @@ private:
     void swing();
     void recoverAnimation();
     void hitTree();
+    void hitGround() const;
+    void shovelDig();
+    void shovelRecover();
     void ausruestungAktualisieren();
 };
 
