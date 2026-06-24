@@ -23,6 +23,8 @@ public:
     void generateFigureEight(float sizeX, float sizeY, float sizeZ, int numPoints = 100);
     void generateCircle(float radius, int numPoints = 100);
 
+    void generateFromSpline(const std::vector<glm::vec3>& controlPoints, int segmentsPerCurve = 20, bool closedLoop = true);
+
 private:
     void calculateParallelTransportFrames(const std::vector<glm::vec3>& points);
 };
