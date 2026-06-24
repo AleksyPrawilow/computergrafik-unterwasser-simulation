@@ -385,8 +385,8 @@ void HeldItem::shovelRecover() {
 void HeldItem::throwSub() {
     MusicManager::getInstance().playMusic("assets/audio/sub_intro.mp3", 2.0f);
     auto * uboot = new Uboot();
-    uboot->transform = getGlobalTransform();
     parent->parent->addChild(uboot);
+    uboot->transform = getGlobalTransform();
     uboot->shouldFloat = false;
     uboot->setIsActive(false);
 
