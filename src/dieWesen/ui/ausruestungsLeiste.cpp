@@ -1,4 +1,5 @@
 #include "ausruestungsLeiste.h"
+#include "dieWesen/player.h"
 #include "werkzeuge/input.h"
 #include "werkzeuge/inventar.h"
 #include "werkzeuge/renderWerkzeuge.h"
@@ -35,7 +36,10 @@ void AusruestungsLeiste::onUpdate(GLFWwindow* window, float deltaTime, Transform
     float barW = leisteContainer->transform.scale.x;
     transform.position = glm::vec3((viewport.x - barW) * 0.5f, viewport.y - 90.0f, 0.0f);
 
-    if (!inventarOffen) {
+    const auto& walkers = getNodesInGroup("playerWalking");
+    bool spielerAktiv = !walkers.empty() && dynamic_cast<Player*>(walkers[0])->getActive();
+
+    if (!inventarOffen && spielerAktiv) {
         constexpr int keys[] = { GLFW_KEY_1, GLFW_KEY_2, GLFW_KEY_3, GLFW_KEY_4, GLFW_KEY_5 };
         for (int i = 0; i < 5; i++) {
             if (Input::isKeyJustPressed(keys[i])) {
