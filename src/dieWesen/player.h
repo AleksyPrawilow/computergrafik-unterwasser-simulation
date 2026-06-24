@@ -18,6 +18,7 @@ public:
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void processInput(float deltaTime);
     void setActive(bool active);
+    [[nodiscard]] bool getActive() const { return isActive; }
 private:
     Wesen * rayTargetHelper = nullptr;
     Island * island = nullptr;

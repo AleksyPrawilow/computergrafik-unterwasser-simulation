@@ -109,15 +109,16 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     if (distance < 300.0f) {
         chase(deltaTime, toTargetWorld, distance);
 
+        float actualDist = glm::distance(transform.position, targetPos);
         float hitDist = boundingRadius + target->boundingRadius;
-        if (distance < hitDist && attackCooldown <= 0.0f) {
+        if (actualDist < hitDist && attackCooldown <= 0.0f) {
             if (auto* uboot = dynamic_cast<Uboot*>(target)) {
                 uboot->schadenNehmen(attackDamage);
                 attackCooldown = attackInterval;
             }
         }
 
-        if (isChasing && !wasChasing) {
+        if (distance < 150.0f && !wasChasing) {
             QuestManager::getInstance().progressObjective("leviathan_encounter");
         }
         wasChasing = isChasing;
