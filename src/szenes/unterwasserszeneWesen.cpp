@@ -67,7 +67,7 @@ void UnterwasserszeneWesen::init() {
     addChild(jellyfish);
 
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
-    fishPath->transform.position = glm::vec3(-12.f, -10.f, 0.f);
+    fishPath->transform.position = glm::vec3(-650.0f, -10.0f, -175.0f);
     fishPath->generateFigureEight(40.0f, 10.0f, 40.0f);
     addChild(fishPath);
     flock->transform.position = fishPath->transform.position;
