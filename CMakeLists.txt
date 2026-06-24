@@ -141,6 +141,8 @@ set(PROJECT_SOURCES
         src/dieWesen/map.h
         src/dieWesen/chest.cpp
         src/dieWesen/chest.h
+        src/dieWesen/leviathan.cpp
+        src/dieWesen/leviathan.h
 )
 
 set(SOIL_SOURCES

@@ -37,7 +37,6 @@ void Wesen::loadModel(const char *filepath, std::vector<glm::vec3> * vertices) {
     localAABB = model.localAABB;
     hasMesh = true;
 
-    // 2. If a calling class specifically requests raw vertices (like Island's heightmap check)
     if (vertices != nullptr) {
         Assimp::Importer import;
         const aiScene* scene = import.ReadFile(filepath, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipUVs);

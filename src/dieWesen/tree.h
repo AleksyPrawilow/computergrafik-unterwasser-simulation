@@ -17,6 +17,7 @@ public:
 private:
     AudioPlayer * fallSound = nullptr;
     glm::vec3 treeEuler;
+    Wesen * leaves = nullptr;
     int hp = 10;
 };
 

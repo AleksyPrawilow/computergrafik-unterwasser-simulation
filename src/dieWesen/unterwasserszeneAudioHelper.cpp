@@ -11,6 +11,7 @@ extern Kamera kamera;
 void UnterwasserszeneAudioHelper::init() {
     musicManager = &MusicManager::getInstance();
     setGameState(OVER_WATER);
+    addToGroup("Music");
 }
 
 void UnterwasserszeneAudioHelper::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
@@ -34,7 +35,7 @@ void UnterwasserszeneAudioHelper::onUpdate(GLFWwindow* window, float deltaTime, 
 
 void UnterwasserszeneAudioHelper::setGameState(const GameState state) {
     gameState = state;
-
+    if (isChasing) return;
     switch (gameState) {
         case OVER_WATER:
             musicManager->playMusic("assets/audio/island_music.mp3");
@@ -51,6 +52,18 @@ void UnterwasserszeneAudioHelper::setGameState(const GameState state) {
         default:
             break;
     }
+}
+
+void UnterwasserszeneAudioHelper::initiateChase() {
+    if (isChasing) return;
+    isChasing = true;
+    musicManager->playMusic("assets/audio/chase.mp3");
+}
+
+void UnterwasserszeneAudioHelper::stopChasing() {
+    if (!isChasing) return;
+    isChasing = false;
+    setGameState(gameState);
 }
 
 void UnterwasserszeneAudioHelper::manageIsland(const Transform& cameraTransform) {

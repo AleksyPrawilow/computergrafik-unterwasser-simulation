@@ -22,9 +22,13 @@ public:
     [[nodiscard]] bool hasCustomRender() const override { return true; };
 
     void setGameState(GameState state);
+    void initiateChase();
+    void stopChasing();
 private:
     MusicManager * musicManager = nullptr;
     GameState gameState = OVER_WATER;
+
+    bool isChasing = false;
 
     void manageIsland(const Transform& cameraTransform);
     void manageUnderwater(const Transform& cameraTransform);

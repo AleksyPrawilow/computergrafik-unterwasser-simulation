@@ -16,13 +16,35 @@ extern Kamera kamera;
 void Tree::init() {
     name = "tree";
     isCollidable = true;
-    loadModel("assets/models/tree.obj");
-    material.shader = ShaderManager::getInstance().getShader("default");
-    material.albedo = Kern::LoadTexture("assets/textures/Raft_baseColor.png");
-    material.normal = Kern::LoadTexture("assets/textures/Raft_normal.png");
-    material.metallic = Kern::LoadTexture("assets/textures/Raft_metallicRoughness.png");
-    material.roughness = Kern::LoadTexture("assets/textures/Raft_metallicRoughness.png");
-    material.shader = ShaderManager::getInstance().getShader("default");
+    loadModel("assets/models/palm.obj");
+    material.shader = ShaderManager::getInstance().loadShader(
+        "default",
+        "assets/shaders/default.vert",
+        "assets/shaders/default.frag"
+        );
+    material.albedo = Kern::LoadTexture("assets/textures/blinn1_baseColor.png");
+    material.normal = Kern::LoadTexture("assets/textures/blinn1_normal.png");
+    material.metallic = Kern::LoadTexture("assets/textures/blinn1_metallicRoughness.png");
+    material.roughness = Kern::LoadTexture("assets/textures/blinn1_metallicRoughness.png");
+    material.opacity = Kern::LoadTexture("assets/textures/blinn1_opacity.png");
+
+    leaves = new Wesen();
+    leaves->loadModel("assets/models/palm_leaves.obj");
+    leaves->material.albedo = material.albedo;
+    leaves->material.normal = material.normal;
+    leaves->material.roughness = material.roughness;
+    leaves->material.metallic = material.metallic;
+    leaves->material.opacity = material.opacity;
+    leaves->material.isTransparent = true;
+    leaves->material.shader = ShaderManager::getInstance().loadShader(
+        "default",
+        "assets/shaders/default.vert",
+        "assets/shaders/default.frag"
+    );
+
+    addChild(leaves);
+
+
     transform.position = glm::vec3(0.0f, 6.0f, 0.0f);
     transform.scale = glm::vec3(1.0f);
     fallSound = new AudioPlayer("assets/audio/tree_fall.mp3", false, 10);

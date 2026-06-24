@@ -47,6 +47,7 @@ uniform sampler2D opacityMap;
 
 uniform float alphaCutoff = 0.0;
 uniform float u_bloomStrength = 0.0;
+uniform float u_emissionPulse = 1.0;
 
 // --- PROCEDURAL CAUSTICS GENERATOR ---
 float calculateCaustics(vec2 xz, float t, float scale) {
@@ -138,7 +139,7 @@ vec4 calculatePBR() {
     vec3 color = ambient + Lo;
 
     // Add PBR Emission
-    color += emission * 3.0;
+    color += emission * 3.0 * u_emissionPulse;
 
     // Projected Caustics
     if (u_causticsEnabled != 0 && u_heightFogEnabled != 0 && worldPos.y < u_heightFogMax) { // FIX: Changed int checks

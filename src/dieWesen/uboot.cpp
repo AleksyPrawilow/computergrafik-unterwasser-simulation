@@ -138,6 +138,9 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
     if (Input::isKeyJustPressed(GLFW_KEY_2)) {
         viewMode = ViewMode::THIRD_PERSON;
     }
+    if (Input::isKeyJustPressed(GLFW_KEY_3)) {
+        viewMode = ViewMode::THIRD_PERSON_BACK;
+    }
 
     if (Input::isKeyPressed(GLFW_KEY_W)) {
         targetMoveSpeed = moveSpeed;
@@ -192,8 +195,13 @@ void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) c
         lookAtTarget = shipPos + up * 0.5f;
         camFollowSpeed = 6.0f;
         camRotateSpeed = 8.0f;
-    }
-    else {
+    } else if (viewMode == ViewMode::THIRD_PERSON_BACK) {
+        targetCamPos = shipPos + forward * 9.0f + up * 1.5f;
+        lookAtTarget = shipPos + up * 0.5f;
+
+        camFollowSpeed = 6.0f;
+        camRotateSpeed = 8.0f;
+    } else {
         targetCamPos = shipPos + forward * 2.1f;
         lookAtTarget = shipPos + forward * 10.0f;
 

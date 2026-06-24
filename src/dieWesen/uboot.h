@@ -23,7 +23,8 @@ struct CPUWave {
 
 enum class ViewMode {
     FIRST_PERSON,
-    THIRD_PERSON
+    THIRD_PERSON,
+    THIRD_PERSON_BACK
 };
 
 class Uboot: public Wesen {

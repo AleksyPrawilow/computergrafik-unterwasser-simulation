@@ -34,6 +34,7 @@
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/aufhebbar.h"
 #include "dieWesen/chest.h"
+#include "dieWesen/leviathan.h"
 #include "dieWesen/unterwasserszeneQuests.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/gegenstandDaten.h"
@@ -50,6 +51,7 @@ void UnterwasserszeneWesen::init() {
         "assets/textures/skybox/nz.png"
     }));
 
+    addChild(new UnterwasserszeneAudioHelper());
     auto * jellyfish = new Jellyfish();
     FishFlock* flock = new FishFlock();
     Path3D* fishPath = new Path3D();
@@ -58,6 +60,7 @@ void UnterwasserszeneWesen::init() {
     addChild(new Wasser());
     addChild(new Island());
     addChild(new Player());
+    addChild(new Leviathan());
     addChild(jellyfish);
 
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
@@ -127,6 +130,4 @@ void UnterwasserszeneWesen::init() {
 
     addChild(new UnterwasserszeneQuests());
     addChild(new Thunderstorm());
-
-    addChild(new UnterwasserszeneAudioHelper());
 }
