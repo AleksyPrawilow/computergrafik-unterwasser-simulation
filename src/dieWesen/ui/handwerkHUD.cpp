@@ -57,7 +57,10 @@ void HandwerkHUD::onInit() {
 }
 
 void HandwerkHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (Input::isKeyJustPressed(GLFW_KEY_C)) {
+    const auto& walkers = getNodesInGroup("playerWalking");
+    bool spielerAktiv = !walkers.empty() && dynamic_cast<Player*>(walkers[0])->getActive();
+
+    if (Input::isKeyJustPressed(GLFW_KEY_C) && spielerAktiv) {
         umschalten(window);
     }
 
