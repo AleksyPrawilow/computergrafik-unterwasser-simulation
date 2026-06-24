@@ -27,7 +27,7 @@ void Uboot::init() {
         );
     loadModel("assets/models/uboot.obj");
     transform.scale = glm::vec3(3.0f);
-    boundingRadius = 3.0f;
+    boundingRadius = 4.0f;
 
     addToGroup("player");
 

@@ -29,7 +29,7 @@ void Leviathan::init() {
     addToGroup("feinde");
     addToGroup("Leviathan");
 
-    boundingRadius = 8.0f;
+    boundingRadius = 40.0f;
 
     music = dynamic_cast<UnterwasserszeneAudioHelper * >(getNodesInGroup("Music")[0]);
 
@@ -84,7 +84,7 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     if (distance < 300.0f) {
         chase(deltaTime, toTargetWorld, distance);
 
-        float actualDist = glm::distance(transform.position, targetPos);
+        float actualDist = glm::distance(getGlobalTransform().position, targetPos);
         float hitDist = boundingRadius + target->boundingRadius;
         if (actualDist < hitDist && attackCooldown <= 0.0f) {
             if (auto* uboot = dynamic_cast<Uboot*>(target)) {
