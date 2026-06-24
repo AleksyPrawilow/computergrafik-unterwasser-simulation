@@ -389,6 +389,7 @@ void HeldItem::throwSub() {
     uboot->transform = getGlobalTransform();
     uboot->shouldFloat = false;
     uboot->setIsActive(false);
+    uboot->player = dynamic_cast<Player *>(parent);
 
     float throwDistance = 20.0f;
     glm::vec3 startPos = getGlobalTransform().position;

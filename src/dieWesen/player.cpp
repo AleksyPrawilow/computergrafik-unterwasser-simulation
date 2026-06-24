@@ -62,9 +62,29 @@ void Player::processInput(const float deltaTime) {
 
     if (!isActive) return;
 
-    constexpr float moveSpeed = 6.0f;
-    constexpr float gravity = 30.0f;
-    constexpr float jumpForce = 10.0f;
+    // 1. Fetch both the local island height and the active wave height
+    float islandHeight = island->getHeight(transform.position.x, transform.position.z);
+
+    const auto time = static_cast<float>(glfwGetTime());
+    float waterHeight = Uboot::getWaterHeight(transform.position.x, transform.position.z, time) * 2.0f;
+
+    // 2. Decouple standing height from swimming height
+    constexpr float standEyeHeight = 3.0f; // Eye height when standing
+    constexpr float swimEyeHeight = 1.1f;  // Eye height when swimming (neck-deep)
+
+    float standingY = islandHeight + standEyeHeight;
+    float floatingY = waterHeight + swimEyeHeight;
+
+    // 3. Determine if the player is actively swimming/submerged
+    bool isSwimming = floatingY > standingY;
+
+    // 4. DYNAMIC LOCOMOTION TUNING (Water Resistance)
+    // 6.0m/s on land, 2.5m/s in water (heavy drag)
+    float activeMoveSpeed = isSwimming ? 2.5f : 6.0f;
+
+    float activeJumpForce = isSwimming ? 4.0f : 10.0f;
+
+    float gravity = 30.0f;
 
     glm::vec3 forward = transform.forward();
     forward.y = 0.0f;
@@ -73,20 +93,13 @@ void Player::processInput(const float deltaTime) {
     verticalVelocity -= gravity * deltaTime;
     direction = glm::vec3(0.0f);
 
-    if (Input::isKeyPressed(GLFW_KEY_W)) {
-        direction += forward;
-    }
-    if (Input::isKeyPressed(GLFW_KEY_S)) {
-        direction -= forward;
-    }
-    if (Input::isKeyPressed(GLFW_KEY_A)) {
-        direction -= transform.right();
-    }
-    if (Input::isKeyPressed(GLFW_KEY_D)) {
-        direction += transform.right();
-    }
+    if (Input::isKeyPressed(GLFW_KEY_W)) direction += forward;
+    if (Input::isKeyPressed(GLFW_KEY_S)) direction -= forward;
+    if (Input::isKeyPressed(GLFW_KEY_A)) direction -= transform.right();
+    if (Input::isKeyPressed(GLFW_KEY_D)) direction += transform.right();
+
     if (Input::isKeyJustPressed(GLFW_KEY_SPACE) && grounded) {
-        verticalVelocity = jumpForce;
+        verticalVelocity = activeJumpForce;
         grounded = false;
     }
 
@@ -94,12 +107,19 @@ void Player::processInput(const float deltaTime) {
         direction = glm::normalize(direction);
     }
 
-    transform.position += direction * moveSpeed * deltaTime;
+    transform.position += direction * activeMoveSpeed * deltaTime;
 
+    if (isSwimming) {
+        float swayX = glm::sin(time * 1.5f) * 0.25f;
+        float swayZ = glm::cos(time * 1.2f) * 0.25f;
+        transform.position += glm::vec3(swayX, 0.0f, swayZ) * deltaTime;
+    }
+
+    float finalTargetY = glm::max(standingY, floatingY);
     constexpr float yAcceleration = 2.0f;
     const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);
 
-    targetY = glm::mix(targetY, island->getHeight(transform.position.x, transform.position.z) + 3.0f, tSpeed);
+    targetY = glm::mix(targetY, finalTargetY, tSpeed);
     transform.position.y += verticalVelocity * deltaTime;
 
     if (transform.position.y <= targetY) {

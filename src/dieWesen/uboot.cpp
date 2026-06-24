@@ -16,6 +16,7 @@
 extern Kamera kamera;
 
 void Uboot::init() {
+    isCollidable = true;
     material.albedo = Kern::LoadTexture("assets/textures/sub_albedo.png");
     material.roughness = Kern::LoadTexture("assets/textures/sub_metallic.png");
     material.metallic = Kern::LoadTexture("assets/textures/sub_metallic.png");
@@ -76,6 +77,15 @@ void Uboot::init() {
         rotors[i] = rotor;
         emitters[i] = emitter;
     }
+
+    interactLabel = new UILabel();
+    interactLabel->text = "Press [E] to pilot";
+    interactLabel->fontSize = 48.0f;
+    interactLabel->expansion = UIExpansion::CENTER;
+    parent->addChild(interactLabel);
+    glm::vec2 screenSize = Kern::GetViewportSize();
+    interactLabel->transform.position = glm::vec3(screenSize.x / 2.0f, screenSize.y / 2.0f, 0.0f);
+    interactLabel->visible = false;
 }
 
 void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
@@ -136,19 +146,34 @@ void Uboot::setIsActive(const bool active) {
 }
 
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
-    if (Input::isKeyJustPressed(GLFW_KEY_F3)) {
-        isActive = !isActive;
+    if (!isActive && player->raycast->isColliding() && player->raycast->getCollider() == this) {
+        interactLabel->visible = true;
+        if (Input::isKeyJustPressed(GLFW_KEY_E)) {
+            isActive = true;
+            interactLabel->visible = false;
+            player->visible = false;
+            player->setActive(false);
+        }
+    } else {
+        interactLabel->visible = false;
     }
 
     if (!isActive) return;
 
-    if (Input::isKeyJustPressed(GLFW_KEY_F5)) {
+    if (targetWaveInfluence > 0.5f && Input::isKeyJustPressed(GLFW_KEY_G)) {
+        isActive = false;
+        player->visible = true;
+        player->setActive(true);
+        player->transform.position = getGlobalTransform().position - transform.forward() * 5.0f;
+    }
+
+    if (Input::isKeyJustPressed(GLFW_KEY_1)) {
         viewMode = ViewMode::FIRST_PERSON;
     }
-    if (Input::isKeyJustPressed(GLFW_KEY_F6)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_2)) {
         viewMode = ViewMode::THIRD_PERSON;
     }
-    if (Input::isKeyJustPressed(GLFW_KEY_F7)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_2)) {
         viewMode = ViewMode::THIRD_PERSON_BACK;
     }
 
