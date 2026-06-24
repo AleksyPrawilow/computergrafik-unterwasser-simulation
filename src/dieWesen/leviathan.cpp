@@ -41,19 +41,14 @@ void Leviathan::init() {
     startClawPositions[2] = glm::vec3(-clawXOffset,  clawYOffset, clawZOffset); // Upper Left
     startClawPositions[3] = glm::vec3(-clawXOffset, -clawYOffset, clawZOffset); // Lower Left
 
+    const std::string colors[4] = {"red", "purple", "green", "blue"};
     for (int i = 0; i < 4; i++) {
-        auto* saber = new Wesen();
-        saber->name = "lightsaber";
-        saber->loadModel("assets/models/lightsaber.obj");
-
-        saber->material.shader = ShaderManager::getInstance().getShader("default");
-        saber->material.albedo = Kern::LoadTexture("assets/textures/default_opacity.png");
-        saber->material.emission = Kern::LoadTexture("assets/textures/default_opacity.png");
-        saber->material.isTransparent = true;
-        saber->material.bloomStrength = 4.0f;
-
-        addChild(saber);
-        lightsabers[i] = saber;
+        auto * dummy = new Wesen();
+        auto * saber = new Lightsaber("assets/textures/lightsaber_" + colors[i] + ".png");
+        saber->dir = (i % 2 == 0) ? 1 : -1;
+        addChild(dummy);
+        lightsabers[i] = dummy;
+        dummy->addChild(saber);
     }
 }
 

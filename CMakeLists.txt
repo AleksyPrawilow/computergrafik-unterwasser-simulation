@@ -143,6 +143,8 @@ set(PROJECT_SOURCES
         src/dieWesen/chest.h
         src/dieWesen/leviathan.cpp
         src/dieWesen/leviathan.h
+        src/dieWesen/lightsaber.cpp
+        src/dieWesen/lightsaber.h
 )
 
 set(SOIL_SOURCES
