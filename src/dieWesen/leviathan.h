@@ -29,12 +29,23 @@ private:
     UnterwasserszeneAudioHelper * music = nullptr;
 
     float moveSpeed = 9.0f;
+    float idleSpeed = 2.0f;
     float u_spiralRadius = 2.2f;
     float u_spiralFrequency = 2.5f;
     float maxRollOffset = 0.5f;
     glm::vec3 basePosition = glm::vec3(0.0f);
+    glm::vec3 patrolCenter = glm::vec3(0.0f);
     float elapsedTime = 0.0f;
     bool isChasing = false;
+    bool wasChasing = false;
+
+    float attackCooldown = 0.0f;
+    float attackDamage = 25.0f;
+    float attackInterval = 2.0f;
+
+    Wesen* findClosestTarget() const;
+    void chase(float deltaTime, const glm::vec3& toTarget, float distance);
+    void patrol(float deltaTime);
 };
 
 

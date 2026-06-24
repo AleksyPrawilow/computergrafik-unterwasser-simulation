@@ -14,6 +14,8 @@
 #include "../werkzeuge/visual/lightManager.h"
 #include "ui/fadenkreuz.h"
 
+class HudPanel;
+
 struct CPUWave {
     glm::vec2 direction;
     float amplitude;
@@ -34,12 +36,18 @@ public:
     [[nodiscard]] float getSpeed() const {
         return actualMoveSpeed;
     }
+    [[nodiscard]] float getLeben() const { return leben; }
+    void schadenNehmen(float schaden);
     void setIsActive(bool active);
     static float getWaterHeight(float x, float z, float t);
 
     bool shouldFloat = true;
 private:
+    float leben = 100.0f;
+    float spawnSchutz = 0.0f;
+
     Fadenkreuz * crosshair = nullptr;
+    HudPanel * hudPanel = nullptr;
     ViewMode viewMode = ViewMode::THIRD_PERSON;
     UbootHeadlight * headlights[2] = {nullptr};
     Timer * spotlightTimer {};

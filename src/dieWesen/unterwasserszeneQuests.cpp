@@ -34,8 +34,14 @@ void UnterwasserszeneQuests::onUpdate(GLFWwindow* window, float deltaTime, Trans
     case THROW_SUB:
         break;
     case EXPLORE_THE_SEA:
+        if (cameraTransform.position.y < -5.0f) {
+            manager->progressObjective("dive_below");
+        }
         break;
     case FIND_THE_TRENCH:
+        if (cameraTransform.position.y < -100.0f) {
+            manager->progressObjective("reach_abyss");
+        }
         break;
     case INVESTIGATE_THE_SOUNDS:
         break;
@@ -221,15 +227,65 @@ void UnterwasserszeneQuests::setupThrowSub() {
 }
 
 void UnterwasserszeneQuests::setupExploreTheSea() {
+    Quest quest;
+    quest.title = "Into the Deep";
 
+    QuestObjective diveObjective;
+    diveObjective.tag = "dive_below";
+    diveObjective.description = "Dive below the surface";
+    diveObjective.requiredCount = 1;
+
+    quest.objectives.push_back(diveObjective);
+
+    quest.onComplete = [this]() {
+        auto * banner = new QuestCompletedBanner("The ocean awaits...");
+        parent->addChild(banner);
+        audio->play();
+        setQuest(FIND_THE_TRENCH);
+    };
+
+    QuestManager::getInstance().acceptQuest(quest);
 }
 
 void UnterwasserszeneQuests::setupFindTheTrench() {
+    Quest quest;
+    quest.title = "The Abyss";
 
+    QuestObjective depthObjective;
+    depthObjective.tag = "reach_abyss";
+    depthObjective.description = "Descend into the abyss";
+    depthObjective.requiredCount = 1;
+
+    quest.objectives.push_back(depthObjective);
+
+    quest.onComplete = [this]() {
+        auto * banner = new QuestCompletedBanner("What lurks in the darkness?");
+        parent->addChild(banner);
+        audio->play();
+        setQuest(INVESTIGATE_THE_SOUNDS);
+    };
+
+    QuestManager::getInstance().acceptQuest(quest);
 }
 
 void UnterwasserszeneQuests::setupInvestigateTheSounds() {
+    Quest quest;
+    quest.title = "The Leviathan";
 
+    QuestObjective encounterObjective;
+    encounterObjective.tag = "leviathan_encounter";
+    encounterObjective.description = "Investigate the strange sounds";
+    encounterObjective.requiredCount = 1;
+
+    quest.objectives.push_back(encounterObjective);
+
+    quest.onComplete = [this]() {
+        auto * banner = new QuestCompletedBanner("You survived!");
+        parent->addChild(banner);
+        audio->play();
+    };
+
+    QuestManager::getInstance().acceptQuest(quest);
 }
 
 void UnterwasserszeneQuests::onUpdateTutorial() {

@@ -6,7 +6,7 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_FISHFLOCK_H
 
 #include "werkzeuge/wesen.h"
-#include "path3D.h"
+#include "path3d.h"
 
 class FishFlock : public Wesen {
 public:

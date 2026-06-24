@@ -2,8 +2,8 @@
 // Created by Alexey Pravilov on 17/06/2026.
 //
 #pragma once
-#ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_AXE_H
-#define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_AXE_H
+#ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_HELD_ITEM_H
+#define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_HELD_ITEM_H
 #include "island.h"
 #include "tree.h"
 #include "uboot.h"
@@ -15,7 +15,7 @@
 
 class Timer;
 
-class Axe: public Wesen {
+class HeldItem: public Wesen {
 public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
@@ -74,4 +74,4 @@ private:
 };
 
 
-#endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_AXE_H
+#endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_HELD_ITEM_H

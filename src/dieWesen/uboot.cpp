@@ -9,8 +9,11 @@
 #include "ui/fadenkreuz.h"
 #include "ui/hudPanel.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/audio/audioPlayer.h"
+
+extern Kamera kamera;
 
 void Uboot::init() {
     material.albedo = Kern::LoadTexture("assets/textures/sub_albedo.png");
@@ -24,8 +27,7 @@ void Uboot::init() {
         );
     loadModel("assets/models/uboot.obj");
     transform.scale = glm::vec3(3.0f);
-
-    std::cout << "Uboot" << std::endl;
+    boundingRadius = 3.0f;
 
     addToGroup("player");
 
@@ -50,7 +52,8 @@ void Uboot::init() {
     crosshair = new Fadenkreuz();
     crosshair->init(16.0f / 9.0f);
     addChild(crosshair);
-    parent->addChild(new HudPanel());
+    hudPanel = new HudPanel();
+    parent->addChild(hudPanel);
 
     auto * audio = new AudioPlayer("assets/audio/submarine.mp3", true, 4, true);
     addChild(audio);
@@ -81,6 +84,10 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     targetRotorSpeed = 0.0f;
     targetRollVelocity = 0.0f;
     crosshair->visible = isActive;
+
+    if (spawnSchutz > 0.0f) {
+        spawnSchutz -= deltaTime;
+    }
 
     processInput(window, deltaTime);
 
@@ -116,6 +123,10 @@ void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
 
     if (isActive) updateCameraTransform(cameraTransform, deltaTime);
 
+    if (hudPanel != nullptr) {
+        hudPanel->setHealth(leben);
+    }
+
     for (ParticleEmitter * emitter : emitters) {
         emitter->active = (transform.position.y < waveHeight) && (glm::abs(actualRotorSpeed) > 2.0f);
     }
@@ -132,13 +143,13 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
 
     if (!isActive) return;
 
-    if (Input::isKeyJustPressed(GLFW_KEY_1)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_F5)) {
         viewMode = ViewMode::FIRST_PERSON;
     }
-    if (Input::isKeyJustPressed(GLFW_KEY_2)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_F6)) {
         viewMode = ViewMode::THIRD_PERSON;
     }
-    if (Input::isKeyJustPressed(GLFW_KEY_3)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_F7)) {
         viewMode = ViewMode::THIRD_PERSON_BACK;
     }
 
@@ -287,4 +298,19 @@ float Uboot::getWaterHeight(const float x, const float z, const float t) {
         y += amplitude * glm::sin(f);
     }
     return y;
+}
+
+void Uboot::schadenNehmen(float schaden) {
+    if (spawnSchutz > 0.0f) return;
+
+    kamera.addShake(0.5f, 0.3f);
+    leben -= schaden;
+
+    if (leben <= 0.0f) {
+        leben = 100.0f;
+        transform.position = glm::vec3(0.0f);
+        transform.rotation = glm::quat(1.0f, 0.0f, 0.0f, 0.0f);
+        actualMoveSpeed = 0.0f;
+        spawnSchutz = 3.0f;
+    }
 }

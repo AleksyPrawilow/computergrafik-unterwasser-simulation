@@ -1,4 +1,4 @@
-#include "path3D.h"
+#include "path3d.h"
 #include "gtc/constants.hpp"
 
 void Path3D::generateFigureEight(float sizeX, float sizeY, float sizeZ, int numPoints) {

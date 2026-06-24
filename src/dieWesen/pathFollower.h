@@ -1,6 +1,6 @@
 #pragma once
 #include "werkzeuge/wesen.h"
-#include "path3D.h"
+#include "path3d.h"
 
 class PathFollower : public Wesen {
 public:

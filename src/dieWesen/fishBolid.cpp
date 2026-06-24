@@ -2,7 +2,7 @@
 #include "werkzeuge/groupManager.h"
 #include "gtc/matrix_transform.hpp"
 #include "flockManager.h"
-#include "path3D.h"
+#include "path3d.h"
 
 void FishBoid::init() {
     addToGroup("Boids");

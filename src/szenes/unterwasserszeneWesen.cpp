@@ -9,7 +9,7 @@
 #include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
 #include "dieWesen/flockManager.h"
-#include "dieWesen/path3D.h"
+#include "dieWesen/path3d.h"
 #include "dieWesen/pathFollower.h"
 #include "dieWesen/oceanFloor.h"
 #include "dieWesen/player.h"
@@ -60,7 +60,10 @@ void UnterwasserszeneWesen::init() {
     addChild(new Wasser());
     addChild(new Island());
     addChild(new Player());
-    addChild(new Leviathan());
+    auto* leviathan = new Leviathan();
+    leviathan->transform.position = glm::vec3(0.0f, -120.0f, 0.0f);
+    leviathan->transform.scale = glm::vec3(4.0f);
+    addChild(leviathan);
     addChild(jellyfish);
 
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
@@ -92,7 +95,6 @@ void UnterwasserszeneWesen::init() {
     addChild(questHUD);
 
     Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
-    Inventar::getInstance().hinzufuegen(GegenstandID::MINIUBOOT, 1);
 
     addChild(new InventarHUD());
     addChild(new HandwerkHUD());
@@ -114,6 +116,15 @@ void UnterwasserszeneWesen::init() {
     auto * chest = new Chest();
     chest->transform.position = glm::vec3(-690.0f, 11.5f, -225.0f);
     addChild(chest);
+
+    auto* schatzMarkierung = new Wesen();
+    schatzMarkierung->loadModel("assets/models/cube.obj");
+    schatzMarkierung->material.albedo = Kern::LoadTexture("assets/textures/laser_rot.png");
+    schatzMarkierung->material.emission = Kern::LoadTexture("assets/textures/laser_rot.png");
+    schatzMarkierung->material.shader = ShaderManager::getInstance().getShader("default");
+    schatzMarkierung->transform.scale = glm::vec3(2.0f);
+    schatzMarkierung->transform.position = glm::vec3(-690.0f, 60.0f, -225.0f);
+    addChild(schatzMarkierung);
 
     auto sceneData = getGodotSceneData();
     for (const auto& [className, transforms] : sceneData) {

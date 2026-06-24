@@ -2,7 +2,7 @@
 // Created by Alexey Pravilov on 17/06/2026.
 //
 
-#include "axe.h"
+#include "heldItem.h"
 
 #include "player.h"
 #include "thunderstorm.h"
@@ -19,7 +19,7 @@
 
 extern Kamera kamera;
 
-void Axe::init() {
+void HeldItem::init() {
     loadModel("assets/models/axe.obj");
     defaultAlbedo = Kern::LoadTexture("assets/textures/axe_albedo.png");
     upgradedAlbedo = Kern::LoadTexture("assets/textures/icon_axt.png");
@@ -72,7 +72,7 @@ void Axe::init() {
     visible = false;
 }
 
-void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+void HeldItem::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     ausruestungAktualisieren();
 
     if (!visible) return;
@@ -134,7 +134,7 @@ void Axe::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransfo
     }
 }
 
-void Axe::ausruestungAktualisieren() {
+void HeldItem::ausruestungAktualisieren() {
     GegenstandID aktiv = Inventar::getInstance().getAktivesItem();
 
     if (aktiv == letzteAktivesItem) return;
@@ -216,13 +216,13 @@ void Axe::ausruestungAktualisieren() {
     }
 }
 
-void Axe::prepareUniforms() const {
+void HeldItem::prepareUniforms() const {
     if (letzteAktivesItem == GegenstandID::KARTE) {
         Kern::setUniform(material.shader, "u_progress", 1.0f);
     }
 }
 
-void Axe::swing() {
+void HeldItem::swing() {
     const bool wasAwaitingRecovery = !recoveryTimer->active;
     recoveryTimer->stopTimer();
     Tween * tween = createTween();
@@ -260,7 +260,7 @@ void Axe::swing() {
         });
 }
 
-void Axe::recoverAnimation() {
+void HeldItem::recoverAnimation() {
     recoveringAnimation = true;
     createTween()
         ->tweenProperty(&transform.position.x, 0.75f, 0.5f, EaseType::EASE_OUT_BACK)
@@ -274,7 +274,7 @@ void Axe::recoverAnimation() {
         });
 }
 
-void Axe::hitTree() {
+void HeldItem::hitTree() {
     const auto * player = dynamic_cast<Player *>(parent);
     if (player == nullptr) {
         return;
@@ -290,12 +290,12 @@ void Axe::hitTree() {
     }
 }
 
-void Axe::hitGround() const {
+void HeldItem::hitGround() const {
     shovelHitSound->play();
-    island->graben(parent->getGlobalTransform().position, 2.0f, 1.5f);
+    island->graben(parent->getGlobalTransform().position, 4.0f, 1.5f);
 }
 
-void Axe::shovelDig() {
+void HeldItem::shovelDig() {
     const bool wasAwaitingRecovery = !recoveryTimer->active;
     recoveryTimer->stopTimer();
     Tween* tween = createTween();
@@ -361,7 +361,7 @@ void Axe::shovelDig() {
             recoveryTimer->startTimer(0.25f, [this]() { recoverAnimation(); });
         });
 }
-void Axe::shovelRecover() {
+void HeldItem::shovelRecover() {
     recoveringAnimation = true;
 
     createTween()
@@ -382,7 +382,7 @@ void Axe::shovelRecover() {
         });
 }
 
-void Axe::throwSub() {
+void HeldItem::throwSub() {
     MusicManager::getInstance().playMusic("assets/audio/sub_intro.mp3", 2.0f);
     auto * uboot = new Uboot();
     parent->parent->addChild(uboot);
@@ -421,7 +421,7 @@ void Axe::throwSub() {
         });
 }
 
-void Axe::showcaseSub(Uboot * uboot) {
+void HeldItem::showcaseSub(Uboot * uboot) {
     dynamic_cast<Player * >(parent)->setActive(false);
     kamera.transform.position = uboot->getGlobalTransform().position - uboot->transform.right() * 2.0f - uboot->transform.forward() * 4.0f;
     kamera.transform.lookAt(uboot->transform.position - uboot->transform.forward() * 4.0f);

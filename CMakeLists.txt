@@ -84,8 +84,8 @@ set(PROJECT_SOURCES
         src/dieWesen/raft.h
         src/dieWesen/tree.cpp
         src/dieWesen/tree.h
-        src/dieWesen/axe.cpp
-        src/dieWesen/axe.h
+        src/dieWesen/heldItem.cpp
+        src/dieWesen/heldItem.h
         src/werkzeuge/random.cpp
         src/werkzeuge/random.h
         src/werkzeuge/himmelsboxWesen.cpp

@@ -3,7 +3,7 @@
 //
 
 #include "player.h"
-#include "axe.h"
+#include "heldItem.h"
 #include "aufhebbar.h"
 #include "grabLoch.h"
 #include "platzierbaresObjekt.h"
@@ -25,8 +25,8 @@ void Player::init() {
     crosshair->init(16.0f / 7.0f);
     addChild(crosshair);
 
-    auto * axe = new Axe();
-    addChild(axe);
+    auto * heldItem = new HeldItem();
+    addChild(heldItem);
 
     rayTargetHelper = new Wesen();
     rayTargetHelper->loadModel("assets/models/hitPoint.obj");
