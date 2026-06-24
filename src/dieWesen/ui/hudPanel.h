@@ -16,8 +16,8 @@ public:
     void setHealth(float newHealth) const;
     void setDepth(float newDepth) const;
     void setSpeed(float newSpeed) const;
-private:
     Uboot * uboot = nullptr;
+private:
     UILabel * hpLabel = nullptr;
     UILabel * depthLabel = nullptr;
     UILabel * speedLabel = nullptr;

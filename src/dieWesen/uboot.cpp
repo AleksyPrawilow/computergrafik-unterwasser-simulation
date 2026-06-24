@@ -29,8 +29,6 @@ void Uboot::init() {
     transform.scale = glm::vec3(3.0f);
     boundingRadius = 3.0f;
 
-    addToGroup("player");
-
     auto * windshield = new Wesen();
     windshield->init();
     windshield->loadModel("assets/models/uboot_windshield.obj");
@@ -53,6 +51,7 @@ void Uboot::init() {
     crosshair->init(16.0f / 9.0f);
     addChild(crosshair);
     hudPanel = new HudPanel();
+    hudPanel->uboot = this;
     parent->addChild(hudPanel);
 
     auto * audio = new AudioPlayer("assets/audio/submarine.mp3", true, 4, true);
