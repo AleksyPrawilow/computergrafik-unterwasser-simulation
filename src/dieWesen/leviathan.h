@@ -4,6 +4,7 @@
 #pragma once
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_LEVIATHAN_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_LEVIATHAN_H
+#include "lightsaber.h"
 #include "unterwasserszeneAudioHelper.h"
 #include "werkzeuge/wesen.h"
 
@@ -27,10 +28,10 @@ public:
     Wesen * lightsabers[4] = { nullptr };
     glm::vec3 startClawPositions[4];
 
-    float clawXOffset = 0.65f;
-    float clawYOffset = 0.45f;
-    float clawZOffset = 8.5f;
-    float lightsabersYOffset = 0.0f;
+    float clawXOffset = 8.5f;
+    float clawYOffset = 3.3f;
+    float clawZOffset = 20.7f;
+    float lightsabersYOffset = -5.0f;
 private:
     UnterwasserszeneAudioHelper * music = nullptr;
 
