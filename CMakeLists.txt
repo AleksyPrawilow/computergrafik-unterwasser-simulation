@@ -108,6 +108,8 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/weltraumHudPanel.h
         src/werkzeuge/bloom.cpp
         src/werkzeuge/bloom.h
+        src/werkzeuge/shadowMap.cpp
+        src/werkzeuge/shadowMap.h
         src/szenes/unterwasserszeneProps.h
         src/dieWesen/rock.cpp
         src/dieWesen/rock.h
@@ -207,6 +209,8 @@ set(IMGUI_SOURCES
         src/dieWesen/ui/ausruestungsLeiste.h
         src/dieWesen/ui/werkbankHUD.cpp
         src/dieWesen/ui/werkbankHUD.h
+        src/dieWesen/ui/ofenHUD.cpp
+        src/dieWesen/ui/ofenHUD.h
         src/dieWesen/platzierbaresObjekt.cpp
         src/dieWesen/platzierbaresObjekt.h
         src/dieWesen/grabLoch.cpp

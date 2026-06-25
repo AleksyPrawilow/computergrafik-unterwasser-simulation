@@ -30,6 +30,7 @@
 #include "werkzeuge/visual/worldEnvironment.h"
 #include "werkzeuge/groupManager.h"
 #include "werkzeuge/bloom.h"
+#include "werkzeuge/shadowMap.h"
 #include "werkzeuge/modelManager.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/gegenstandDaten.h"
@@ -38,6 +39,7 @@
 Renderer renderer;
 Kamera kamera;
 Bloom bloom;
+ShadowMap shadowMap;
 WorldEnvironment * WorldEnvironment::activeEnv = nullptr;
 Wesen * scene = nullptr;
 Leviathan * leviathan = nullptr;
@@ -114,6 +116,7 @@ void Scene::init(GLFWwindow* window)
 	Input::init(window);
 
 	bloom.init(fbW, fbH);
+	shadowMap.init(1024);
 
 	szeneWechseln(0);
 
@@ -131,6 +134,7 @@ void Scene::shutdown(GLFWwindow* window) {
 	ImGui::DestroyContext();
 
 	bloom.cleanup();
+	shadowMap.cleanup();
 	ShaderManager::getInstance().cleanup();
 	LightManager::getInstance().cleanup();
 	TweenManager::getInstance().cleanup();
@@ -185,14 +189,21 @@ void Scene::renderLoop(GLFWwindow* window) {
 	    glm::mat4 view = kamera.getViewMatrix();
 	    glm::mat4 projection = kamera.getProjectionMatrix();
 		renderer.updateFrustum(view, projection);
-		renderer.sendEnvironment(kamera.transform.position);
 
 		EnvParameters bloomParams;
 		if (WorldEnvironment::activeEnv != nullptr) {
 			bloomParams = WorldEnvironment::activeEnv->params;
+			glm::vec3 shadowSunDir = glm::normalize(glm::vec3(0.3f, 0.8f, 0.5f));
+			shadowMap.updateDirectional(shadowSunDir, glm::vec3(-700.0f, 10.0f, -220.0f), 120.0f);
+			renderer.lightSpaceMatrix = shadowMap.getLightSpaceMatrix();
 		}
 
+		renderer.sendEnvironment(kamera.transform.position);
 		renderer.render(*scene, view, projection, kamera.transform.position);
+
+		shadowMap.beginPass();
+		renderer.shadowPass(shadowMap);
+		shadowMap.endPass();
 
 		bloom.beginCapture();
 	    renderer.drawOpaque(view, projection, kamera.transform.position);

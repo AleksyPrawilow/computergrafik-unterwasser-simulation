@@ -114,14 +114,28 @@ void Kern::DrawVertexArray( const VertexData & data )
 
 void Kern::DrawContext(const Kern::RenderContext& context)
 {
-
 	glBindVertexArray(context.vertexArray);
-	glDrawElements(
-		GL_TRIANGLES,      // mode
-		context.size,    // count
-		GL_UNSIGNED_INT,   // type
-		(void*)0           // element array buffer offset
-	);
+	glDrawElements(GL_TRIANGLES, context.size, GL_UNSIGNED_INT, (void*)0);
+	glBindVertexArray(0);
+}
+
+void Kern::DrawContextInstanced(const Kern::RenderContext& context, int instanceCount)
+{
+	glBindVertexArray(context.vertexArray);
+	glDrawElementsInstanced(GL_TRIANGLES, context.size, GL_UNSIGNED_INT, (void*)0, instanceCount);
+	glBindVertexArray(0);
+}
+
+void Kern::RenderContext::setupInstanceBuffer(const std::vector<glm::mat4>& matrices) {
+	if (instanceVBO == 0) glGenBuffers(1, &instanceVBO);
+	glBindVertexArray(vertexArray);
+	glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+	glBufferData(GL_ARRAY_BUFFER, matrices.size() * sizeof(glm::mat4), matrices.data(), GL_STATIC_DRAW);
+	for (int i = 0; i < 4; i++) {
+		glEnableVertexAttribArray(5 + i);
+		glVertexAttribPointer(5 + i, 4, GL_FLOAT, GL_FALSE, sizeof(glm::mat4), (void*)(i * sizeof(glm::vec4)));
+		glVertexAttribDivisor(5 + i, 1);
+	}
 	glBindVertexArray(0);
 }
 

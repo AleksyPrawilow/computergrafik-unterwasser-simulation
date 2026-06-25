@@ -85,6 +85,102 @@ process_children:
     }
 }
 
+void Renderer::shadowPass(const ShadowMap& shadow) {
+    if (shadowShader == 0) {
+        shadowShader = ShaderManager::getInstance().loadShader(
+            "shadow", "assets/shaders/shadow.vert", "assets/shaders/shadow.frag");
+    }
+
+    activeShadowMap = shadow.getDepthTexture();
+    glm::mat4 lightVP = shadow.getLightSpaceMatrix();
+
+    Frustum lightFrustum;
+    lightFrustum.update(lightVP);
+
+    static GLint locMVP = -1, locHasOp = -1, locOpMap = -1;
+    if (locMVP == -1) {
+        locMVP = glGetUniformLocation(shadowShader, "u_lightMVP");
+        locHasOp = glGetUniformLocation(shadowShader, "u_hasOpacity");
+        locOpMap = glGetUniformLocation(shadowShader, "opacityMap");
+    }
+
+    static GLint locInstancing = -1, locSwayTime = -1;
+    if (locInstancing == -1) {
+        locInstancing = glGetUniformLocation(shadowShader, "u_useInstancing");
+        locSwayTime = glGetUniformLocation(shadowShader, "u_swayTime");
+    }
+
+    glUseProgram(shadowShader);
+    glUniform1i(locHasOp, 0);
+    glUniform1i(locInstancing, 0);
+    if (locSwayTime != -1) glUniform1f(locSwayTime, static_cast<float>(glfwGetTime()));
+
+    auto drawShadowEntity = [&](const Wesen* e) {
+        if (!e->hasMesh && e->material.isInstanced == 0) return;
+
+        if (e->material.isInstanced > 0) {
+            if (e->material.opacity != 0) {
+                glUniform1i(locHasOp, 1);
+                glActiveTexture(GL_TEXTURE0);
+                glBindTexture(GL_TEXTURE_2D, e->material.opacity);
+                if (locOpMap != -1) glUniform1i(locOpMap, 0);
+            }
+            glUniform1i(locInstancing, 1);
+            glUniformMatrix4fv(locMVP, 1, GL_FALSE, &lightVP[0][0]);
+            Kern::DrawContextInstanced(e->mesh, e->material.isInstanced);
+            glUniform1i(locInstancing, 0);
+            if (e->material.opacity != 0) glUniform1i(locHasOp, 0);
+            return;
+        }
+
+        if (!e->hasMesh) return;
+
+        glm::mat4 model = e->getGlobalModelMatrix();
+        glm::vec3 localMin = e->localAABB.min;
+        glm::vec3 localMax = e->localAABB.max;
+        glm::vec3 corners[8] = {
+            {localMin.x, localMin.y, localMin.z}, {localMax.x, localMin.y, localMin.z},
+            {localMin.x, localMax.y, localMin.z}, {localMax.x, localMax.y, localMin.z},
+            {localMin.x, localMin.y, localMax.z}, {localMax.x, localMin.y, localMax.z},
+            {localMin.x, localMax.y, localMax.z}, {localMax.x, localMax.y, localMax.z}
+        };
+        glm::vec3 wMin(1e30f), wMax(-1e30f);
+        for (int i = 0; i < 8; i++) {
+            glm::vec3 w = glm::vec3(model * glm::vec4(corners[i], 1.0f));
+            wMin = glm::min(wMin, w);
+            wMax = glm::max(wMax, w);
+        }
+        if (!lightFrustum.isAABBInside(wMin, wMax)) return;
+
+        if (e->material.opacity != 0) {
+            glUniform1i(locHasOp, 1);
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, e->material.opacity);
+            if (locOpMap != -1) glUniform1i(locOpMap, 0);
+        }
+
+        glm::mat4 mvp = lightVP * model;
+        glUniformMatrix4fv(locMVP, 1, GL_FALSE, &mvp[0][0]);
+        Kern::DrawContext(e->mesh);
+
+        if (e->material.opacity != 0) {
+            glUniform1i(locHasOp, 0);
+        }
+    };
+
+    for (const Wesen* e : opaqueQueue) {
+        drawShadowEntity(e);
+    }
+
+    glDisable(GL_CULL_FACE);
+    for (const Wesen* e : transparentQueue) {
+        drawShadowEntity(e);
+    }
+    glEnable(GL_CULL_FACE);
+
+    glUseProgram(0);
+}
+
 void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
     for (const Wesen* e : opaqueQueue) {
         drawElement(*e, view, projection, cameraPos);
@@ -167,6 +263,7 @@ void Renderer::sendEnvironment(const glm::vec3 cameraPos) const {
         uboData.u_causticsEnabled = params.causticsEnabled ? 1 : 0;
         uboData.u_depthDimmingEnabled = params.depthDimmingEnabled ? 1 : 0;
         uboData.u_bloomEnabled = params.bloomEnabled ? 1 : 0;
+        uboData.u_lightSpaceMatrix = lightSpaceMatrix;
 
         // Upload the entire block to the GPU in a single step
         glBindBuffer(GL_UNIFORM_BUFFER, getEnvUBO());
@@ -300,7 +397,16 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     if (m.doubleSided) {
         Kern::SetCullState(false);
     }
-    Kern::DrawContext(e.mesh);
+
+    if (m.isInstanced > 0) {
+        Kern::setUniform(m.shader, "u_useInstancing", true);
+        Kern::setUniform(m.shader, "transformation", projection * view);
+        Kern::DrawContextInstanced(e.mesh, m.isInstanced);
+        Kern::setUniform(m.shader, "u_useInstancing", false);
+    } else {
+        Kern::DrawContext(e.mesh);
+    }
+
     if (m.doubleSided) {
         Kern::SetCullState(true);
     }
@@ -370,6 +476,12 @@ void Renderer::setupUniforms(const Material& m, const glm::vec3& cameraPos) cons
     }
 
     Kern::setUniform(m.shader, "u_bloomStrength", m.bloomStrength);
+
+    if (activeShadowMap != 0) {
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, activeShadowMap);
+        Kern::setUniform(m.shader, "u_shadowMap", 8);
+    }
 }
 
 void Renderer::drawDebugBox(const glm::vec3& min, const glm::vec3& max) const {

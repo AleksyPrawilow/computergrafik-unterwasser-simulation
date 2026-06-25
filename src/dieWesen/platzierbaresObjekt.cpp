@@ -2,6 +2,7 @@
 #include "werkzeuge/modelManager.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/visual/lightManager.h"
 
 PlatzierbaresObjekt::PlatzierbaresObjekt(GegenstandID typ) : typ(typ) {}
 
@@ -12,6 +13,7 @@ void PlatzierbaresObjekt::init() {
     if (typ == GegenstandID::HAUS) {
         name = "haus";
         transform.scale = glm::vec3(1.0f);
+        addToGroup("haus");
         buildHouse();
         return;
     }
@@ -24,12 +26,34 @@ void PlatzierbaresObjekt::init() {
         name = "werkbank";
         transform.scale = glm::vec3(1.0f, 0.8f, 1.0f);
         addToGroup("werkbank");
+    } else if (typ == GegenstandID::OFEN) {
+        name = "ofen";
+        transform.scale = glm::vec3(0.9f, 0.9f, 0.9f);
+        addToGroup("ofen");
+    } else if (typ == GegenstandID::GLAS) {
+        name = "glas";
+        loadModel("assets/models/triangle.obj");
+        transform.scale = glm::vec3(3.5f, 1.0f, 1.0f);
+        material.normal = Kern::LoadTexture("assets/textures/water_normal.png");
+        material.isTransparent = true;
+        material.doubleSided = true;
+        material.shader = ShaderManager::getInstance().loadShader(
+            "windshield",
+            "assets/shaders/default.vert",
+            "assets/shaders/refract.frag"
+        );
+        return;
     } else if (typ == GegenstandID::ZAUN) {
         name = "zaun";
         transform.scale = glm::vec3(1.5f, 1.2f, 0.2f);
     } else if (typ == GegenstandID::TRUHE) {
         name = "truhe";
         transform.scale = glm::vec3(0.8f, 0.6f, 0.6f);
+    } else if (typ == GegenstandID::FACKEL) {
+        name = "fackel";
+        transform.scale = glm::vec3(0.15f, 1.0f, 0.15f);
+        torchLight = LightManager::getInstance().createPointLight(
+            glm::vec3(1.0f, 0.7f, 0.3f), 50.0f);
     } else {
         name = "platziert";
         transform.scale = glm::vec3(0.5f);
@@ -37,6 +61,9 @@ void PlatzierbaresObjekt::init() {
 }
 
 void PlatzierbaresObjekt::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (torchLight != nullptr) {
+        torchLight->position = getGlobalTransform().position + glm::vec3(0.0f, 1.5f, 0.0f);
+    }
 }
 
 Wesen* PlatzierbaresObjekt::makePanel(const glm::vec3& pos, const glm::vec3& euler, const glm::vec3& scale) {
