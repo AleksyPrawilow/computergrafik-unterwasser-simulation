@@ -8,6 +8,8 @@
 #include "dieWesen/earth.h"
 #include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
+#include "dieWesen/crab.h"
+#include "dieWesen/turtle.h"
 #include "dieWesen/flockManager.h"
 #include "dieWesen/path3d.h"
 #include "dieWesen/pathFollower.h"
@@ -98,6 +100,14 @@ void UnterwasserszeneWesen::init() {
     flock->targetPath = fishPath;
     // flock->transform.position = glm::vec3(-12.f, -10.f, 0.f);
     addChild(flock);
+
+    // Crab* crab = new Crab(2);
+    // crab->transform.position = glm::vec3(-684.0f, 31.5f, -224.0f);
+    // addChild(crab);
+
+    // Turtle *turtle = new Turtle(2);
+    // turtle->transform.position = glm::vec3(-694.0f, 31.5f, -224.0f);
+    // addChild(turtle);
 
     auto * bottle = new Bottle();
     bottle->transform.position = glm::vec3(-580.0f, 2.0f, -180.0f);

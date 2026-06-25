@@ -212,6 +212,10 @@ set(IMGUI_SOURCES
         src/dieWesen/path3d.h
         src/dieWesen/pathFollower.cpp
         src/dieWesen/pathFollower.h
+        src/dieWesen/turtle.cpp
+        src/dieWesen/turtle.h
+        src/dieWesen/crab.cpp
+        src/dieWesen/crab.h
 )
 
 add_executable(${PROJECT_NAME}
