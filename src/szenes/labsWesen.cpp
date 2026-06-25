@@ -24,6 +24,15 @@ void LabsWesen::init() {
 }));
 
     auto * umwelt = new WorldEnvironment();
+    umwelt->init();
+    umwelt->params.sunEnergy = 3.0f;
+    umwelt->params.sunDirection = glm::normalize(glm::vec3(0.3f, 0.8f, 0.5f));
+    umwelt->params.fogEnabled = false;
+    umwelt->params.heightFogEnabled = false;
+    umwelt->params.causticsEnabled = false;
+    umwelt->params.depthDimmingEnabled = false;
+    umwelt->params.bloomThreshold = 0.0f;
+    umwelt->params.bloomIntensity = 1.5f;
     addChild(umwelt);
 
     addChild(new Island());
@@ -81,7 +90,6 @@ void LabsWesen::init() {
                 entity->material.albedo = Kern::LoadTexture("assets/textures/platform_albedo.png");
                 entity->material.normal = Kern::LoadTexture("assets/textures/platform_normal.png");
                 entity->material.metallic = Kern::LoadTexture("assets/textures/platform_roughness.png");
-                entity->material.normal = Kern::LoadTexture("assets/textures/platform_roughness.png");
             }
             if (entity != nullptr) {
                 addChild(entity);

@@ -42,6 +42,7 @@ public:
     void schadenNehmen(float schaden);
     void knockback(const glm::vec3& direction, float force);
     void setIsActive(bool active);
+    [[nodiscard]] bool getActive() const { return isActive; }
     static float getWaterHeight(float x, float z, float t);
 
     bool shouldFloat = true;
