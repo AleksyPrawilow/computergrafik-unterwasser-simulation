@@ -40,6 +40,10 @@ private:
 
     bool kannPlatzieren = true;
 
+    float buffTimer = 0.0f;
+    float speedMultiplier = 1.0f;
+    float jumpMultiplier = 1.0f;
+
     void handleRotations(GLFWwindow* window, float deltaTime);
     void updateCameraTransform(Transform& cameraTransform, float deltaTime) const;
     void updateRaycast();

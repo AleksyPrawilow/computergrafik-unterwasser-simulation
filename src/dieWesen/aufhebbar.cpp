@@ -20,7 +20,7 @@ void Aufhebbar::init() {
     if (!info.modellPfad.empty()) {
         loadModel(info.modellPfad.c_str());
         material.albedo = Kern::LoadTexture(info.modellAlbedoPfad.c_str());
-        transform.scale = glm::vec3(0.3f);
+        transform.scale = glm::vec3(info.modellSkalierung);
     } else {
         loadModel("assets/models/cube.obj");
         material.albedo = info.iconTextur;

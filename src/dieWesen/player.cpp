@@ -50,6 +50,15 @@ void Player::init() {
 }
 
 void Player::onUpdate(GLFWwindow* window, const float deltaTime, Transform& cameraTransform) {
+    if (buffTimer > 0.0f) {
+        buffTimer -= deltaTime;
+        if (buffTimer <= 0.0f) {
+            buffTimer = 0.0f;
+            speedMultiplier = 1.0f;
+            jumpMultiplier = 1.0f;
+        }
+    }
+
     processInput(deltaTime);
     if (isActive) handleRotations(window, deltaTime);
     if (isActive) updateCameraTransform(cameraTransform, deltaTime);
@@ -76,8 +85,8 @@ void Player::processInput(const float deltaTime) {
 
     bool isSwimming = floatingY > standingY;
 
-    float baseMoveSpeed = isSwimming ? 2.5f : 6.0f;
-    float activeJumpForce = isSwimming ? 4.0f : 10.0f;
+    float baseMoveSpeed = (isSwimming ? 2.5f : 6.0f) * speedMultiplier;
+    float activeJumpForce = (isSwimming ? 4.0f : 10.0f) * jumpMultiplier;
     float gravity = 30.0f;
 
     constexpr float sprintMultiplier = 2.0f;
@@ -213,7 +222,36 @@ void Player::handleItemAction(GLFWwindow* window) {
     const auto& info = GegenstandDaten::getInstance().getInfo(aktiv);
 
     glm::vec3 platzPos = transform.position + transform.forward() * 3.0f;
-    platzPos.y = island->getHeight(platzPos.x, platzPos.z) + 0.5f;
+    if (aktiv == GegenstandID::GLAS) {
+        const auto& haeuser = getNodesInGroup("haus");
+        float naheste = 15.0f;
+        Wesen* nahestesHaus = nullptr;
+        for (auto* h : haeuser) {
+            float dist = glm::distance(transform.position, h->getGlobalTransform().position);
+            if (dist < naheste) {
+                naheste = dist;
+                nahestesHaus = h;
+            }
+        }
+        if (nahestesHaus) {
+            glm::vec3 hausPos = nahestesHaus->getGlobalTransform().position;
+            platzPos = hausPos + glm::vec3(0.0f, 6.3f, 3.8f);
+        }
+    } else {
+        platzPos.y = island->getHeight(platzPos.x, platzPos.z) + 0.5f;
+    }
+
+    if (info.istKonsumierbar) {
+        int hotbarIdx = Inventar::getInstance().getAktiverSlot();
+        Inventar::getInstance().hotbarVerbrauchen(hotbarIdx);
+
+        speedMultiplier = 2.0f;
+        jumpMultiplier = 2.0f;
+        buffTimer = 30.0f;
+
+        AudioManager::getInstance().play2D("assets/audio/pickup.mp3", false, true);
+        return;
+    }
 
     if (info.istPlatzierbar) {
         int hotbarIdx = Inventar::getInstance().getAktiverSlot();

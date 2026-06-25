@@ -40,6 +40,7 @@ namespace Kern
 	void DrawVertexArrayIndexed(const float * vertexArray, const int * indexArray, int numIndexes, int elementSize);
 	void DrawVertexArray(const VertexData & data);
 	void DrawContext(const RenderContext& context);
+	void DrawContextInstanced(const RenderContext& context, int instanceCount);
 
 	glm::vec2 GetViewportSize();
 	glm::mat4 GetOrthoProjection();

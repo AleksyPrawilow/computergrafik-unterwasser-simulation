@@ -29,7 +29,10 @@ enum class GegenstandID {
     FISCH,
     SEETANG,
     SUSHI,
-    HAUS
+    HAUS,
+    SAND,
+    GLAS,
+    OFEN
 };
 
 enum class WerkzeugTyp {
@@ -41,7 +44,8 @@ enum class WerkzeugTyp {
 
 enum class RezeptQuelle {
     HAND,
-    WERKBANK
+    WERKBANK,
+    OFEN
 };
 
 struct GegenstandInfo {
@@ -54,8 +58,10 @@ struct GegenstandInfo {
     WerkzeugTyp werkzeugTyp = WerkzeugTyp::KEINS;
     int werkzeugSchaden = 0;
     bool istPlatzierbar = false;
+    bool istKonsumierbar = false;
     std::string modellPfad;
     std::string modellAlbedoPfad;
+    float modellSkalierung = 0.3f;
 };
 
 struct Rezept {

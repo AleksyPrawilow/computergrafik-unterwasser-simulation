@@ -117,13 +117,14 @@ vec4 calculatePBR() {
     }
 
     // FIX: Extracted .xyz from vec4 ambient color
-    vec3 ambient = u_ambientColor.xyz * ambientScale * albedo * depthFactor;
+    // --- 2. DEFAULT SUN LIGHT ---
+    float shadow = calculateShadow(worldPos);
+    float shadowAmbientFactor = mix(0.4, 1.0, shadow);
+    vec3 ambient = u_ambientColor.xyz * ambientScale * albedo * depthFactor * shadowAmbientFactor;
 
     // Accumulated outgoing light
     vec3 Lo = vec3(0.0);
 
-    // --- 2. DEFAULT SUN LIGHT ---
-    float shadow = calculateShadow(worldPos);
     vec3 sunRadiance = u_sunColor.xyz * u_sunEnergy * depthFactor * shadow;
 
     Lo += CalculateCookTorrance(N, V, u_sunDirection.xyz, sunRadiance, albedo, roughness, metallic, F0, worldPos);

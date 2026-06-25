@@ -206,6 +206,8 @@ set(IMGUI_SOURCES
         src/dieWesen/ui/ausruestungsLeiste.h
         src/dieWesen/ui/werkbankHUD.cpp
         src/dieWesen/ui/werkbankHUD.h
+        src/dieWesen/ui/ofenHUD.cpp
+        src/dieWesen/ui/ofenHUD.h
         src/dieWesen/platzierbaresObjekt.cpp
         src/dieWesen/platzierbaresObjekt.h
         src/dieWesen/grabLoch.cpp

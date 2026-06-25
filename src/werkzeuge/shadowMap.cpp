@@ -34,10 +34,16 @@ void ShadowMap::cleanup() {
 
 void ShadowMap::updateDirectional(const glm::vec3& lightDir, const glm::vec3& sceneCenter, float sceneRadius) {
     glm::vec3 dir = glm::normalize(lightDir);
-    glm::vec3 lightPos = sceneCenter + dir * sceneRadius;
 
-    glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, glm::vec3(0.0f, 1.0f, 0.0f));
-    glm::mat4 lightProj = glm::ortho(-sceneRadius, sceneRadius, -sceneRadius, sceneRadius, 0.1f, sceneRadius * 2.0f);
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    if (glm::abs(glm::dot(dir, up)) > 0.99f) {
+        up = glm::vec3(0.0f, 0.0f, 1.0f);
+    }
+
+    glm::vec3 lightPos = sceneCenter + dir * sceneRadius * 1.5f;
+
+    glm::mat4 lightView = glm::lookAt(lightPos, sceneCenter, up);
+    glm::mat4 lightProj = glm::ortho(-sceneRadius, sceneRadius, -sceneRadius, sceneRadius, 1.0f, sceneRadius * 4.0f);
 
     lightSpaceMatrix = lightProj * lightView;
 }

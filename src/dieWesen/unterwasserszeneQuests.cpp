@@ -173,8 +173,14 @@ void UnterwasserszeneQuests::setupTheBeginning() {
     workbenchObjective.description = "Craft a workbench";
     workbenchObjective.requiredCount = 1;
 
+    QuestObjective furnaceObjective;
+    furnaceObjective.tag = "craft_Furnace";
+    furnaceObjective.description = "Craft a furnace";
+    furnaceObjective.requiredCount = 1;
+
     quest.objectives.push_back(axeObjective);
     quest.objectives.push_back(workbenchObjective);
+    quest.objectives.push_back(furnaceObjective);
 
     quest.onComplete = [this]() {
         auto * banner = new QuestCompletedBanner("Now you can build!");
@@ -232,9 +238,15 @@ void UnterwasserszeneQuests::setupSurvival() {
     fishObjective.description = "Catch something from the sea";
     fishObjective.requiredCount = 1;
 
+    QuestObjective houseObjective;
+    houseObjective.tag = "craft_House";
+    houseObjective.description = "Build a house";
+    houseObjective.requiredCount = 1;
+
     quest.objectives.push_back(raftObjective);
     quest.objectives.push_back(rodObjective);
     quest.objectives.push_back(fishObjective);
+    quest.objectives.push_back(houseObjective);
 
     quest.onComplete = [this]() {
         auto * banner = new QuestCompletedBanner("Time to find the treasure!");

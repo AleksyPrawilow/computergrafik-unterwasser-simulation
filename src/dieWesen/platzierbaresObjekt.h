@@ -14,6 +14,7 @@ public:
 
     GegenstandID getTyp() const { return typ; }
     bool istWerkbank() const { return typ == GegenstandID::WERKBANK; }
+    bool istOfen() const { return typ == GegenstandID::OFEN; }
 
 private:
     GegenstandID typ;

@@ -115,7 +115,7 @@ void Scene::init(GLFWwindow* window)
 	Input::init(window);
 
 	bloom.init(fbW, fbH);
-	shadowMap.init(2048);
+	shadowMap.init(1024);
 
 	szeneWechseln(0);
 
@@ -192,7 +192,8 @@ void Scene::renderLoop(GLFWwindow* window) {
 		EnvParameters bloomParams;
 		if (WorldEnvironment::activeEnv != nullptr) {
 			bloomParams = WorldEnvironment::activeEnv->params;
-			shadowMap.updateDirectional(bloomParams.sunDirection, kamera.transform.position, 200.0f);
+			glm::vec3 shadowSunDir = glm::normalize(glm::vec3(0.3f, 0.8f, 0.5f));
+			shadowMap.updateDirectional(shadowSunDir, glm::vec3(-700.0f, 10.0f, -220.0f), 120.0f);
 			renderer.lightSpaceMatrix = shadowMap.getLightSpaceMatrix();
 		}
 

@@ -5,6 +5,9 @@ void GegenstandDaten::init() {
     // --- Items ---
     registrieren(GegenstandID::HOLZ, "Wood", "assets/textures/icon_holz.png", 64);
     registrieren(GegenstandID::STEIN, "Stone", "assets/textures/icon_stein.png", 64);
+    registry[static_cast<int>(GegenstandID::STEIN)].modellPfad = "assets/models/Rock001.obj";
+    registry[static_cast<int>(GegenstandID::STEIN)].modellAlbedoPfad = "assets/textures/RockTexture001_ao.png";
+    registry[static_cast<int>(GegenstandID::STEIN)].modellSkalierung = 3.0f;
     registrieren(GegenstandID::PLANKE, "Plank", "assets/textures/icon_planke.png", 64);
     registrieren(GegenstandID::SEIL, "Rope", "assets/textures/icon_seil.png", 16);
     registrieren(GegenstandID::FLASCHE, "Bottle", "assets/textures/icon_flasche.png", 16);
@@ -49,9 +52,17 @@ void GegenstandDaten::init() {
     registrieren(GegenstandID::FISCH, "Fish", "assets/textures/icon_fisch.png", 16);
     registrieren(GegenstandID::SEETANG, "Seaweed", "assets/textures/icon_seetang.png", 16);
     registrieren(GegenstandID::SUSHI, "Sushi", "assets/textures/icon_sushi.png", 16);
+    registry[static_cast<int>(GegenstandID::SUSHI)].istKonsumierbar = true;
 
     registrieren(GegenstandID::HAUS, "House", "assets/textures/icon_haus.png", 1);
     registry[static_cast<int>(GegenstandID::HAUS)].istPlatzierbar = true;
+
+    registrieren(GegenstandID::SAND, "Sand", "assets/textures/icon_sand.png", 64);
+    registrieren(GegenstandID::GLAS, "Glass", "assets/textures/icon_glas.png", 64);
+    registry[static_cast<int>(GegenstandID::GLAS)].istPlatzierbar = true;
+
+    registrieren(GegenstandID::OFEN, "Furnace", "assets/textures/icon_ofen.png", 1);
+    registry[static_cast<int>(GegenstandID::OFEN)].istPlatzierbar = true;
 
     // --- Hand recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 1, RezeptQuelle::HAND);
@@ -60,6 +71,7 @@ void GegenstandDaten::init() {
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::PLANKE, GegenstandID::WERKBANK, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::STEIN, GegenstandID::SCHAUFEL, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::SEIL, GegenstandID::ANGEL, 1, RezeptQuelle::HAND);
+    rezeptHinzufuegen(GegenstandID::STEIN, GegenstandID::STEIN, GegenstandID::OFEN, 1, RezeptQuelle::HAND);
 
     // --- Workbench recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 2, RezeptQuelle::WERKBANK);
@@ -69,8 +81,11 @@ void GegenstandDaten::init() {
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::SEIL, GegenstandID::FACKEL, 2, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::PLANKE, GegenstandID::ZAUN, 3, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::AXT, GegenstandID::TRUHE, 1, RezeptQuelle::WERKBANK);
-    rezeptHinzufuegen(GegenstandID::FISCH, GegenstandID::SEETANG, GegenstandID::SUSHI, 1, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::HOLZ, GegenstandID::HAUS, 1, RezeptQuelle::WERKBANK);
+
+    // --- Furnace recipes ---
+    rezeptHinzufuegen(GegenstandID::SAND, GegenstandID::SAND, GegenstandID::GLAS, 1, RezeptQuelle::OFEN);
+    rezeptHinzufuegen(GegenstandID::FISCH, GegenstandID::SEETANG, GegenstandID::SUSHI, 1, RezeptQuelle::OFEN);
 }
 
 const GegenstandInfo& GegenstandDaten::getInfo(GegenstandID id) const {

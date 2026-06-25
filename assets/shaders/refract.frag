@@ -91,7 +91,7 @@ void main() {
     }
 
     // 5. Fresnel Effect
-    float F0 = 0.02;
+    float F0 = 0.08;
     float Fresnel = F0 + (1.0 - F0) * pow(1.0 - max(dot(N, viewDir), 0.0), 5.0);
 
     // Apply Look-Down Glare Fix: fade out reflections when looking down
@@ -103,8 +103,7 @@ void main() {
     // Blend reflection and refraction
     vec3 finalColor = mix(refractionColor, reflectionColor, Fresnel);
 
-    // Add a very subtle, high-tech cyan glass tint
-    vec3 glassTint = vec3(0.01, 0.03, 0.045);
+    vec3 glassTint = vec3(0.03, 0.06, 0.08);
     finalColor += glassTint;
 
     // --- 6. APPlY TONEMAPPING & GAMMA CORRECTION TO THE GLASS COLOR ---
@@ -148,12 +147,10 @@ void main() {
         foggedColor = mix(finalFogColor, finalColor, localFogFactor);
     }
 
-    // Transparency: Opaque at grazing angles (edges), transparent in center
-    float alpha = mix(0.80, 0.08, 1.0 - Fresnel);
+    float alpha = mix(0.85, 0.3, 1.0 - Fresnel);
 
     if (!gl_FrontFacing) {
-        // Double-sided support (First-Person cockpit)
-        alpha = mix(0.80, 0.12, 1.0 - Fresnel);
+        alpha = mix(0.85, 0.35, 1.0 - Fresnel);
     }
 
     FragColor = vec4(foggedColor, alpha);
