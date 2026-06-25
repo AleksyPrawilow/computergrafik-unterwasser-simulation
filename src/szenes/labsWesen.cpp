@@ -47,6 +47,7 @@ void LabsWesen::init() {
     auto sceneData = getLabsProps();
     for (const auto& [className, transforms] : sceneData) {
         for (const auto& t : transforms) {
+
             Wesen * entity = nullptr;
             if (className == "cave") {
                 entity = new Prop(t.position, t.rotation, t.scale);
@@ -93,6 +94,10 @@ void LabsWesen::init() {
             }
             if (entity != nullptr) {
                 addChild(entity);
+                entity->transform.position = t.position;
+                entity->transform.rotation = t.rotation;
+                entity->transform.scale = t.scale;
+                std::cout << entity->transform.position.x << " " << entity->transform.position.y <<  " " << entity->transform.position.z << std::endl;
             }
         }
     }
