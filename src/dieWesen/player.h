@@ -19,13 +19,14 @@ public:
     void processInput(float deltaTime);
     void setActive(bool active);
     [[nodiscard]] bool getActive() const { return isActive; }
+    bool affectedByWater = true;
+    float targetY = 0.0f;
 private:
     Wesen * rayTargetHelper = nullptr;
     Island * island = nullptr;
     Timer * raycastTimer = nullptr;
     bool isActive = true;
 
-    float targetY = 0.0f;
     float verticalVelocity = 0.0f;
     float bobTime = 0.0f;
     bool grounded = true;

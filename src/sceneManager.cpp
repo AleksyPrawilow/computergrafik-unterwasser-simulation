@@ -11,6 +11,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include "dieWesen/leviathan.h"
+#include "szenes/labsWesen.h"
 #include "szenes/unterwasserszeneWesen.h"
 #include "szenes/weltraumszeneWesen.h"
 #include "werkzeuge/textur.h"
@@ -70,7 +71,7 @@ void Scene::szeneWechseln(int index) {
 	if (index == 0) {
 		scene = new UnterwasserszeneWesen();
 	} else {
-		scene = new WeltraumszeneWesen();
+		scene = new LabsWesen();
 	}
 	scene->init();
 	const auto& leviathanGroup = GroupManager::getInstance().getEntitiesInGroup("Leviathan");

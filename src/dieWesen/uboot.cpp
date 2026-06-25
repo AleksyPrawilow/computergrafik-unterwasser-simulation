@@ -151,7 +151,7 @@ void Uboot::setIsActive(const bool active) {
 }
 
 void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
-    if (!isActive && player->raycast->isColliding() && player->raycast->getCollider() == this) {
+    if (player && !isActive && player->raycast->isColliding() && player->raycast->getCollider() == this) {
         interactLabel->visible = true;
         if (Input::isKeyJustPressed(GLFW_KEY_E)) {
             isActive = true;

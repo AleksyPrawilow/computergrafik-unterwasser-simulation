@@ -197,7 +197,7 @@ void UnterwasserszeneWesen::init() {
     schatzMarkierung->transform.position = glm::vec3(-690.0f, 70.0f, -225.0f);
     addChild(schatzMarkierung);
 
-    auto sceneData = getGodotSceneData();
+    auto sceneData = getUnterwasserProps();
     for (const auto& [className, transforms] : sceneData) {
         for (const auto& t : transforms) {
             Wesen * entity = nullptr;

@@ -17,7 +17,7 @@ struct GodotTransform {
         : position(p), rotation(r), scale(s) {}
 };
 
-inline std::unordered_map<std::string, std::vector<GodotTransform>> getGodotSceneData() {
+inline std::unordered_map<std::string, std::vector<GodotTransform>> getUnterwasserProps() {
     return {
             { "oceanbed", {
                 GodotTransform(

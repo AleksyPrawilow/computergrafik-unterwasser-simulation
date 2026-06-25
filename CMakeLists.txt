@@ -153,6 +153,9 @@ set(PROJECT_SOURCES
         src/dieWesen/coral.h
         src/dieWesen/seaweed.cpp
         src/dieWesen/seaweed.h
+        src/szenes/labsProps.h
+        src/szenes/labsWesen.cpp
+        src/szenes/labsWesen.h
 )
 
 set(SOIL_SOURCES
