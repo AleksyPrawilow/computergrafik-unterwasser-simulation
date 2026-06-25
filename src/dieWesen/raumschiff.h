@@ -8,6 +8,7 @@
 #include "../werkzeuge/transform.h"
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/audio/audioPlayer.h"
+#include <functional>
 #include <unordered_set>
 
 enum class AnsichtModus {
@@ -22,6 +23,14 @@ public:
     [[nodiscard]] float getGeschwindigkeit() const { return tatsaechlicheGeschwindigkeit; }
     [[nodiscard]] float getLeben() const { return leben; }
     void schadenNehmen(float schaden);
+    void heilen(float menge = 100.0f) { leben = glm::min(leben + menge, 100.0f); }
+    float schadenBlitz = 0.0f;
+    void vollHeilen() { leben = 100.0f; }
+    void raketenAuffuellen() { raketenMunition = 3; }
+    [[nodiscard]] int getRaketenMunition() const { return raketenMunition; }
+    [[nodiscard]] bool hatSpawnSchutz() const { return spawnSchutz > 0.0f; }
+    void setSpawnSchutz(float dauer) { spawnSchutz = dauer; }
+    std::function<void()> onDeath;
 
 private:
     Fadenkreuz * fadenkreuz = nullptr;
@@ -47,6 +56,7 @@ private:
     bool istAktiv = true;
     bool canShoot = true;
     bool shootLeft = true;
+    int raketenMunition = 3;
     float spawnSchutz = 0.0f;
     std::unordered_set<Wesen*> aktiveKollisionen;
 

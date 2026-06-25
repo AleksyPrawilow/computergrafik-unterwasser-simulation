@@ -4,9 +4,38 @@ layout(location = 1) out vec4 bloomColor;
 uniform float u_bloomStrength = 0.0;
 
 in vec2 TexCoord;
-uniform int u_particleType = 0; // 0 = Bubbles, 1 = Rain
+in float vLife;
+uniform int u_particleType = 0; // 0 = Bubbles, 1 = Rain, 2 = Fire
 
 void main() {
+    if (u_particleType == 2) {
+        vec2 localCoord = TexCoord * 2.0 - 1.0;
+        float r2 = dot(localCoord, localCoord);
+        if (r2 > 1.0) discard;
+
+        float softEdge = 1.0 - sqrt(r2);
+        float fade = vLife;
+
+        vec3 coreColor = vec3(1.0, 0.9, 0.3);
+        vec3 midColor = vec3(1.0, 0.4, 0.05);
+        vec3 outerColor = vec3(0.6, 0.1, 0.0);
+        vec3 smokeColor = vec3(0.15, 0.1, 0.08);
+
+        vec3 fireColor;
+        if (fade > 0.6)
+            fireColor = mix(midColor, coreColor, (fade - 0.6) / 0.4);
+        else if (fade > 0.25)
+            fireColor = mix(outerColor, midColor, (fade - 0.25) / 0.35);
+        else
+            fireColor = mix(smokeColor, outerColor, fade / 0.25);
+
+        float alpha = softEdge * clamp(fade * 2.0, 0.0, 1.0) * 0.85;
+
+        FragColor = vec4(fireColor, alpha);
+        bloomColor = vec4(fireColor * u_bloomStrength * fade, alpha);
+        return;
+    }
+
     if (u_particleType == 1) {
         float xDist = abs(TexCoord.x - 0.5) * 2.0;
         if (xDist > 1.0) {

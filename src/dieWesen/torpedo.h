@@ -7,6 +7,8 @@
 
 class Torpedo : public Wesen {
 public:
+    bool istZielsuchend = false;
+
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void abfeuern(const glm::vec3& position, const glm::quat& rotation);

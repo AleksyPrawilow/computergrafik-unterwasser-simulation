@@ -30,7 +30,7 @@ void Raumschiff::init() {
     boundingRadius = 4.0f;
 
     addToGroup("spieler");
-    spawnSchutz = 1.5f;
+    spawnSchutz = 4.0f;
 
     fadenkreuz = new Fadenkreuz();
     fadenkreuz->init(16.0f / 9.0f);
@@ -91,7 +91,7 @@ void Raumschiff::onUpdate(GLFWwindow* window, float deltaTime, Transform& camera
                 if (auto* feind = dynamic_cast<Feindschiff*>(ziel)) {
                     feind->schadenNehmen(1.0f);
                 }
-                schadenNehmen(25.0f);
+                schadenNehmen(20.0f);
                 if (parent != nullptr)
                     parent->addChild(new Explosion(getGlobalTransform().position, 3.0f));
             } else if (!drin) {
@@ -179,6 +179,17 @@ void Raumschiff::eingabeVerarbeiten(GLFWwindow* window, const float deltaTime) {
         auto * torpedo = new Torpedo();
         parent->addChild(torpedo);
         torpedo->abfeuern(spawnPos, transform.rotation);
+    }
+
+    if (Input::isKeyJustPressed(GLFW_KEY_F) && parent != nullptr && raketenMunition > 0) {
+        raketenMunition--;
+        shootSound->play();
+
+        glm::vec3 spawnPos = transform.position + transform.forward() * 5.0f;
+        auto * rakete = new Torpedo();
+        rakete->istZielsuchend = true;
+        parent->addChild(rakete);
+        rakete->abfeuern(spawnPos, transform.rotation);
     }
 
     if (isDashing) {
@@ -280,6 +291,7 @@ void Raumschiff::rollsBehandeln(GLFWwindow* window, const float deltaTime) {
 
 void Raumschiff::schadenNehmen(float schaden) {
     kamera.addShake(0.4f, 0.25f);
+    schadenBlitz = 1.0f;
     leben -= schaden;
     if (leben <= 0.0f) {
         leben = 100.0f;
@@ -288,5 +300,6 @@ void Raumschiff::schadenNehmen(float schaden) {
         tatsaechlicheGeschwindigkeit = 0.0f;
         spawnSchutz = 2.0f;
         aktiveKollisionen.clear();
+        if (onDeath) onDeath();
     }
 }
