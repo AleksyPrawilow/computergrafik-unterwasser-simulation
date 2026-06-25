@@ -100,7 +100,7 @@ void UnterwasserszeneWesen::init() {
     addChild(flock);
 
     auto * bottle = new Bottle();
-    bottle->transform.position = glm::vec3(-700, 20.0f, -210.0f);
+    bottle->transform.position = glm::vec3(-580.0f, 2.0f, -180.0f);
     addChild(bottle);
 
     auto * worldEnv = new WorldEnvironment();
@@ -122,6 +122,7 @@ void UnterwasserszeneWesen::init() {
     if (!startItemsGegeben) {
         Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
         Inventar::getInstance().hinzufuegen(GegenstandID::MINIUBOOT, 1);
+        Inventar::getInstance().hinzufuegen(GegenstandID::HAUS, 1);
         startItemsGegeben = true;
     }
 
@@ -131,15 +132,15 @@ void UnterwasserszeneWesen::init() {
     addChild(new AusruestungsLeiste());
 
     auto* seilPickup = new Aufhebbar(GegenstandID::SEIL, 2);
-    seilPickup->transform.position = glm::vec3(-695.0f, 20.0f, -215.0f);
+    seilPickup->transform.position = glm::vec3(-695.0f, 35.0f, -215.0f);
     addChild(seilPickup);
 
     auto* steinPickup = new Aufhebbar(GegenstandID::STEIN, 3);
-    steinPickup->transform.position = glm::vec3(-705.0f, 16.0f, -225.0f);
+    steinPickup->transform.position = glm::vec3(-705.0f, 30.0f, -225.0f);
     addChild(steinPickup);
 
     auto * chest = new Chest();
-    chest->transform.position = glm::vec3(-690.0f, 11.5f, -225.0f);
+    chest->transform.position = glm::vec3(-690.0f, 27.0f, -225.0f);
     addChild(chest);
 
     auto* schatzMarkierung = new Wesen();
@@ -148,7 +149,7 @@ void UnterwasserszeneWesen::init() {
     schatzMarkierung->material.emission = Kern::LoadTexture("assets/textures/laser_rot.png");
     schatzMarkierung->material.shader = ShaderManager::getInstance().getShader("default");
     schatzMarkierung->transform.scale = glm::vec3(2.0f);
-    schatzMarkierung->transform.position = glm::vec3(-690.0f, 60.0f, -225.0f);
+    schatzMarkierung->transform.position = glm::vec3(-690.0f, 70.0f, -225.0f);
     addChild(schatzMarkierung);
 
     auto sceneData = getGodotSceneData();

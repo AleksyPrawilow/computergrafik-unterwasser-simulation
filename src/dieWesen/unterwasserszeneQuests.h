@@ -14,7 +14,8 @@ public:
     enum QUESTS {
         TUTORIAL,
         COLLECT_BOTTLE,
-        CHOP_DOWN,
+        THE_BEGINNING,
+        SURVIVAL,
         DIG_OUT,
         THROW_SUB,
         EXPLORE_THE_SEA,
@@ -34,7 +35,8 @@ private:
 
     void setupTutorial();
     void setupCollectBottle();
-    void setupChopDown();
+    void setupTheBeginning();
+    void setupSurvival();
     void setupDigOut();
     void setupThrowSub();
     void setupExploreTheSea();

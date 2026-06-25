@@ -16,6 +16,8 @@ public:
 
 private:
     GegenstandID typ;
+    Wesen* makePanel(const glm::vec3& pos, const glm::vec3& euler, const glm::vec3& scale);
+    void buildHouse();
 };
 
 #endif //COMPUTERGRAFIK_UNTERWASSER_SIMULATION_PLATZIERBARESOBJEKT_H

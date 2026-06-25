@@ -139,7 +139,7 @@ void Bottle::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTran
 }
 
 void Bottle::beginSwim() {
-    auto targetIslandPos = glm::vec3(-669.0, 0.0f, -199.0);
+    auto targetIslandPos = glm::vec3(-625.0f, 0.0f, -190.0f);
     createTween()
         ->tweenProperty(&transform.position.x, targetIslandPos.x, 5.0f, EaseType::EASE_OUT_SINE)
         ->parallel()

@@ -14,6 +14,7 @@ void VBoxUI::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTran
     float maxWidth = 0.0f;
 
     for (const Wesen* child : children) {
+        if (!child->visible) continue;
         maxWidth = glm::max(maxWidth, child->transform.scale.x);
         totalHeight += child->transform.scale.y + spacing;
     }
@@ -23,6 +24,7 @@ void VBoxUI::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTran
 
     float currentY = 0.0f;
     for (Wesen* child : children) {
+        if (!child->visible) continue;
         float localX = 0.0f;
 
         if (alignment == UIAlignment::CENTER) {

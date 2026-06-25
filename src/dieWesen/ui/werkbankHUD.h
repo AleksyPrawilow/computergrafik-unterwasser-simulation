@@ -17,7 +17,7 @@ private:
     static constexpr int MAX_SICHTBAR = 6;
 
     UIElement* hintergrund = nullptr;
-    VBoxUI* container = nullptr;
+    UIElement* container = nullptr;
     UILabel* titelLabel = nullptr;
     UILabel* hinweisLabel = nullptr;
 
