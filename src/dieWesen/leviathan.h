@@ -17,6 +17,8 @@ public:
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void prepareUniforms() const override;
 
+    bool cutscene = false;
+
     // --- 1. CONFIGURABLE SWIMMING PARAMETERS (Body) ---
     float u_swimSpeed = 4.5;
     float u_swimFrequency = 0.075;

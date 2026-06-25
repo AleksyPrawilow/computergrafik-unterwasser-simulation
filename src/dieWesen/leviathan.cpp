@@ -82,6 +82,8 @@ Wesen* Leviathan::findClosestTarget() const {
 
 
 void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (cutscene) return;
+
     startClawPositions[0] = glm::vec3( clawXOffset,  clawYOffset, clawZOffset); // Upper Right
     startClawPositions[1] = glm::vec3( clawXOffset, -clawYOffset, clawZOffset); // Lower Right
     startClawPositions[2] = glm::vec3(-clawXOffset,  clawYOffset, clawZOffset); // Upper Left

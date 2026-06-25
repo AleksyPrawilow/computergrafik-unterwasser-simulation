@@ -156,6 +156,8 @@ set(PROJECT_SOURCES
         src/szenes/labsProps.h
         src/szenes/labsWesen.cpp
         src/szenes/labsWesen.h
+        src/dieWesen/megalodon.cpp
+        src/dieWesen/megalodon.h
 )
 
 set(SOIL_SOURCES

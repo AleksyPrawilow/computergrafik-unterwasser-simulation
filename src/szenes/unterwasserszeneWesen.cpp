@@ -6,6 +6,8 @@
 
 #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
+
+#include "dieWesen/megalodon.h"
 #include "werkzeuge/himmelsboxWesen.h"
 
 class SeaweedBatch : public Wesen {
@@ -103,6 +105,22 @@ void UnterwasserszeneWesen::init() {
         addChild(carrier);
     }
 
+    Path3D * megalodonPath = new Path3D();
+    megalodonPath->transform.position = glm::vec3(-650.0f, -10.0f, -175.0f);
+    megalodonPath->generateCircle(25.0f, 100);
+    addChild(megalodonPath);
+
+    PathFollower* carrier = new PathFollower();
+    carrier->targetPath = megalodonPath;
+    carrier->moveSpeed = 10.0f;
+
+    carrier->currentNodeIndex = 0;
+    carrier->transform.position = megalodonPath->frames[carrier->currentNodeIndex].position;
+
+    auto * megalodon = new Megalodon();
+    carrier->addChild(megalodon);
+    addChild(carrier);
+
     // FISHES
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
     fishPath->transform.position = glm::vec3(-650.0f, -10.0f, -175.0f);
@@ -195,7 +213,7 @@ void UnterwasserszeneWesen::init() {
     }
 
     auto * chest = new Chest();
-    chest->transform.position = glm::vec3(-690.0f, 27.0f, -225.0f);
+    chest->transform.position = glm::vec3(-690.0f, 24.0f, -225.0f);
     addChild(chest);
 
     auto* schatzMarkierung = new Wesen();
