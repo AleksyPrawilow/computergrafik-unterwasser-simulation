@@ -9,6 +9,7 @@
 #include <vector>
 #include <unordered_map>
 #include "frustum.h"
+#include "shadowMap.h"
 
 class Wesen;
 struct Material;
@@ -47,12 +48,15 @@ struct alignas(16) GlobalEnvironmentData {
     int u_causticsEnabled;
     int u_depthDimmingEnabled;
     int u_bloomEnabled;
-}; // Total struct size = 112 + 16 + 16 + 16 + 16 = 176 bytes (Perfect 16-byte multiple)
+
+    glm::mat4 u_lightSpaceMatrix;
+}; // Total struct size = 176 + 64 = 240 bytes
 
 class Renderer {
 public:
     void init();
     void render(const Wesen& e, const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
+    void shadowPass(const ShadowMap& shadow);
     void drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
     void drawHimmelsbox(const glm::mat4& view, const glm::mat4& projection) const;
     void drawTransparent(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos);
@@ -96,6 +100,11 @@ private:
     GLuint defaultEmission = 0;
     GLuint defaultOpacity = 0;
     GLuint envUBO = 0;
+    GLuint shadowShader = 0;
+    GLuint activeShadowMap = 0;
+public:
+    glm::mat4 lightSpaceMatrix = glm::mat4(1.0f);
+private:
     Frustum frustum{};
 };
 

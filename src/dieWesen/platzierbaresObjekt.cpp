@@ -2,6 +2,7 @@
 #include "werkzeuge/modelManager.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/visual/lightManager.h"
 
 PlatzierbaresObjekt::PlatzierbaresObjekt(GegenstandID typ) : typ(typ) {}
 
@@ -30,6 +31,11 @@ void PlatzierbaresObjekt::init() {
     } else if (typ == GegenstandID::TRUHE) {
         name = "truhe";
         transform.scale = glm::vec3(0.8f, 0.6f, 0.6f);
+    } else if (typ == GegenstandID::FACKEL) {
+        name = "fackel";
+        transform.scale = glm::vec3(0.15f, 1.0f, 0.15f);
+        torchLight = LightManager::getInstance().createPointLight(
+            glm::vec3(1.0f, 0.7f, 0.3f), 50.0f);
     } else {
         name = "platziert";
         transform.scale = glm::vec3(0.5f);
@@ -37,6 +43,9 @@ void PlatzierbaresObjekt::init() {
 }
 
 void PlatzierbaresObjekt::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (torchLight != nullptr) {
+        torchLight->position = getGlobalTransform().position + glm::vec3(0.0f, 1.5f, 0.0f);
+    }
 }
 
 Wesen* PlatzierbaresObjekt::makePanel(const glm::vec3& pos, const glm::vec3& euler, const glm::vec3& scale) {

@@ -29,6 +29,8 @@ layout (std140) uniform GlobalEnvironment {
     int u_causticsEnabled;
     int u_depthDimmingEnabled;
     int u_bloomEnabled;
+
+    mat4 u_lightSpaceMatrix;
 };
 
 in vec3 worldPos;
@@ -48,6 +50,22 @@ uniform sampler2D opacityMap;
 uniform float alphaCutoff = 0.0;
 uniform float u_bloomStrength = 0.0;
 uniform float u_emissionPulse = 1.0;
+uniform sampler2DShadow u_shadowMap;
+
+float calculateShadow(vec3 wp) {
+    vec4 lsPos = u_lightSpaceMatrix * vec4(wp, 1.0);
+    vec3 proj = lsPos.xyz / lsPos.w * 0.5 + 0.5;
+    if (proj.z > 1.0) return 1.0;
+    float bias = 0.003;
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(u_shadowMap, 0);
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            shadow += texture(u_shadowMap, vec3(proj.xy + vec2(x, y) * texelSize, proj.z - bias));
+        }
+    }
+    return shadow / 9.0;
+}
 
 // --- PROCEDURAL CAUSTICS GENERATOR ---
 float calculateCaustics(vec2 xz, float t, float scale) {
@@ -101,10 +119,9 @@ vec4 calculatePBR() {
     vec3 Lo = vec3(0.0);
 
     // --- 2. DEFAULT SUN LIGHT ---
-    // FIX: Extracted .xyz from vec4 sun color
-    vec3 sunRadiance = u_sunColor.xyz * u_sunEnergy * depthFactor;
+    float shadow = calculateShadow(worldPos);
+    vec3 sunRadiance = u_sunColor.xyz * u_sunEnergy * depthFactor * shadow;
 
-    // FIX: Extracted .xyz from vec4 sun direction
     Lo += CalculateCookTorrance(N, V, u_sunDirection.xyz, sunRadiance, albedo, roughness, metallic, F0, worldPos);
 
     // Point lights

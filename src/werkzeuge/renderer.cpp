@@ -85,6 +85,28 @@ process_children:
     }
 }
 
+void Renderer::shadowPass(const ShadowMap& shadow) {
+    if (shadowShader == 0) {
+        shadowShader = ShaderManager::getInstance().loadShader(
+            "shadow", "assets/shaders/shadow.vert", "assets/shaders/shadow.frag");
+    }
+
+    activeShadowMap = shadow.getDepthTexture();
+    glm::mat4 lightVP = shadow.getLightSpaceMatrix();
+
+    glUseProgram(shadowShader);
+
+    for (const Wesen* e : opaqueQueue) {
+        if (!e->hasMesh) continue;
+        glm::mat4 model = e->getGlobalModelMatrix();
+        glm::mat4 lightMVP = lightVP * model;
+        Kern::setUniform(shadowShader, "u_lightMVP", lightMVP);
+        Kern::DrawContext(e->mesh);
+    }
+
+    glUseProgram(0);
+}
+
 void Renderer::drawOpaque(const glm::mat4& view, const glm::mat4& projection, const glm::vec3& cameraPos) {
     for (const Wesen* e : opaqueQueue) {
         drawElement(*e, view, projection, cameraPos);
@@ -167,6 +189,7 @@ void Renderer::sendEnvironment(const glm::vec3 cameraPos) const {
         uboData.u_causticsEnabled = params.causticsEnabled ? 1 : 0;
         uboData.u_depthDimmingEnabled = params.depthDimmingEnabled ? 1 : 0;
         uboData.u_bloomEnabled = params.bloomEnabled ? 1 : 0;
+        uboData.u_lightSpaceMatrix = lightSpaceMatrix;
 
         // Upload the entire block to the GPU in a single step
         glBindBuffer(GL_UNIFORM_BUFFER, getEnvUBO());
@@ -364,6 +387,12 @@ void Renderer::setupUniforms(const Material& m, const glm::vec3& cameraPos) cons
     }
 
     Kern::setUniform(m.shader, "u_bloomStrength", m.bloomStrength);
+
+    if (activeShadowMap != 0) {
+        glActiveTexture(GL_TEXTURE8);
+        glBindTexture(GL_TEXTURE_2D, activeShadowMap);
+        Kern::setUniform(m.shader, "u_shadowMap", 8);
+    }
 }
 
 void Renderer::drawDebugBox(const glm::vec3& min, const glm::vec3& max) const {

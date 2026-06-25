@@ -4,6 +4,7 @@
 
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/gegenstandDaten.h"
+#include "werkzeuge/visual/lightManager.h"
 
 class PlatzierbaresObjekt : public Wesen {
 public:
@@ -16,6 +17,7 @@ public:
 
 private:
     GegenstandID typ;
+    PointLight* torchLight = nullptr;
     Wesen* makePanel(const glm::vec3& pos, const glm::vec3& euler, const glm::vec3& scale);
     void buildHouse();
 };
