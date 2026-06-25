@@ -34,7 +34,9 @@
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/aufhebbar.h"
 #include "dieWesen/chest.h"
+#include "dieWesen/coral.h"
 #include "dieWesen/leviathan.h"
+#include "dieWesen/seaweed.h"
 #include "dieWesen/unterwasserszeneQuests.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/gegenstandDaten.h"
@@ -164,4 +166,73 @@ void UnterwasserszeneWesen::init() {
 
     addChild(new UnterwasserszeneQuests());
     addChild(new Thunderstorm());
+    //addChild(new UnterwasserszeneVisualHelper());
+
+    constexpr float mapSize = 600.0f;
+    constexpr float cellSize = 12.0f;
+    constexpr float halfCell = cellSize * 0.5f;
+
+    int gridDim = static_cast<int>(mapSize / cellSize); // 50x50 grid = 2,500 cells
+
+    for (int x = -gridDim / 2; x < gridDim / 2; x++) {
+        for (int z = -gridDim / 2; z < gridDim / 2; z++) {
+
+            // Spawn Density: 25% chance to spawn an object in this cell
+            if (Random::range(0.0f, 1.0f) > 0.25f) {
+                continue;
+            }
+
+            float cellX = static_cast<float>(x) * cellSize;
+            float cellZ = static_cast<float>(z) * cellSize;
+
+            float rx = cellX + Random::range(-halfCell, halfCell) - 700;
+            float rz = cellZ + Random::range(-halfCell, halfCell) - 200;
+
+            // 1. Establish a default flat seabed level
+            float ry = -35.0f;
+
+            // 2. If your OceanFloor is a dynamic terrain mesh, query its heightmap dynamically:
+            const auto& floors = GroupManager::getInstance().getEntitiesInGroup("OceanFloor");
+            if (!floors.empty()) {
+                // (Change "OceanFloor" to whatever class/group name your seabed uses)
+                OceanFloor* floor = dynamic_cast<OceanFloor*>(floors[0]);
+                if (floor != nullptr) {
+                    ry = floor->getHeight(rx, rz) + floor->transform.position.y - 1.0f; // Snaps the rocks and foliage perfectly to the seabed!
+                }
+            }
+
+            glm::vec3 pos(rx, ry, rz);
+            glm::vec3 scale(1.0f); // Default scale (Coral calculates sizes dynamically)
+
+            glm::quat rot = glm::angleAxis(Random::range(0.0f, 6.283f), glm::vec3(0.0f, 1.0f, 0.0f));
+
+            Wesen* entity = nullptr;
+            float spawnChoice = Random::range(0.0f, 1.0f);
+
+            if (spawnChoice < 0.50f) {
+                // 50% chance to spawn a Rock
+                //entity = new Rock(pos, rot, glm::vec3(Random::range(20.0f, 30.0f)));
+            }
+            else if (spawnChoice < 0.80f) {
+                // 30% chance to spawn a swaying Seaweed/Kelp
+                entity = new Seaweed(pos, rot, glm::vec3(Random::range(2.0f, 6.0f)));
+            }
+            else {
+                // 20% chance to spawn a completely unique, procedurally generated Coral tree!
+                int randomSeed = static_cast<int>(Random::range(0.0f, 10000.0f));
+                entity = new Coral(pos, rot, scale, randomSeed);
+
+                // Color variety: Randomize coral colors between glowing pink, orange, and neon red
+                float colorRoll = Random::range(0.0f, 1.0f);
+                if (colorRoll < 0.33f) {
+                    entity->material.bloomStrength = 1.2f; // Glowing Pink
+                    // (Tinting color filters are read by PBR)
+                }
+            }
+
+            if (entity != nullptr) {
+                addChild(entity);
+            }
+        }
+    }
 }

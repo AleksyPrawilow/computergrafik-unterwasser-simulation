@@ -192,7 +192,7 @@ void main() {
         color = color / (color + vec3(1.0));
         color = pow(color, vec3(1.0 / 2.2));
 
-        if (u_fogEnabled == 1 && u_cameraPos.y < u_heightFogMax) {
+        if (u_fogEnabled == 1 && worldPos.y < u_heightFogMax) {
             float dist = length(u_cameraPos.xyz - hitPointWorld);
 
             float currentDrift = sin(hitPointWorld.x * 0.08 + u_time * 0.3)

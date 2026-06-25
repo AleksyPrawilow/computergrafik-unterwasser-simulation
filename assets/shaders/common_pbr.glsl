@@ -75,6 +75,10 @@ vec4 calculatePBR() {
     vec3 emission = texture(emissionMap, texCoord).rgb;
     float alpha = texture(opacityMap, texCoord).r;
 
+    if (alpha < alphaCutoff) {
+        discard;
+    }
+
     // Normals
     vec3 tangentNormal = texture(normalMap, texCoord).rgb;
     tangentNormal = normalize(tangentNormal * 2.0 - 1.0);
@@ -162,57 +166,72 @@ vec4 calculatePBR() {
     color = color / (color + vec3(1.0));
     color = pow(color, vec3(1.0 / 2.2));
 
-    if (u_fogEnabled != 0 && u_cameraPos.y < u_heightFogMax) {
+    if (u_fogEnabled != 0 && (worldPos.y < u_heightFogMax || u_cameraPos.y < u_heightFogMax)) {
         float dist = length(u_cameraPos.xyz - worldPos);
 
-         float currentDrift = sin(worldPos.x * 0.08 + u_time * 0.3)
-         * cos(worldPos.z * 0.08 - u_time * 0.2)
-         * sin(worldPos.y * 0.04);
+        float currentDrift = sin(worldPos.x * 0.08 + u_time * 0.3)
+        * cos(worldPos.z * 0.08 - u_time * 0.2)
+        * sin(worldPos.y * 0.04);
 
-         float baseFogDensity = u_baseFogDensity;
-         float dynamicDensity = baseFogDensity + (currentDrift * 0.008);
-         float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
+        float baseFogDensity = u_baseFogDensity;
+        float dynamicDensity = baseFogDensity + (currentDrift * 0.008);
+        float fogFactor = clamp(exp(-dist * dynamicDensity), 0.0, 1.0);
 
-         // Calculate height-blended base fog color
-         float depthBlend = clamp((-V.y - (-0.2)) / 1.0, 0.0, 1.0);
-         // FIX: Removed block prefix and extracted .xyz from vec4 fog colors
-         vec3 baseWaterColor = mix(u_fogColor.xyz, u_heightFogColor.xyz, depthBlend);
+        if (u_cameraPos.y >= u_heightFogMax && worldPos.y < u_heightFogMax && u_heightFogEnabled != 0) {
+            float h = u_heightFogMax - worldPos.y;
+            float waterDist = h / max(abs(V.y), 0.001);
 
-         vec3 sunDirection = normalize(u_sunDirection.xyz);
-         float viewSunAngle = max(dot(-V, sunDirection), 0.0);
-         vec3 sunHazeColor = u_sunColor.xyz * pow(viewSunAngle, 6.0) * 0.3;
+            float waterFogDensity = u_baseFogDensity;
+            float waterFogFactor = clamp(exp(-waterDist * waterFogDensity), 0.0, 1.0);
 
-         vec3 finalFogColor = baseWaterColor + sunHazeColor;
+            vec3 waterFogColor = u_fogColor.xyz;
+            if (u_depthDimmingEnabled != 0) {
+                float depthFactor = clamp(exp((worldPos.y - u_heightFogMax) * u_depthDimmingCoefficient), 0.01, 1.0);
+                waterFogColor *= depthFactor;
+            }
 
-         // Headlight fog scattering
-         for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
-             if (spotLights[i].intensity > 0.0) {
-                 vec3 L = normalize(spotLights[i].position - worldPos);
-                 float theta = dot(-L, normalize(spotLights[i].direction));
-                 float epsilon = spotLights[i].cutOff - spotLights[i].outerCutOff;
-                 float spotIntensity = clamp((theta - spotLights[i].outerCutOff) / epsilon, 0.0, 1.0);
+            color = mix(waterFogColor, color, waterFogFactor);
+        }
 
-                 float distanceToLight = length(spotLights[i].position - worldPos);
-                 float attenuation = 1.0 / (distanceToLight * distanceToLight + 0.5);
-                 float absorption = exp(-distanceToLight * 0.15);
+        vec3 baseWaterColor;
+        if (u_cameraPos.y < u_heightFogMax) {
+            float depthBlend = clamp((-V.y - (-0.2)) / 1.0, 0.0, 1.0);
+            baseWaterColor = mix(u_fogColor.xyz, u_heightFogColor.xyz, depthBlend);
+        } else {
+            baseWaterColor = u_fogColor.xyz;
+        }
 
-                 vec3 fogGlow = spotLights[i].color * spotLights[i].intensity * attenuation * spotIntensity * 0.15 * absorption;
-                 finalFogColor += fogGlow;
-             }
-         }
+        vec3 sunDirection = normalize(u_sunDirection.xyz);
+        float viewSunAngle = max(dot(-V, sunDirection), 0.0);
+        vec3 sunHazeColor = u_sunColor.xyz * pow(viewSunAngle, 6.0) * 0.3;
 
-         // --- FIXED: DIM THE FOG COLOR BY THE CAMERA'S DEPTH ---
-         if (u_depthDimmingEnabled != 0) { // FIX: Changed int check
-               float cameraDepthFactor = clamp(exp(u_cameraPos.y * u_depthDimmingCoefficient), 0.0, 1.0);
-               finalFogColor *= cameraDepthFactor;
-         }
+        vec3 finalFogColor = baseWaterColor + sunHazeColor;
 
-         // Tonemap and Gamma Correct the fog color independently
-         finalFogColor = finalFogColor / (finalFogColor + vec3(1.0));
-         finalFogColor = pow(finalFogColor, vec3(1.0 / 2.2));
+        for (int i = 0; i < MAX_SPOT_LIGHTS; ++i) {
+            if (spotLights[i].intensity > 0.0) {
+                vec3 L = normalize(spotLights[i].position - worldPos);
+                float theta = dot(-L, normalize(spotLights[i].direction));
+                float epsilon = spotLights[i].cutOff - spotLights[i].outerCutOff;
+                float spotIntensity = clamp((theta - spotLights[i].outerCutOff) / epsilon, 0.0, 1.0);
 
-         // Blend them
-         color = mix(finalFogColor, color, fogFactor);
+                float distanceToLight = length(spotLights[i].position - worldPos);
+                float attenuation = 1.0 / (distanceToLight * distanceToLight + 0.5);
+                float absorption = exp(-distanceToLight * 0.15);
+
+                vec3 fogGlow = spotLights[i].color * spotLights[i].intensity * attenuation * spotIntensity * 0.15 * absorption;
+                finalFogColor += fogGlow;
+            }
+        }
+
+        if (u_depthDimmingEnabled != 0 && u_cameraPos.y < u_heightFogMax) {
+            float cameraDepthFactor = clamp(exp(u_cameraPos.y * u_depthDimmingCoefficient), 0.0, 1.0);
+            finalFogColor *= cameraDepthFactor;
+        }
+
+        finalFogColor = finalFogColor / (finalFogColor + vec3(1.0));
+        finalFogColor = pow(finalFogColor, vec3(1.0 / 2.2));
+
+        color = mix(finalFogColor, color, fogFactor);
     }
 
     return vec4(color, alpha);
