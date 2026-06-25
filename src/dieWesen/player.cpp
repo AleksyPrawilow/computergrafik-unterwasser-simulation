@@ -74,7 +74,7 @@ void Player::processInput(const float deltaTime) {
     float standingY = islandHeight + standEyeHeight;
     float floatingY = waterHeight + swimEyeHeight;
 
-    bool isSwimming = floatingY > standingY;
+    bool isSwimming = (affectedByWater) ? floatingY > standingY : false;
 
     float baseMoveSpeed = isSwimming ? 2.5f : 6.0f;
     float activeJumpForce = isSwimming ? 4.0f : 10.0f;
@@ -119,22 +119,23 @@ void Player::processInput(const float deltaTime) {
             break;
         }
     }
+    if (affectedByWater) {
+        if (isSwimming) {
+            float swayX = glm::sin(time * 1.5f) * 0.25f;
+            float swayZ = glm::cos(time * 1.2f) * 0.25f;
+            transform.position += glm::vec3(swayX, 0.0f, swayZ) * deltaTime;
+        }
 
-    if (isSwimming) {
-        float swayX = glm::sin(time * 1.5f) * 0.25f;
-        float swayZ = glm::cos(time * 1.2f) * 0.25f;
-        transform.position += glm::vec3(swayX, 0.0f, swayZ) * deltaTime;
-    }
-
-    float finalTargetY = glm::max(standingY, floatingY);
-    if (finalTargetY > targetY) {
-        constexpr float upAcceleration = 12.0f;
-        const float tUp = 1.0f - glm::exp(-upAcceleration * deltaTime);
-        targetY = glm::mix(targetY, finalTargetY, tUp);
-    } else {
-        constexpr float yAcceleration = 2.0f;
-        const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);
-        targetY = glm::mix(targetY, finalTargetY, tSpeed);
+        float finalTargetY = glm::max(standingY, floatingY);
+        if (finalTargetY > targetY) {
+            constexpr float upAcceleration = 12.0f;
+            const float tUp = 1.0f - glm::exp(-upAcceleration * deltaTime);
+            targetY = glm::mix(targetY, finalTargetY, tUp);
+        } else {
+            constexpr float yAcceleration = 2.0f;
+            const float tSpeed = 1.0f - glm::exp(-yAcceleration * deltaTime);
+            targetY = glm::mix(targetY, finalTargetY, tSpeed);
+        }
     }
     transform.position.y += verticalVelocity * deltaTime;
 
