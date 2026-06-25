@@ -66,6 +66,9 @@ void HudPanel::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTr
 	VBoxUI::onUpdate(window, deltaTime, cameraTransform);
 
 	if (uboot != nullptr) {
+		visible = uboot->getActive();
+		if (!visible) return;
+
 		float depthVal = -uboot->transform.position.y;
 		const float speedVal = uboot->getSpeed() * 3.6f;
 

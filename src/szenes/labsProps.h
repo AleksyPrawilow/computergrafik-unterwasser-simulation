@@ -5,19 +5,7 @@
 #ifndef COMPUTERGRAFIK_UNTERWASSER_SIMULATION_LABSPROPS_H
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_LABSPROPS_H
 
-#include <unordered_map>
-#include <vector>
-#include <string>
-#include <glm.hpp>
-#include <gtc/quaternion.hpp>
-
-struct GodotTransform {
-    glm::vec3 position;
-    glm::quat rotation;
-    glm::vec3 scale;
-    GodotTransform(glm::vec3 p, glm::quat r, glm::vec3 s)
-        : position(p), rotation(r), scale(s) {}
-};
+#include "unterwasserszeneProps.h"
 
 inline std::unordered_map<std::string, std::vector<GodotTransform>> getLabsProps() {
     return {
@@ -52,7 +40,7 @@ inline std::unordered_map<std::string, std::vector<GodotTransform>> getLabsProps
                 glm::vec3(0.560000f, 0.560000f, 0.560000f)
             ),
             GodotTransform(
-                glm::vec3(-22.274422f, 30.672104f, 3.631607f),
+                glm::vec3(-12.0f, 30.672104f, 3.631607f),
                 glm::quat(0.974930f, 0.000000f, -0.222510f, 0.000000f),
                 glm::vec3(0.560000f, 0.560000f, 0.560000f)
             ),

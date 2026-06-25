@@ -158,7 +158,7 @@ void Scene::processInput(GLFWwindow* window) {
 	if (Input::isKeyJustPressed(GLFW_KEY_F1) && aktuelleSzene != 0) {
 		szeneWechseln(0);
 	}
-	if (Input::isKeyJustPressed(GLFW_KEY_F2) && aktuelleSzene != 1) {
+	if (Input::isKeyJustPressed(GLFW_KEY_F4) && aktuelleSzene != 1) {
 		szeneWechseln(1);
 	}
 }
