@@ -15,6 +15,25 @@ private:
     Raumschiff * raumschiff = nullptr;
     UILabel * hpLabel = nullptr;
     UILabel * geschwindigkeitLabel = nullptr;
+    UILabel * abschuessLabel = nullptr;
+    UILabel * raketenLabel = nullptr;
+    UILabel * feindeLabel = nullptr;
+
+    UIElement * schadenVignette = nullptr;
+    UIElement * bossBalkenHG = nullptr;
+    UIElement * bossBalken = nullptr;
+    UILabel * bossLabel = nullptr;
+
+    static constexpr int KOMPASS_MAX = 25;
+    static constexpr float KOMPASS_BREITE = 600.0f;
+    UIElement* kompassHG = nullptr;
+    UIElement* kompassPunkte[KOMPASS_MAX] = {};
+
+    GLuint texCyan = 0;
+    GLuint texRot = 0;
+    GLuint texLila = 0;
+
+    void kompassAktualisieren();
 };
 
 #endif

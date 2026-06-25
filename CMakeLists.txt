@@ -153,6 +153,10 @@ set(PROJECT_SOURCES
         src/dieWesen/coral.h
         src/dieWesen/seaweed.cpp
         src/dieWesen/seaweed.h
+        src/dieWesen/schildPickup.cpp
+        src/dieWesen/schildPickup.h
+        src/dieWesen/feuerEmitter.cpp
+        src/dieWesen/feuerEmitter.h
         src/szenes/labsProps.h
         src/szenes/labsWesen.cpp
         src/szenes/labsWesen.h

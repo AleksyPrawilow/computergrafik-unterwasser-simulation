@@ -11,7 +11,7 @@ class DissolvingLabel;
 
 class QuestCompletedBanner : public VBoxUI {
 public:
-    explicit QuestCompletedBanner(const std::string& questName);
+    explicit QuestCompletedBanner(const std::string& questName, const std::string& titleOverride = "");
 
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
@@ -25,6 +25,7 @@ public:
 
 private:
     std::string questTitle;
+    std::string titelText;
     static GLuint dissolveShader;
 
     DissolvingLabel* topBorder = nullptr;

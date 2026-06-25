@@ -29,8 +29,8 @@ public:
 
 GLuint QuestCompletedBanner::dissolveShader = 0;
 
-QuestCompletedBanner::QuestCompletedBanner(const std::string& questName)
-    : VBoxUI(12.0f), questTitle(questName) {}
+QuestCompletedBanner::QuestCompletedBanner(const std::string& questName, const std::string& titleOverride)
+    : VBoxUI(12.0f), questTitle(questName), titelText(titleOverride.empty() ? "Q U E S T   C O M P L E T E D" : titleOverride) {}
 
 void QuestCompletedBanner::init() {
     if (dissolveShader == 0) {
@@ -56,7 +56,7 @@ void QuestCompletedBanner::init() {
     titleLabel = new DissolvingLabel();
     titleLabel->dissolveRef = &titleDissolve;
     titleLabel->shader = dissolveShader;
-    titleLabel->setText("Q U E S T   C O M P L E T E D", 64.0f);
+    titleLabel->setText(titelText, 64.0f);
     titleLabel->color = glm::vec4(1.0f, 0.85f, 0.2f, 1.0f);
     addChild(titleLabel);
 

@@ -45,6 +45,11 @@ ParticleEmitter::ParticleEmitter(unsigned int maxParticles) : maxParticlesCount(
     glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(GPUParticle), (void*)(offsetof(GPUParticle, scale)));
     glVertexAttribDivisor(3, 1);
 
+    // Layout location 4: float life
+    glEnableVertexAttribArray(4);
+    glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, sizeof(GPUParticle), (void*)(offsetof(GPUParticle, life)));
+    glVertexAttribDivisor(4, 1);
+
     glBindVertexArray(0);
 }
 
@@ -82,7 +87,7 @@ void ParticleEmitter::onUpdate(GLFWwindow* window, float deltaTime, Transform& c
             // Delegate physics updates to the active subclass
             onUpdateParticle(*it, deltaTime);
 
-            gpuData.push_back({ it->position, it->scale });
+            gpuData.push_back({ it->position, it->scale, it->life / it->maxLife });
             ++it;
         }
     }

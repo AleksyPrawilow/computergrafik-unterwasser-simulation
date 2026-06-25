@@ -40,6 +40,9 @@ void Laser::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
 
     const auto& spieler = getNodesInGroup("spieler");
     for (auto* ziel : spieler) {
+        if (auto* schiff = dynamic_cast<Raumschiff*>(ziel)) {
+            if (schiff->hatSpawnSchutz()) continue;
+        }
         float abstand = glm::distance(getGlobalTransform().position, ziel->getGlobalTransform().position);
         if (abstand < boundingRadius + ziel->boundingRadius) {
             if (auto* schiff = dynamic_cast<Raumschiff*>(ziel)) {
