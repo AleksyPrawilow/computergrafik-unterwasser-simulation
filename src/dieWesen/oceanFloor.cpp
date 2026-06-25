@@ -17,6 +17,27 @@ void OceanFloor::init() {
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
-    loadModel("assets/models/oceanbed.obj");
+    loadModel("assets/models/oceanbed.obj", &vertices);
     transform.scale = glm::vec3(1.0f);
+    addToGroup("OceanFloor");
+}
+
+float OceanFloor::getHeight(const float x, const float z) const {
+    float closestDistanceSq = std::numeric_limits<float>::max();
+    float groundHeight = -1.0f;
+    auto [position, rotation, scale] = getGlobalTransform();
+
+    for (const auto& localPos : vertices) {
+        const glm::vec3 worldPos = position + (rotation * (localPos * scale));
+
+        const float dx = worldPos.x - x;
+        const float dz = worldPos.z - z;
+
+        if (const float distSq = dx * dx + dz * dz; distSq < closestDistanceSq) {
+            closestDistanceSq = distSq;
+            groundHeight = worldPos.y;
+        }
+    }
+
+    return groundHeight;
 }

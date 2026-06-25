@@ -147,6 +147,12 @@ set(PROJECT_SOURCES
         src/dieWesen/leviathan.h
         src/dieWesen/lightsaber.cpp
         src/dieWesen/lightsaber.h
+        src/dieWesen/proceduralCoral.cpp
+        src/dieWesen/proceduralCoral.h
+        src/dieWesen/coral.cpp
+        src/dieWesen/coral.h
+        src/dieWesen/seaweed.cpp
+        src/dieWesen/seaweed.h
 )
 
 set(SOIL_SOURCES

@@ -320,7 +320,13 @@ void Renderer::drawElement(const Wesen& e, const glm::mat4& view, const glm::mat
     }
 
     setupUniforms(m, cameraPos);
+    if (m.doubleSided) {
+        Kern::SetCullState(false);
+    }
     Kern::DrawContext(e.mesh);
+    if (m.doubleSided) {
+        Kern::SetCullState(true);
+    }
     glUseProgram(0);
 }
 
