@@ -15,20 +15,27 @@
 extern Kamera kamera;
 
 void Raumschiff::init() {
-    material.albedo = Kern::LoadTexture("assets/textures/raumschiff_albedo.png");
-    material.roughness = Kern::LoadTexture("assets/textures/raumschiff_roughness.png");
-    material.metallic = Kern::LoadTexture("assets/textures/raumschiff_metallic.png");
-    material.normal = Kern::LoadTexture("assets/textures/raumschiff_normal.png");
-    material.shader = ShaderManager::getInstance().loadShader(
+    // 1. TWORZYMY WIZUALNY MODEL JAKO DZIECKO
+    Wesen* visualModel = new Wesen();
+    visualModel->material.albedo = Kern::LoadTexture("assets/textures/spaceship.png");
+    visualModel->material.emission = Kern::LoadTexture("assets/textures/spaceship_emissive.png");
+    visualModel->material.metallic = Kern::LoadTexture("assets/textures/spaceship_metalness.png");
+    visualModel->material.normal = Kern::LoadTexture("assets/textures/spaceship_normal.png");
+    visualModel->material.shader = ShaderManager::getInstance().loadShader(
         "default",
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
-    loadModel("assets/models/spaceship2.obj");
+    visualModel->loadModel("assets/models/spaceship.obj");
+
+    visualModel->transform.yaw(glm::radians(-90.0f));
+
+    addChild(visualModel);
+
     transform.position = glm::vec3(0.f, 0.f, 0.f);
     transform.scale = glm::vec3(3.0f);
-    boundingRadius = 4.0f;
 
+    boundingRadius = 4.0f;
     addToGroup("spieler");
     spawnSchutz = 4.0f;
 
