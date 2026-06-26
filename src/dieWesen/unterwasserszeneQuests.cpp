@@ -5,8 +5,10 @@
 #include "unterwasserszeneQuests.h"
 
 #include "bottle.h"
+#include "megalodon.h"
 #include "ui/questCompletedBanner.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/textur.h"
 #include "werkzeuge/visual/questManager.h"
 
 UnterwasserszeneQuests::QUESTS UnterwasserszeneQuests::savedQuest = TUTORIAL;
@@ -23,6 +25,8 @@ void UnterwasserszeneQuests::init() {
 }
 
 void UnterwasserszeneQuests::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+
+
     switch (currentQuest) {
     case TUTORIAL:
         onUpdateTutorial();
@@ -329,12 +333,21 @@ void UnterwasserszeneQuests::setupFindTheTrench() {
 
 void UnterwasserszeneQuests::setupInvestigateTheSounds() {
     Quest quest;
-    quest.title = "The Leviathan";
+    quest.title = "The bigger fish";
 
     QuestObjective encounterObjective;
     encounterObjective.tag = "leviathan_encounter";
     encounterObjective.description = "Investigate the strange sounds";
     encounterObjective.requiredCount = 1;
+
+    uiMarker = new WorldspaceUI();
+    parent->addChild(uiMarker);
+    uiMarker->material.albedo = Kern::LoadTexture("assets/textures/quest_marker.png");
+    uiMarker->transform.scale = glm::vec3(128.0f, 128.0f, 1.0f);
+    uiMarker->expansion = UIExpansion::CENTER;
+    uiMarker->setTarget(getNodesInGroup("F")[0], glm::vec3(0.0f, 4.0f, 0.0f));
+    uiMarker->shouldScale = true;
+    uiMarker->enabled = false;
 
     quest.objectives.push_back(encounterObjective);
 

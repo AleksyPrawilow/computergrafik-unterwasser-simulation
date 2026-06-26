@@ -4,6 +4,7 @@
 
 #include "starWarsIntro.h"
 
+#include "fadeOverlay.h"
 #include "logo.h"
 #include "dieWesen/raumschiff.h"
 #include "szenes/weltraumszeneWesen.h"
@@ -16,6 +17,10 @@
 extern Kamera kamera;
 
 void StarWarsIntro::init() {
+    auto* fade = new FadeOverlay();
+    parent->addChild(fade);
+    fade->fadeOut(0.0f);
+
     loadModel("assets/models/starwars.obj");
     material.shader = ShaderManager::getInstance().getShader("default");
     material.opacity = Kern::LoadTexture("assets/textures/starwarsintro/starwarsintro.1.png");
@@ -30,12 +35,13 @@ void StarWarsIntro::init() {
     transform.scale = glm::vec3(1.0f);
 
     createTween()
-        ->tweenProperty(&transform.position, kamera.transform.position + transform.up() * 5.0f, 60.0f, EaseType::LINEAR)
+        ->tweenProperty(&transform.position, kamera.transform.position + transform.up() * 3.0f, 30.0f, EaseType::LINEAR)
         ->tweenCallback([this]() {
             auto * player = dynamic_cast<Raumschiff*>(getNodesInGroup("spieler")[0]);
             auto * scene = dynamic_cast<WeltraumszeneWesen *>(parent);
             player->cutscene = false;
             scene->welleStarten(0);
+            MusicManager::getInstance().playMusic("assets/audio/beatit.mp3");
         });
 
     parent->addChild(new Logo());
