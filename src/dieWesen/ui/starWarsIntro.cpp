@@ -4,11 +4,13 @@
 
 #include "starWarsIntro.h"
 
+#include "logo.h"
 #include "dieWesen/raumschiff.h"
 #include "szenes/weltraumszeneWesen.h"
 #include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/visual/tween.h"
 
 extern Kamera kamera;
@@ -19,6 +21,8 @@ void StarWarsIntro::init() {
     material.opacity = Kern::LoadTexture("assets/textures/starwarsintro/starwarsintro.1.png");
     material.albedo = Kern::LoadTexture("assets/textures/starwarsintro/starwarsintro.1.png");
     material.doubleSided = true;
+
+    MusicManager::getInstance().playMusic("assets/audio/star_wars.mp3");
 
     transform.position = kamera.transform.position + kamera.transform.forward() * 4.0f;
     transform.rotation = kamera.transform.rotation * glm::quat(glm::radians(glm::vec3(-45.0f, 0.0f, 0.0f)));
@@ -33,6 +37,8 @@ void StarWarsIntro::init() {
             player->cutscene = false;
             scene->welleStarten(0);
         });
+
+    parent->addChild(new Logo());
 }
 
 void StarWarsIntro::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {

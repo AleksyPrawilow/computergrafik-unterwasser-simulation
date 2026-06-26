@@ -179,6 +179,8 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/fadeOverlay.h
         src/dieWesen/ui/starWarsIntro.cpp
         src/dieWesen/ui/starWarsIntro.h
+        src/dieWesen/ui/logo.cpp
+        src/dieWesen/ui/logo.h
 )
 
 set(SOIL_SOURCES

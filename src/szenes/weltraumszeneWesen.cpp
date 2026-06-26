@@ -96,7 +96,7 @@ void WeltraumszeneWesen::init() {
     addChild(cinematicBars);
 
     addChild(new StarWarsIntro());
-    MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
+    // MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
 }
 
 void WeltraumszeneWesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
