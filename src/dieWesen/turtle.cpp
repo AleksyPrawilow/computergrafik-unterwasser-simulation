@@ -10,7 +10,7 @@ void Turtle::init() {
         material.albedo = Kern::LoadTexture("assets/textures/turtle1.png");
         material.normal = Kern::LoadTexture("assets/textures/turtle1_normal.png");
         material.metallic = Kern::LoadTexture("assets/textures/turtle1_specular.png");
-        material.roughness = material.metallic; 
+        material.roughness = material.metallic;
 
         // Wesen* eyes = new Wesen();
         // eyes->loadModel("assets/models/turtle1_eyes.obj");

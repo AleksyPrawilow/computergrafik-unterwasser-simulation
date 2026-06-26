@@ -136,9 +136,28 @@ void UnterwasserszeneWesen::init() {
     // crab->transform.position = glm::vec3(-684.0f, 31.5f, -224.0f);
     // addChild(crab);
 
-    // Turtle *turtle = new Turtle(2);
-    // turtle->transform.position = glm::vec3(-694.0f, 31.5f, -224.0f);
-    // addChild(turtle);
+    // Turtle
+    Path3D* turtlePath = new Path3D();
+    turtlePath->transform.position = glm::vec3(-600.0f, -10.0f, -165.0f);
+    turtlePath->generateFigureEight(40.0f, 10.0f, 40.0f);
+    addChild(turtlePath);
+
+    for (int i = 0; i < 4; i++) {
+        PathFollower* carrier = new PathFollower();
+        carrier->targetPath = turtlePath;
+        carrier->moveSpeed = 3.5f;
+
+        carrier->currentNodeIndex = i * 25;
+        carrier->transform.position = turtlePath->frames[carrier->currentNodeIndex].position;
+
+        int currentType = (i % 2) + 1;
+        Turtle* turtle = new Turtle(currentType);
+
+        turtle->transform.scale = glm::vec3(0.8f + (rand() % 100 / 250.0f));
+
+        carrier->addChild(turtle);
+        addChild(carrier);
+    }
 
     auto * bottle = new Bottle();
     bottle->transform.position = glm::vec3(-580.0f, 2.0f, -180.0f);
