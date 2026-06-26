@@ -60,8 +60,12 @@ void SchiffslaborHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& c
     if (Input::isKeyJustPressed(GLFW_KEY_R)) {
         if (offen) {
             umschalten(window);
-        } else if (!inventarOffen && spielerNaheKonsole()) {
-            umschalten(window);
+        } else {
+            const auto& walkers = getNodesInGroup("playerWalking");
+            bool spielerAktiv = !walkers.empty() && dynamic_cast<Player*>(walkers[0])->getActive();
+            if (spielerAktiv && !inventarOffen && spielerNaheKonsole()) {
+                umschalten(window);
+            }
         }
     }
 

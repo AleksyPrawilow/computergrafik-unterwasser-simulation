@@ -14,7 +14,12 @@
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/ui/schiffslaborHUD.h"
 #include "dieWesen/ui/fadeOverlay.h"
+#include "dieWesen/ui/cinematicBars.h"
+#include "dieWesen/ui/questCompletedBanner.h"
+#include "dieWesen/explosion.h"
+#include "dieWesen/lightsaber.h"
 #include "werkzeuge/himmelsboxWesen.h"
+#include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/random.h"
@@ -25,6 +30,9 @@
 #include "werkzeuge/ui/uiContainers.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/visual/worldEnvironment.h"
+#include "werkzeuge/visual/tween.h"
+
+extern Kamera kamera;
 
 namespace {
     constexpr float WAND_HOEHE = 8.0f;
@@ -144,7 +152,7 @@ void RaumschiffInnenWesen::init() {
     baueWesen(glm::vec3(0.0f, 1.0f, -41.0f), glm::vec3(66.0f, 2.0f, T), false, true);
     baueWesen(glm::vec3(0.0f, 7.0f, -41.0f), glm::vec3(66.0f, 2.0f, T), false, true);
     // Vertical mullions dividing the glass band (Y 2..6) into panes.
-    for (float mx : {-22.0f, -11.0f, 0.0f, 11.0f, 22.0f}) {
+    for (float mx : {-22.0f, -11.0f, 11.0f, 22.0f}) {
         baueWesen(glm::vec3(mx, 4.0f, -41.0f), glm::vec3(1.5f, 4.0f, T), false, true);
     }
 
@@ -361,11 +369,19 @@ void RaumschiffInnenWesen::init() {
         kompassPunkte[i]->visible = false;
     }
 
-    // --- Fade in from black ---
-    auto* fadeIn = new FadeOverlay();
-    addChild(fadeIn);
-    fadeIn->sofort(1.0f);
-    fadeIn->fadeOut(1.0f);
+    // --- Cutscene support ---
+    cinematicBars = new CinematicBars();
+    addChild(cinematicBars);
+
+    fadeOverlay = new FadeOverlay();
+    addChild(fadeOverlay);
+    fadeOverlay->sofort(1.0f);
+    fadeOverlay->fadeOut(1.0f);
+
+    // --- Death Star callback ---
+    player->onTodessternBenutzt = [this]() {
+        if (!cutsceneGestartet) starteCutscene();
+    };
 
     // --- HUDs ---
     addChild(new InventarHUD());
@@ -389,6 +405,12 @@ void RaumschiffInnenWesen::onUpdate(GLFWwindow* window, float deltaTime, Transfo
         glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
         schadenVignette->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
         schadenVignette->transform.scale = glm::vec3(viewport.x, viewport.y, 1.0f);
+    }
+
+    if (cutsceneAktiv) {
+        const float tFolge = 1.0f - glm::exp(-3.0f * deltaTime);
+        cameraTransform.position = glm::mix(cameraTransform.position, cameraZielPos, tFolge);
+        cameraTransform.lookAt(cameraBlickZiel, glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     kompassAktualisieren();
@@ -447,3 +469,176 @@ void RaumschiffInnenWesen::kompassAktualisieren() {
         kompassPunkte[i]->visible = false;
     }
 }
+
+void RaumschiffInnenWesen::starteCutscene() {
+    cutsceneGestartet = true;
+    cutsceneAktiv = true;
+
+    if (spielerRef) spielerRef->setActive(false);
+    cinematicBars->setEnabled(true);
+
+    auto feinde = getNodesInGroup("feinde");
+    for (auto* f : feinde) f->queueDestroy();
+    auto feindlaser = getNodesInGroup("feindlaser");
+    for (auto* l : feindlaser) l->queueDestroy();
+
+    // --- Ocean surface far below the window ---
+    auto* ozean = new Wesen();
+    ozean->loadModel("assets/models/cube.obj");
+    ozean->material.albedo = Kern::LoadTexture("assets/textures/emission_cyan.png");
+    ozean->material.emission = Kern::LoadTexture("assets/textures/emission_cyan.png");
+    ozean->material.bloomStrength = 0.15f;
+    ozean->material.isTransparent = true;
+    ozean->material.shader = ShaderManager::getInstance().getShader("default");
+    ozean->transform.position = glm::vec3(0.0f, -350.0f, -200.0f);
+    ozean->transform.scale = glm::vec3(500.0f, 0.5f, 500.0f);
+    addChild(ozean);
+
+    // --- Leviathan starts deep in the ocean ---
+    leviathanModell = new Wesen();
+    leviathanModell->loadModel("assets/models/leviathan.obj");
+    leviathanModell->material.albedo = Kern::LoadTexture("assets/textures/leviathan_albedo.png");
+    leviathanModell->material.emission = Kern::LoadTexture("assets/textures/leviathan_emissive.png");
+    leviathanModell->material.normal = Kern::LoadTexture("assets/textures/leviathan_normal.png");
+    leviathanModell->material.bloomStrength = 0.3f;
+    leviathanModell->material.shader = ShaderManager::getInstance().getShader("default");
+    leviathanModell->transform.position = glm::vec3(40.0f, -500.0f, -200.0f);
+    leviathanModell->transform.scale = glm::vec3(6.0f);
+    addChild(leviathanModell);
+
+    const std::string saberFarben[4] = {"red", "purple", "green", "blue"};
+    glm::vec3 saberPositionen[4] = {
+        glm::vec3( 6.0f,  4.0f, 22.0f),
+        glm::vec3( 8.0f, -6.0f, 18.0f),
+        glm::vec3(-6.0f,  4.0f, 22.0f),
+        glm::vec3(-8.0f, -6.0f, 18.0f),
+    };
+    for (int i = 0; i < 4; i++) {
+        auto* dummy = new Wesen();
+        auto* saber = new Lightsaber("assets/textures/lightsaber_" + saberFarben[i] + ".png");
+        saber->dir = (i % 2 == 0) ? 1 : -1;
+        leviathanModell->addChild(dummy);
+        dummy->addChild(saber);
+        dummy->transform.position = saberPositionen[i];
+    }
+
+    // --- Death Star hidden for now, spawns later ---
+    todessternKugel = new Wesen();
+    todessternKugel->loadModel("assets/models/death_star.obj");
+    todessternKugel->material.albedo = Kern::LoadTexture("assets/textures/death_star/06_-_Default.png");
+    todessternKugel->material.emission = Kern::LoadTexture("assets/textures/death_star/emissiveMap6.png");
+    todessternKugel->material.normal = Kern::LoadTexture("assets/textures/death_star/normalMap1.png");
+    todessternKugel->material.metallic = Kern::LoadTexture("assets/textures/death_star/metalnessMap1.png");
+    todessternKugel->material.bloomStrength = 0.4f;
+    todessternKugel->material.shader = ShaderManager::getInstance().getShader("default");
+    todessternKugel->transform.position = glm::vec3(0.0f, 4.0f, -42.0f);
+    todessternKugel->transform.scale = glm::vec3(0.005f);
+    todessternKugel->visible = false;
+    addChild(todessternKugel);
+
+    // --- Phase 1: Camera flies out to the ocean, watches leviathan breach ---
+    // Start camera inside bridge, then fly it out and above the ocean
+    cameraZielPos = glm::vec3(0.0f, 4.0f, -35.0f);
+    cameraBlickZiel = glm::vec3(0.0f, 4.0f, -100.0f);
+
+    createTween()
+        ->tweenInterval(0.5f)
+        // Camera flies out through window and down to hover above the ocean
+        ->tweenProperty(&cameraZielPos.z, -150.0f, 2.0f, EaseType::EASE_IN_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&cameraZielPos.y, -200.0f, 2.0f, EaseType::EASE_IN_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&cameraZielPos.x, 60.0f, 2.0f, EaseType::EASE_IN_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&cameraBlickZiel, glm::vec3(40.0f, -400.0f, -200.0f), 2.0f, EaseType::EASE_IN_OUT_SINE)
+        // Hold — looking down at the ocean
+        ->tweenInterval(1.0f)
+        // Leviathan swims up from the deep
+        ->tweenProperty(&leviathanModell->transform.position.y, -300.0f, 2.0f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&cameraBlickZiel.y, -300.0f, 2.0f, EaseType::EASE_OUT_SINE)
+        // Leviathan breaches the surface — bursts upward!
+        ->tweenProperty(&leviathanModell->transform.position.y, -100.0f, 1.5f, EaseType::EASE_IN_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&cameraBlickZiel.y, -100.0f, 1.5f, EaseType::EASE_OUT_SINE)
+        // Leviathan flies up past the camera into space
+        ->tweenProperty(&leviathanModell->transform.position.y, 300.0f, 2.5f, EaseType::EASE_IN)
+        ->parallel()
+        ->tweenProperty(&leviathanModell->transform.position.x, 120.0f, 2.5f, EaseType::EASE_IN)
+        ->parallel()
+        ->tweenProperty(&cameraBlickZiel.y, 300.0f, 2.5f, EaseType::EASE_IN)
+        // Camera returns to the bridge for the Death Star face-off
+        ->tweenCallback([this, ozean]() {
+            ozean->queueDestroy();
+            leviathanModell->transform.position = glm::vec3(120.0f, 10.0f, -450.0f);
+            todessternKugel->visible = true;
+        })
+        ->tweenProperty(&cameraZielPos, glm::vec3(0.0f, 4.0f, -30.0f), 2.0f, EaseType::EASE_IN_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&cameraBlickZiel, glm::vec3(-20.0f, 4.0f, -300.0f), 2.0f, EaseType::EASE_IN_OUT_SINE)
+        ->tweenInterval(0.5f)
+        // Phase 2: Death Star flies out to the left and grows
+        ->tweenProperty(&todessternKugel->transform.position.z, -300.0f, 4.0f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.position.x, -60.0f, 4.0f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.scale.x, 0.15f, 4.0f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.scale.y, 0.15f, 4.0f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.scale.z, 0.15f, 4.0f, EaseType::EASE_OUT_CUBIC)
+        // Face off pause
+        ->tweenInterval(1.5f)
+        // Fire the laser
+        ->tweenCallback([this]() { spawnRiesenLaser(); })
+        ->tweenInterval(0.8f)
+        // Leviathan explodes
+        ->tweenCallback([this]() {
+            if (leviathanModell) {
+                addChild(new Explosion(leviathanModell->getGlobalTransform().position, 40.0f));
+                addChild(new Explosion(leviathanModell->getGlobalTransform().position + glm::vec3(10.0f, 5.0f, -5.0f), 25.0f));
+                addChild(new Explosion(leviathanModell->getGlobalTransform().position + glm::vec3(-15.0f, -3.0f, 8.0f), 30.0f));
+                leviathanModell->queueDestroy();
+                leviathanModell = nullptr;
+            }
+            if (riesenLaser) {
+                riesenLaser->queueDestroy();
+                riesenLaser = nullptr;
+            }
+        })
+        ->tweenInterval(2.0f)
+        // Fade to black + victory
+        ->tweenCallback([this]() {
+            fadeOverlay->fadeIn(2.0f, [this]() {
+                addChild(new QuestCompletedBanner("The End.", "Y O U   W I N"));
+            });
+        });
+}
+
+void RaumschiffInnenWesen::spawnRiesenLaser() {
+    if (!todessternKugel || !leviathanModell) return;
+
+    glm::vec3 von = todessternKugel->getGlobalTransform().position;
+    glm::vec3 nach = leviathanModell->getGlobalTransform().position;
+    glm::vec3 richtung = nach - von;
+    float laenge = glm::length(richtung);
+    if (laenge < 1.0f) return;
+
+    glm::vec3 mitte = (von + nach) * 0.5f;
+    glm::quat rot = Transform::quatLookAt(glm::normalize(richtung), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    auto* laser = new Wesen();
+    laser->loadModel("assets/models/cube.obj");
+    laser->material.albedo = Kern::LoadTexture("assets/textures/emission_gruen.png");
+    laser->material.emission = Kern::LoadTexture("assets/textures/emission_gruen.png");
+    laser->material.bloomStrength = 1.5f;
+    laser->material.shader = ShaderManager::getInstance().getShader("default");
+    laser->transform.position = mitte;
+    laser->transform.rotation = rot;
+    laser->transform.scale = glm::vec3(3.0f, 3.0f, laenge * 0.5f);
+    addChild(laser);
+    riesenLaser = laser;
+
+    kamera.addShake(1.0f, 0.5f);
+}
+
