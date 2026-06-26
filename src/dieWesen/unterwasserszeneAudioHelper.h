@@ -24,6 +24,7 @@ public:
     void setGameState(GameState state);
     void initiateChase();
     void stopChasing();
+    bool deaktiviert = false;
 private:
     MusicManager * musicManager = nullptr;
     GameState gameState = OVER_WATER;

@@ -304,6 +304,7 @@ void WeltraumszeneWesen::spawnWave(int numA, int numB, bool mitBoss) {
         boss->material.normal = Kern::LoadTexture("assets/textures/boss_spaceship/normalMap1.png");
         boss->material.metallic = Kern::LoadTexture("assets/textures/boss_spaceship/metalnessMap1.png");
         boss->material.bloomStrength = 0.2f;
+        boss->material.doubleSided = true;
         boss->laserGroesse = glm::vec3(0.4f, 0.4f, 8.0f);
         boss->laserOffset = 30.0f;
         boss->bewegungsGeschwindigkeit = 25.0f;
