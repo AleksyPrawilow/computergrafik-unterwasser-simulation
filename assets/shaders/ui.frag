@@ -5,6 +5,7 @@ out vec4 FragColor;
 uniform sampler2D uiTexture;
 uniform vec4 textColor;
 uniform bool isText;
+uniform float alpha = 1.0f;
 
 // Helper to sample the font shape safely across both color and alpha channels
 float sampleFont(vec2 uv) {

@@ -173,6 +173,8 @@ set(PROJECT_SOURCES
         src/dieWesen/megalodon.h
         src/dieWesen/ui/cinematicBars.cpp
         src/dieWesen/ui/cinematicBars.h
+        src/dieWesen/spaceshipEnterable.cpp
+        src/dieWesen/spaceshipEnterable.h
 )
 
 set(SOIL_SOURCES
