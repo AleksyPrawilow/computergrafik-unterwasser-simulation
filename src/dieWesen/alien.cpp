@@ -10,12 +10,11 @@ void Alien::init() {
     material.albedo = Kern::LoadTexture("assets/textures/xenomorph/T_MI_Xeno_Body_BaseColor.png");
     material.normal = Kern::LoadTexture("assets/textures/xenomorph/normalMap1.png");
     material.metallic = Kern::LoadTexture("assets/textures/xenomorph/metalnessMap1.png");
-    material.emission = Kern::LoadTexture("assets/textures/xenomorph/T_MI_Xeno_Body_BaseColor.png");
-    material.bloomStrength = 0.08f;
+    material.bloomStrength = 0.0f;
     material.shader = ShaderManager::getInstance().getShader("default");
     transform.scale = glm::vec3(1.0f);
     boundingRadius = 2.5f;
-    bodenY = 1.5f;
+    bodenY = 0.5f;
     addToGroup("aliens");
     name = "alien";
     schussTimer = Random::range(0.0f, schussIntervall);
@@ -89,7 +88,7 @@ void Alien::laserAbfeuern() {
     if (spieler.empty()) return;
 
     glm::vec3 spielerPos = spieler[0]->getGlobalTransform().position;
-    glm::vec3 pos = getGlobalTransform().position;
+    glm::vec3 pos = getGlobalTransform().position + glm::vec3(0.0f, 2.0f, 0.0f);
     glm::vec3 richtung = spielerPos - pos;
     if (glm::length(richtung) < 1.0f) return;
 

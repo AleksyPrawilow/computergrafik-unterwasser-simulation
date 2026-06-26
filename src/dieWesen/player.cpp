@@ -263,11 +263,11 @@ void Player::handleRotations(GLFWwindow* window, float deltaTime) {
 
 void Player::updateCameraTransform(Transform& cameraTransform, float deltaTime) const {
     cameraTransform.position = transform.position;
+    cameraTransform.rotation = transform.rotation;
     if (istRollend) {
-        glm::quat rollTilt = glm::angleAxis(glm::radians(rollWinkel), transform.forward());
-        cameraTransform.rotation = transform.rotation * rollTilt;
-    } else {
-        cameraTransform.rotation = transform.rotation;
+        glm::vec3 blickRichtung = glm::normalize(cameraTransform.rotation * glm::vec3(0.0f, 0.0f, -1.0f));
+        glm::quat rollTilt = glm::angleAxis(glm::radians(rollWinkel), blickRichtung);
+        cameraTransform.rotation = rollTilt * cameraTransform.rotation;
     }
 }
 

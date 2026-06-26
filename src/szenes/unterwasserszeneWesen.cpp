@@ -53,6 +53,14 @@ public:
 #include "dieWesen/coral.h"
 #include "dieWesen/leviathan.h"
 #include "dieWesen/seaweed.h"
+#include "dieWesen/lightsaber.h"
+#include "dieWesen/ui/fadeOverlay.h"
+#include "szenes/raumschiffInnenWesen.h"
+#include "werkzeuge/kamera.h"
+#include "werkzeuge/visual/tween.h"
+#include "sceneManager.h"
+
+extern Kamera kamera;
 #include "dieWesen/unterwasserszeneQuests.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/gegenstandDaten.h"
@@ -347,5 +355,108 @@ void UnterwasserszeneWesen::init() {
         seaweedBatch->material.isInstanced = static_cast<int>(seaweedMatrices.size());
         addChild(seaweedBatch);
         seaweedBatch->mesh.setupInstanceBuffer(seaweedMatrices);
+    }
+
+    // --- Leviathan cutscene (triggered from the ship scene) ---
+    if (RaumschiffInnenWesen::cutscenePhase == 1) {
+        leviathanCutscene = true;
+        cutsceneKameraAktiv = true;
+
+        // Disable the player
+        const auto& spieler = getNodesInGroup("spielerInsel");
+        if (!spieler.empty()) {
+            auto* p = dynamic_cast<Player*>(spieler[0]);
+            if (p) p->setActive(false);
+        }
+
+        // Add cinematic bars
+        auto* bars = new CinematicBars();
+        addChild(bars);
+        bars->setEnabled(true);
+
+        // Fade in from black
+        auto* fadeIn = new FadeOverlay();
+        addChild(fadeIn);
+        fadeIn->sofort(1.0f);
+        fadeIn->fadeOut(1.5f);
+
+        // Spawn leviathan deep underwater with lightsabers
+        cutsceneLeviathan = new Wesen();
+        cutsceneLeviathan->loadModel("assets/models/leviathan.obj");
+        cutsceneLeviathan->material.albedo = Kern::LoadTexture("assets/textures/leviathan_albedo.png");
+        cutsceneLeviathan->material.emission = Kern::LoadTexture("assets/textures/leviathan_emissive.png");
+        cutsceneLeviathan->material.normal = Kern::LoadTexture("assets/textures/leviathan_normal.png");
+        cutsceneLeviathan->material.bloomStrength = 0.3f;
+        cutsceneLeviathan->material.shader = ShaderManager::getInstance().getShader("default");
+        cutsceneLeviathan->transform.position = glm::vec3(-700.0f, -80.0f, -220.0f);
+        cutsceneLeviathan->transform.scale = glm::vec3(4.0f);
+        addChild(cutsceneLeviathan);
+
+        const std::string saberFarben[4] = {"red", "purple", "green", "blue"};
+        glm::vec3 saberPos[4] = {
+            glm::vec3( 6.0f,  4.0f, 22.0f), glm::vec3( 8.0f, -6.0f, 18.0f),
+            glm::vec3(-6.0f,  4.0f, 22.0f), glm::vec3(-8.0f, -6.0f, 18.0f),
+        };
+        for (int i = 0; i < 4; i++) {
+            auto* dummy = new Wesen();
+            auto* saber = new Lightsaber("assets/textures/lightsaber_" + saberFarben[i] + ".png");
+            saber->dir = (i % 2 == 0) ? 1 : -1;
+            cutsceneLeviathan->addChild(dummy);
+            dummy->addChild(saber);
+            dummy->transform.position = saberPos[i];
+        }
+
+        // Camera starts underwater looking at the leviathan
+        cameraZielPos = glm::vec3(-700.0f, -20.0f, -120.0f);
+        cameraBlickZiel = glm::vec3(-700.0f, -80.0f, -220.0f);
+
+        createTween()
+            ->tweenInterval(2.0f)
+            // Leviathan swims upward
+            ->tweenProperty(&cutsceneLeviathan->transform.position.y, -20.0f, 3.0f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&cameraBlickZiel.y, -20.0f, 3.0f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&cameraZielPos.y, 10.0f, 3.0f, EaseType::EASE_OUT_SINE)
+            // Breaches the surface with a roll!
+            ->tweenProperty(&cutsceneLeviathan->transform.position.y, 40.0f, 2.0f, EaseType::EASE_IN_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&cameraBlickZiel.y, 40.0f, 2.0f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&cameraZielPos.y, 50.0f, 2.0f, EaseType::EASE_OUT_SINE)
+            ->parallel()
+            ->tweenProperty(&leviathanEuler.x, 360.0f, 2.0f, EaseType::EASE_IN_OUT_SINE)
+            // Flies up into the sky, spiraling
+            ->tweenProperty(&cutsceneLeviathan->transform.position.y, 500.0f, 3.0f, EaseType::EASE_IN)
+            ->parallel()
+            ->tweenProperty(&cameraBlickZiel.y, 500.0f, 3.0f, EaseType::EASE_IN)
+            ->parallel()
+            ->tweenProperty(&cameraZielPos.y, 100.0f, 3.0f, EaseType::EASE_IN)
+            ->parallel()
+            ->tweenProperty(&leviathanEuler.z, 720.0f, 3.0f, EaseType::EASE_IN)
+            ->parallel()
+            ->tweenProperty(&leviathanEuler.y, -45.0f, 3.0f, EaseType::EASE_IN_OUT_SINE)
+            ->tweenInterval(0.5f)
+            // Fade to black, switch to ship scene for Death Star phase
+            ->tweenCallback([this]() {
+                auto* fadeOut = new FadeOverlay();
+                addChild(fadeOut);
+                fadeOut->fadeIn(1.0f, []() {
+                    RaumschiffInnenWesen::cutscenePhase = 2;
+                    Scene::requestSceneSwitch(3);
+                });
+            });
+    }
+}
+
+void UnterwasserszeneWesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (cutsceneKameraAktiv) {
+        const float t = 1.0f - glm::exp(-3.0f * deltaTime);
+        cameraTransform.position = glm::mix(cameraTransform.position, cameraZielPos, t);
+        cameraTransform.lookAt(cameraBlickZiel, glm::vec3(0.0f, 1.0f, 0.0f));
+
+        if (cutsceneLeviathan && glm::length2(leviathanEuler) > 0.001f) {
+            cutsceneLeviathan->transform.rotation = glm::quat(glm::radians(leviathanEuler));
+        }
     }
 }

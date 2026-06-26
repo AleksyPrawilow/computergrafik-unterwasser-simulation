@@ -25,6 +25,8 @@ void StarWarsIntro::init() {
     material.shader = ShaderManager::getInstance().getShader("default");
     material.opacity = Kern::LoadTexture("assets/textures/starwarsintro/starwarsintro.1.png");
     material.albedo = Kern::LoadTexture("assets/textures/starwarsintro/starwarsintro.1.png");
+    material.emission = Kern::LoadTexture("assets/textures/starwarsintro/starwarsintro.1.png");
+    material.bloomStrength = 0.8f;
     material.doubleSided = true;
 
     MusicManager::getInstance().playMusic("assets/audio/star_wars.mp3");

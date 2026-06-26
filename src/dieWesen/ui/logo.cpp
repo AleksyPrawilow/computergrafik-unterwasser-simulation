@@ -16,6 +16,8 @@ void Logo::init() {
     material.shader = ShaderManager::getInstance().getShader("default");
     material.opacity = Kern::LoadTexture("assets/textures/starwarslogo/starwarslogo.1.png");
     material.albedo = Kern::LoadTexture("assets/textures/starwarslogo/starwarslogo.1.png");
+    material.emission = Kern::LoadTexture("assets/textures/starwarslogo/starwarslogo.1.png");
+    material.bloomStrength = 0.8f;
     material.doubleSided = true;
 
     transform.position = kamera.transform.position + kamera.transform.forward() * 4.0f;

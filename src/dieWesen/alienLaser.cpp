@@ -6,8 +6,8 @@
 void AlienLaser::init() {
     loadModel("assets/models/cube.obj");
     transform.scale = glm::vec3(0.08f, 0.08f, 1.5f);
-    material.albedo = Kern::LoadTexture("assets/textures/emission_gruen.png");
-    material.emission = Kern::LoadTexture("assets/textures/emission_gruen.png");
+    material.albedo = Kern::LoadTexture("assets/textures/laser_rot.png");
+    material.emission = Kern::LoadTexture("assets/textures/laser_rot.png");
     material.shader = ShaderManager::getInstance().getShader("default");
     material.bloomStrength = 0.8f;
     boundingRadius = 0.4f;
