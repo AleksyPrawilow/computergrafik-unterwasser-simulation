@@ -21,8 +21,8 @@ void Feindschiff::init() {
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
-    transform.scale = glm::vec3(6.0f);
-    boundingRadius = 7.2f;
+    transform.scale = glm::vec3(0.004f);
+    boundingRadius = 7.0f;
     addToGroup("feinde");
     name = "feindschiff";
     schussTimer = Random::range(0.0f, schussIntervall);
@@ -208,7 +208,7 @@ void Feindschiff::schadenNehmen(float schaden) {
         }
         WeltraumszeneWesen::abschussZaehlen();
 
-        bool istBoss = transform.scale.x > 50.0f;
+        bool istBoss = transform.scale.x > 0.1f;
         if (istBoss) {
             istTot = true;
             removeFromGroup("feinde");

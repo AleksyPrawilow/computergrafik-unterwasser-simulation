@@ -114,8 +114,6 @@ void RaumschiffInnenWesen::init() {
         addChild(w);
     };
 
-    MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3");
-
     // Full-height collidable wall, given an XZ centre at floor level.
     auto makeWand = [&](const glm::vec3& center, const glm::vec3& size) {
         baueWesen(center + glm::vec3(0.0f, WAND_HOEHE * 0.5f, 0.0f), size, true, true);
@@ -290,11 +288,11 @@ void RaumschiffInnenWesen::init() {
     // their lasers fly off harmlessly -> a distant skirmish framed by the windows.
     struct Patrouille { glm::vec3 zentrum; float radius; float scale; float tempo; };
     const Patrouille schiffe[] = {
-        { glm::vec3(-25.0f, 6.0f, -110.0f), 30.0f, 8.0f, 7.0f },
-        { glm::vec3(30.0f, -6.0f, -130.0f), 45.0f, 11.0f, 9.0f },
-        { glm::vec3(0.0f, 14.0f, -165.0f), 60.0f, 14.0f, 11.0f },
-        { glm::vec3(-45.0f, -8.0f, -145.0f), 40.0f, 9.0f, 8.0f },
-        { glm::vec3(50.0f, 18.0f, -180.0f), 55.0f, 12.0f, 10.0f },
+        { glm::vec3(-25.0f, 6.0f, -110.0f), 30.0f, 0.004f, 7.0f },
+        { glm::vec3(30.0f, -6.0f, -130.0f), 45.0f, 0.005f, 9.0f },
+        { glm::vec3(0.0f, 14.0f, -165.0f), 60.0f, 0.006f, 11.0f },
+        { glm::vec3(-45.0f, -8.0f, -145.0f), 40.0f, 0.004f, 8.0f },
+        { glm::vec3(50.0f, 18.0f, -180.0f), 55.0f, 0.005f, 10.0f },
     };
     for (const auto& s : schiffe) {
         auto * feind = new Feindschiff();
@@ -395,6 +393,7 @@ void RaumschiffInnenWesen::init() {
     addChild(new SchiffslaborHUD());
     addChild(new AusruestungsLeiste());
 
+    MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3", 1.5f, true);
 
     if (cutscenePhase == 2) {
         cutscenePhase = 0;

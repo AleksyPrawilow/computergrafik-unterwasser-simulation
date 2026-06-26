@@ -297,8 +297,8 @@ void WeltraumszeneWesen::spawnWave(int numA, int numB, bool mitBoss) {
         }
         addChild(boss);
         boss->loadModel("assets/models/boss_spaceship.obj");
-        boss->transform.scale = glm::vec3(100.0f);
-        boss->boundingRadius = 120.0f;
+        boss->transform.scale = glm::vec3(0.5f);
+        boss->boundingRadius = 80.0f;
         boss->material.albedo = Kern::LoadTexture("assets/textures/boss_spaceship/panels.png");
         boss->material.emission = Kern::LoadTexture("assets/textures/boss_spaceship/engine.png");
         boss->material.normal = Kern::LoadTexture("assets/textures/boss_spaceship/normalMap1.png");
