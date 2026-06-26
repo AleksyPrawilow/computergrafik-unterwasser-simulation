@@ -17,6 +17,8 @@ public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 
+    static int cutscenePhase;  // 0=none, 1=ocean(leviathan), 2=ship(death star)
+
 private:
     Player* spielerRef = nullptr;
     UILabel* lebenLabel = nullptr;
@@ -36,9 +38,11 @@ private:
     Wesen* todessternKugel = nullptr;
     Wesen* leviathanModell = nullptr;
     Wesen* riesenLaser = nullptr;
+    glm::vec3 leviathanEuler = glm::vec3(0.0f);
 
     void kompassAktualisieren();
     void starteCutscene();
+    void startePhase2();
     void spawnRiesenLaser();
 };
 

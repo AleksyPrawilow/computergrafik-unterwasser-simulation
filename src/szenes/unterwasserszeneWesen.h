@@ -12,8 +12,15 @@
 class UnterwasserszeneWesen : public Wesen {
 public:
     void init() override;
+    void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
 private:
     Uboot * uboot = nullptr;
+    bool leviathanCutscene = false;
+    bool cutsceneKameraAktiv = false;
+    glm::vec3 cameraZielPos = glm::vec3(0.0f);
+    glm::vec3 cameraBlickZiel = glm::vec3(0.0f);
+    glm::vec3 leviathanEuler = glm::vec3(0.0f);
+    Wesen* cutsceneLeviathan = nullptr;
 };
 
 
