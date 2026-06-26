@@ -52,6 +52,7 @@ namespace {
         boden->transform.scale = size * 0.5f; // cube spans -1..1 => 2 units
         return boden;
     }
+
 }
 
 void RaumschiffInnenWesen::init() {
@@ -112,6 +113,8 @@ void RaumschiffInnenWesen::init() {
         }
         addChild(w);
     };
+
+    MusicManager::getInstance().playMusic("doom_music.mp3");
 
     // Full-height collidable wall, given an XZ centre at floor level.
     auto makeWand = [&](const glm::vec3& center, const glm::vec3& size) {

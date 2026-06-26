@@ -12,6 +12,7 @@
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
+#include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 
 void LabsWesen::init() {
@@ -35,6 +36,8 @@ void LabsWesen::init() {
     umwelt->params.bloomThreshold = 0.0f;
     umwelt->params.bloomIntensity = 1.5f;
     addChild(umwelt);
+
+    MusicManager::getInstance().playMusic("assets/audio/cave_music.mp3");
 
     addChild(new Island());
     auto * player = new Player();
