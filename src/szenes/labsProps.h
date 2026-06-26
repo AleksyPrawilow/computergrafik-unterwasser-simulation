@@ -72,7 +72,7 @@ std::unordered_map<std::string, std::vector<GodotTransform>> getLabsProps() {
         } },
         { "playerpos", {
             GodotTransform(
-                glm::vec3(15.104755f, 35.307430f, -14.964807f),
+                glm::vec3(13.104755f, 35.307430f, -14.964807f),
                 glm::quat(1.000000f, 0.000000f, 0.000000f, 0.000000f),
                 glm::vec3(1.000000f, 1.000000f, 1.000000f)
             )
