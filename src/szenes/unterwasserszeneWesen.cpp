@@ -376,7 +376,12 @@ void UnterwasserszeneWesen::init() {
         const auto& questHuds = getNodesInGroup("QuestManager");
         for (auto* q : questHuds) q->visible = false;
 
-        // Play the ship scene music
+        // Kill the audio helper so it stops overriding the music
+        const auto& audioHelpers = getNodesInGroup("Music");
+        for (auto* ah : audioHelpers) ah->queueDestroy();
+
+        // Play dramatic sound then cutscene music
+        AudioManager::getInstance().play2D("assets/audio/dramatic_sound.mp3", false, true);
         MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3", 1.5f, true);
 
         // Add cinematic bars

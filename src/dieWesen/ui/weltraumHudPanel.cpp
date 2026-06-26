@@ -142,7 +142,7 @@ void WeltraumHudPanel::onUpdate(GLFWwindow* window, float deltaTime, Transform& 
     Feindschiff* boss = nullptr;
     for (auto* f : feinde) {
         auto* fs = dynamic_cast<Feindschiff*>(f);
-        if (fs && fs->transform.scale.x > 50.0f) {
+        if (fs && fs->transform.scale.x > 0.1f) {
             boss = fs;
             break;
         }
@@ -214,7 +214,7 @@ void WeltraumHudPanel::kompassAktualisieren() {
         float dy = feindPos.y - spielerPos.y;
         float hoehenFaktor = glm::clamp(dy / 60.0f, -1.0f, 1.0f);
 
-        bool istBoss = f->transform.scale.x > 50.0f;
+        bool istBoss = f->transform.scale.x > 0.1f;
         float basisGroesse = istBoss ? 20.0f : 12.0f;
         float groesse = basisGroesse + hoehenFaktor * 4.0f;
 

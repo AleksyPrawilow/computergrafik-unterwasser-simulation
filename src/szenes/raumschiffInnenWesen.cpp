@@ -114,8 +114,6 @@ void RaumschiffInnenWesen::init() {
         addChild(w);
     };
 
-    MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3", 2.0f, true);
-
     // Full-height collidable wall, given an XZ centre at floor level.
     auto makeWand = [&](const glm::vec3& center, const glm::vec3& size) {
         baueWesen(center + glm::vec3(0.0f, WAND_HOEHE * 0.5f, 0.0f), size, true, true);
