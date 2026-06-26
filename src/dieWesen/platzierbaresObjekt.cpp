@@ -30,6 +30,10 @@ void PlatzierbaresObjekt::init() {
         name = "ofen";
         transform.scale = glm::vec3(0.9f, 0.9f, 0.9f);
         addToGroup("ofen");
+    } else if (typ == GegenstandID::LABORKONSOLE) {
+        name = "laborkonsole";
+        transform.scale = glm::vec3(1.6f, 1.2f, 1.6f);
+        addToGroup("schiffslabor");
     } else if (typ == GegenstandID::GLAS) {
         name = "glas";
         loadModel("assets/models/triangle.obj");

@@ -3,6 +3,7 @@
 //
 
 #include "spaceshipEnterable.h"
+#include "ui/fadeOverlay.h"
 
 #include "werkzeuge/input.h"
 #include "werkzeuge/kamera.h"
@@ -80,9 +81,8 @@ void SpaceshipEnterable::cutscene() {
         ->tweenProperty(&euler.x, -360.0f * 4, 3.0f, EaseType::EASE_IN)
         ->parallel()
         ->tweenCallback([this]() {
-        parent->createTween()
-            ->tweenInterval(3.0f)
-            ->tweenCallback([this]() {
-            });
+        auto* fade = new FadeOverlay();
+        parent->addChild(fade);
+        fade->fadeIn(2.0f);
         });
 }

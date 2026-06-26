@@ -85,7 +85,7 @@ void LabsWesen::init() {
                 entity->material.shader = ShaderManager::getInstance().getShader("default");
                 entity->material.albedo = Kern::LoadTexture("assets/textures/platform_albedo.png");
                 entity->material.normal = Kern::LoadTexture("assets/textures/platform_normal.png");
-                entity->material.metallic = Kern::LoadTexture("assets/textures/platform_metallic.png");
+                entity->material.metallic = Kern::LoadTexture("assets/textures/platform_metllic.png");
                 entity->material.roughness = Kern::LoadTexture("assets/textures/platform_roughness.png");
             } else if (className == "camerapos") {
                 entity = new Prop(t.position, t.rotation, t.scale);

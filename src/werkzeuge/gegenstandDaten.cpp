@@ -64,6 +64,18 @@ void GegenstandDaten::init() {
     registrieren(GegenstandID::OFEN, "Furnace", "assets/textures/icon_ofen.png", 1);
     registry[static_cast<int>(GegenstandID::OFEN)].istPlatzierbar = true;
 
+    // --- Spaceship interior items ---
+    registrieren(GegenstandID::METALLSCHROTT, "Metal Scrap", "assets/textures/icon_metallschrott.png", 64);
+    registrieren(GegenstandID::SCHALTKREIS, "Circuit", "assets/textures/icon_schaltkreis.png", 64);
+    registrieren(GegenstandID::ROBOTERARM, "Robotic Arm", "assets/textures/icon_roboterarm.png", 16);
+    registrieren(GegenstandID::TODESSTERN, "Death Star", "assets/textures/icon_todesstern.png", 1);
+
+    registrieren(GegenstandID::LABORKONSOLE, "Lab Console", "assets/textures/icon_laborkonsole.png", 1);
+    registry[static_cast<int>(GegenstandID::LABORKONSOLE)].istPlatzierbar = true;
+
+    registrieren(GegenstandID::PHOTONENBLASTER, "Photon Blaster", "assets/textures/icon_photonenblaster.png", 1);
+    registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].istWaffe = true;
+
     // --- Hand recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::STEIN, GegenstandID::AXT, 1, RezeptQuelle::HAND);
@@ -86,6 +98,10 @@ void GegenstandDaten::init() {
     // --- Furnace recipes ---
     rezeptHinzufuegen(GegenstandID::SAND, GegenstandID::SAND, GegenstandID::GLAS, 1, RezeptQuelle::OFEN);
     rezeptHinzufuegen(GegenstandID::FISCH, GegenstandID::SEETANG, GegenstandID::SUSHI, 1, RezeptQuelle::OFEN);
+
+    // --- Ship laboratory recipes ---
+    rezeptHinzufuegen(GegenstandID::METALLSCHROTT, GegenstandID::SCHALTKREIS, GegenstandID::ROBOTERARM, 1, RezeptQuelle::SCHIFFSLABOR);
+    rezeptHinzufuegen(GegenstandID::ROBOTERARM, GegenstandID::ROBOTERARM, GegenstandID::TODESSTERN, 1, RezeptQuelle::SCHIFFSLABOR);
 }
 
 const GegenstandInfo& GegenstandDaten::getInfo(GegenstandID id) const {
