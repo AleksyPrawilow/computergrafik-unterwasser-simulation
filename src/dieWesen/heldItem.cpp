@@ -67,7 +67,8 @@ void HeldItem::init() {
     shovelHitSound = new AudioPlayer("assets/audio/shovel.mp3", false, 10.0f);
     addChild(shovelHitSound);
 
-    island = dynamic_cast<Island *>(getNodesInGroup("Island")[0]);
+    const auto& inseln = getNodesInGroup("Island");
+    island = inseln.empty() ? nullptr : dynamic_cast<Island *>(inseln[0]);
 
     visible = false;
 }
@@ -217,8 +218,8 @@ void HeldItem::ausruestungAktualisieren() {
         material.roughness = 0;
         material.metallic = 0;
         material.shader = ShaderManager::getInstance().getShader("default");
-        transform.scale = glm::vec3(0.15f);
-        transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
+        transform.scale = glm::vec3(info.modellSkalierung);
+        transform.position = glm::vec3(0.7f, -0.4f, -1.0f);
         istAxt = false;
     } else {
         mesh = cubeModelMesh;
@@ -310,7 +311,9 @@ void HeldItem::hitTree() {
 
 void HeldItem::hitGround() const {
     shovelHitSound->play();
-    island->graben(parent->getGlobalTransform().position, 4.0f, 1.5f);
+    if (island != nullptr) {
+        island->graben(parent->getGlobalTransform().position, 4.0f, 1.5f);
+    }
 }
 
 void HeldItem::shovelDig() {

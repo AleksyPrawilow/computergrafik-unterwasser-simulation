@@ -32,7 +32,13 @@ enum class GegenstandID {
     HAUS,
     SAND,
     GLAS,
-    OFEN
+    OFEN,
+    METALLSCHROTT,
+    SCHALTKREIS,
+    ROBOTERARM,
+    TODESSTERN,
+    LABORKONSOLE,
+    PHOTONENBLASTER
 };
 
 enum class WerkzeugTyp {
@@ -45,7 +51,8 @@ enum class WerkzeugTyp {
 enum class RezeptQuelle {
     HAND,
     WERKBANK,
-    OFEN
+    OFEN,
+    SCHIFFSLABOR
 };
 
 struct GegenstandInfo {
@@ -59,6 +66,7 @@ struct GegenstandInfo {
     int werkzeugSchaden = 0;
     bool istPlatzierbar = false;
     bool istKonsumierbar = false;
+    bool istWaffe = false;
     std::string modellPfad;
     std::string modellAlbedoPfad;
     float modellSkalierung = 0.3f;

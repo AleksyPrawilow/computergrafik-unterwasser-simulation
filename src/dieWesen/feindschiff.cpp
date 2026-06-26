@@ -10,20 +10,19 @@
 #include "szenes/weltraumszeneWesen.h"
 
 void Feindschiff::init() {
-    loadModel("assets/models/spaceship2.obj");
-    material.albedo = Kern::LoadTexture("assets/textures/feindschiff_albedo.png");
-    material.emission = Kern::LoadTexture("assets/textures/feindschiff_albedo.png");
-    material.roughness = Kern::LoadTexture("assets/textures/raumschiff_roughness.png");
-    material.metallic = Kern::LoadTexture("assets/textures/raumschiff_metallic.png");
-    material.normal = Kern::LoadTexture("assets/textures/raumschiff_normal.png");
+    loadModel("assets/models/enemy_spaceship.obj");
+    material.albedo = Kern::LoadTexture("assets/textures/enemy_spaceship/Raven_sketchfablambert5SG.png");
+    material.emission = Kern::LoadTexture("assets/textures/enemy_spaceship/emissiveMap1.png");
+    material.metallic = Kern::LoadTexture("assets/textures/enemy_spaceship/metalnessMap1.png");
+    material.normal = Kern::LoadTexture("assets/textures/enemy_spaceship/normalMap1.png");
     material.bloomStrength = 0.1f;
     material.shader = ShaderManager::getInstance().loadShader(
         "default",
         "assets/shaders/default.vert",
         "assets/shaders/default.frag"
     );
-    transform.scale = glm::vec3(6.0f);
-    boundingRadius = 7.2f;
+    transform.scale = glm::vec3(0.004f);
+    boundingRadius = 7.0f;
     addToGroup("feinde");
     name = "feindschiff";
     schussTimer = Random::range(0.0f, schussIntervall);
@@ -209,7 +208,7 @@ void Feindschiff::schadenNehmen(float schaden) {
         }
         WeltraumszeneWesen::abschussZaehlen();
 
-        bool istBoss = transform.scale.x > 50.0f;
+        bool istBoss = transform.scale.x > 0.1f;
         if (istBoss) {
             istTot = true;
             removeFromGroup("feinde");

@@ -5,6 +5,8 @@
 #include "dieWesen/raumschiff.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/weltraumHudPanel.h"
+#include "dieWesen/ui/fadeOverlay.h"
+#include "dieWesen/ui/cinematicBars.h"
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/random.h"
 #include "werkzeuge/visual/worldEnvironment.h"
@@ -12,6 +14,12 @@
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/groupManager.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/textur.h"
+#include "werkzeuge/renderWerkzeuge.h"
+#include "sceneManager.h"
+#include "dieWesen/ui/starWarsIntro.h"
+
+extern bool cursorDisabled;
 
 int WeltraumszeneWesen::abschuesse = 0;
 
@@ -46,8 +54,8 @@ void WeltraumszeneWesen::init() {
     umwelt->params.sunDirection = glm::normalize(glm::vec3(0.3f, 0.8f, 0.2f));
     umwelt->params.sunColor = glm::vec3(1.0f, 1.0f, 0.98f);
     umwelt->params.sunEnergy = 2.0f;
-    umwelt->params.ambientColor = glm::vec3(0.15f, 0.15f, 0.2f);
-    umwelt->params.ambientEnergy = 0.05f;
+    umwelt->params.ambientColor = glm::vec3(0.2f, 0.2f, 0.25f);
+    umwelt->params.ambientEnergy = 0.3f;
     umwelt->params.fogEnabled = false;
     umwelt->params.heightFogEnabled = false;
     umwelt->params.causticsEnabled = false;
@@ -71,17 +79,69 @@ void WeltraumszeneWesen::init() {
     spawnDelay = new Timer();
     addChild(spawnDelay);
 
-    MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
+    bordTimer = new Timer();
+    addChild(bordTimer);
 
-    spawnDelay->startTimer(1.0f, [this]() {
-        welleStarten(0);
-    });
+    bordPrompt = new UILabel();
+    bordPrompt->setText("Press [E] to board the wreck", 40.0f);
+    bordPrompt->color = glm::vec4(1.0f, 0.9f, 0.4f, 1.0f);
+    bordPrompt->expansion = UIExpansion::CENTER;
+    addChild(bordPrompt);
+    bordPrompt->visible = false;
+
+    fadeOverlay = new FadeOverlay();
+    addChild(fadeOverlay);
+
+    cinematicBars = new CinematicBars();
+    addChild(cinematicBars);
+
+    addChild(new StarWarsIntro());
+    // MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
 }
 
 void WeltraumszeneWesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
     if (Input::isKeyJustPressed(GLFW_KEY_G) && aktuelleWelle < 2) {
         alleFeindeEntfernen();
         welleStarten(2);
+    }
+
+    bordenPruefen(window);
+}
+
+void WeltraumszeneWesen::bordenPruefen(GLFWwindow* window) {
+    if (bordVorgang) return;
+
+    // Only once the boss corpse exists (wave 3 cleared) and the player ship is around.
+    const auto& leichen = getNodesInGroup("bossLeiche");
+    if (leichen.empty() || raumschiff == nullptr) {
+        if (bordPrompt) bordPrompt->visible = false;
+        return;
+    }
+
+    glm::vec3 spielerPos = raumschiff->getGlobalTransform().position;
+    glm::vec3 wrackPos = leichen[0]->getGlobalTransform().position;
+    // Boss corpse can be at any Y in space -> full 3D distance, never flattened.
+    float abstand = glm::distance(spielerPos, wrackPos);
+
+    bool inReichweite = abstand < 160.0f;
+
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
+    bordPrompt->transform.position = glm::vec3(viewport.x * 0.5f, viewport.y * 0.75f, 0.0f);
+    bordPrompt->visible = inReichweite;
+
+    if (inReichweite && Input::isKeyJustPressed(GLFW_KEY_E)) {
+        bordVorgang = true;
+        bordPrompt->visible = false;
+        raumschiff->setIstAktiv(false);
+
+        // Cinematic bars slide in, then fade to black, then switch scene.
+        cinematicBars->setEnabled(true);
+
+        bordTimer->startTimer(0.5f, [this]() {
+            fadeOverlay->fadeIn(0.8f, []() {
+                Scene::requestSceneSwitch(3);
+            });
+        });
     }
 }
 
@@ -236,11 +296,15 @@ void WeltraumszeneWesen::spawnWave(int numA, int numB, bool mitBoss) {
             );
         }
         addChild(boss);
-        boss->transform.scale = glm::vec3(100.0f);
-        boss->boundingRadius = 120.0f;
-        boss->material.albedo = Kern::LoadTexture("assets/textures/boss_gold.png");
-        boss->material.emission = Kern::LoadTexture("assets/textures/boss_gold.png");
+        boss->loadModel("assets/models/boss_spaceship.obj");
+        boss->transform.scale = glm::vec3(0.5f);
+        boss->boundingRadius = 80.0f;
+        boss->material.albedo = Kern::LoadTexture("assets/textures/boss_spaceship/panels.png");
+        boss->material.emission = Kern::LoadTexture("assets/textures/boss_spaceship/engine.png");
+        boss->material.normal = Kern::LoadTexture("assets/textures/boss_spaceship/normalMap1.png");
+        boss->material.metallic = Kern::LoadTexture("assets/textures/boss_spaceship/metalnessMap1.png");
         boss->material.bloomStrength = 0.2f;
+        boss->material.doubleSided = true;
         boss->laserGroesse = glm::vec3(0.4f, 0.4f, 8.0f);
         boss->laserOffset = 30.0f;
         boss->bewegungsGeschwindigkeit = 25.0f;

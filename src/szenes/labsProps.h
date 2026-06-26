@@ -72,7 +72,14 @@ std::unordered_map<std::string, std::vector<GodotTransform>> getLabsProps() {
         } },
         { "playerpos", {
             GodotTransform(
-                glm::vec3(11.698412f, 3.185538f, -0.125142f),
+                glm::vec3(13.104755f, 35.307430f, -14.964807f),
+                glm::quat(1.000000f, 0.000000f, 0.000000f, 0.000000f),
+                glm::vec3(1.000000f, 1.000000f, 1.000000f)
+            )
+        } },
+        { "camerapos", {
+            GodotTransform(
+                glm::vec3(15.104755f, 35.307430f, -14.964807f),
                 glm::quat(1.000000f, 0.000000f, 0.000000f, 0.000000f),
                 glm::vec3(1.000000f, 1.000000f, 1.000000f)
             )
@@ -86,9 +93,9 @@ std::unordered_map<std::string, std::vector<GodotTransform>> getLabsProps() {
         } },
         { "spaceship", {
             GodotTransform(
-                glm::vec3(3.000000f, 33.000000f, -4.000000f),
-                glm::quat(1.000000f, 0.000000f, 0.000000f, 0.000000f),
-                glm::vec3(10.410000f, 10.410000f, 10.410000f)
+                glm::vec3(2.792377f, 35.308704f, -9.540951f),
+                glm::quat(0.608761f, 0.000000f, 0.793353f, 0.000000f),
+                glm::vec3(10.820000f, 10.820000f, 10.820000f)
             )
         } }
     };

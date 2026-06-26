@@ -58,6 +58,9 @@ void Raumschiff::init() {
 }
 
 void Raumschiff::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (cutscene == true) {
+        return;
+    }
     zielGeschwindigkeit = 0.0f;
     zielRollGeschwindigkeit = 0.0f;
     fadenkreuz->visible = istAktiv;

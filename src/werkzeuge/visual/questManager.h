@@ -56,11 +56,10 @@ public:
     void setOnProgressChangedCallback(std::function<void()> callback) {
         onProgressChanged = std::move(callback);
     }
+    std::vector<Quest> activeQuests;
 
 private:
     QuestManager() = default;
-
-    std::vector<Quest> activeQuests;
     std::function<void()> onProgressChanged = nullptr;
 };
 

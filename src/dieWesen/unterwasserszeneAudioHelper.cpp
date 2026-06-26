@@ -15,6 +15,7 @@ void UnterwasserszeneAudioHelper::init() {
 }
 
 void UnterwasserszeneAudioHelper::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (isQueuedDestroyed || deaktiviert) return;
     switch (gameState) {
         case OVER_WATER:
             manageIsland(cameraTransform);

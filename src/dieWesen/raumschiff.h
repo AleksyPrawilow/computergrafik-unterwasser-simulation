@@ -29,9 +29,10 @@ public:
     void raketenAuffuellen() { raketenMunition = 3; }
     [[nodiscard]] int getRaketenMunition() const { return raketenMunition; }
     [[nodiscard]] bool hatSpawnSchutz() const { return spawnSchutz > 0.0f; }
+    void setIstAktiv(bool aktiv) { istAktiv = aktiv; }
     void setSpawnSchutz(float dauer) { spawnSchutz = dauer; }
     std::function<void()> onDeath;
-
+    bool cutscene = true;
 private:
     Fadenkreuz * fadenkreuz = nullptr;
     AnsichtModus ansichtModus = AnsichtModus::DRITTE_PERSON;

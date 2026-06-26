@@ -6,6 +6,7 @@
 #define COMPUTERGRAFIK_UNTERWASSER_SIMULATION_UNTERWASSERSZENEQUESTS_H
 #include "werkzeuge/wesen.h"
 #include "werkzeuge/audio/audioPlayer.h"
+#include "werkzeuge/ui/worldspaceUI.h"
 #include "werkzeuge/visual/questManager.h"
 
 
@@ -29,6 +30,7 @@ public:
 
     QUESTS currentQuest = TUTORIAL;
     static QUESTS savedQuest;
+    WorldspaceUI * uiMarker = nullptr;
 private:
     QuestManager * manager = nullptr;
     AudioPlayer * audio = nullptr;

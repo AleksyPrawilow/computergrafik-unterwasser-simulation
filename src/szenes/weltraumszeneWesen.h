@@ -4,8 +4,11 @@
 
 #include "dieWesen/timer.h"
 #include "werkzeuge/wesen.h"
+#include "werkzeuge/ui/uiLabel.h"
 
 class Raumschiff;
+class FadeOverlay;
+class CinematicBars;
 
 class WeltraumszeneWesen : public Wesen {
 public:
@@ -14,19 +17,24 @@ public:
 
     static void abschussZaehlen() { abschuesse++; }
     static int getAbschuesse() { return abschuesse; }
-
+    void welleStarten(int welle);
 private:
     static int abschuesse;
     int aktuelleWelle = 0;
     bool welleAktiv = false;
     Timer* wellenTimer = nullptr;
     Timer* spawnDelay = nullptr;
+    Timer* bordTimer = nullptr;
     Raumschiff* raumschiff = nullptr;
 
-    void welleStarten(int welle);
+    UILabel* bordPrompt = nullptr;
+    FadeOverlay* fadeOverlay = nullptr;
+    CinematicBars* cinematicBars = nullptr;
+    bool bordVorgang = false;
     void spawnWave(int numA, int numB, bool mitBoss);
     void alleFeindeEntfernen();
     void wellenPruefung();
+    void bordenPruefen(GLFWwindow* window);
 };
 
 #endif

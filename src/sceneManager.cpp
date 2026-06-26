@@ -14,6 +14,7 @@
 #include "szenes/labsWesen.h"
 #include "szenes/unterwasserszeneWesen.h"
 #include "szenes/weltraumszeneWesen.h"
+#include "szenes/raumschiffInnenWesen.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/transform.h"
 #include "werkzeuge/renderer.h"
@@ -46,11 +47,16 @@ Leviathan * leviathan = nullptr;
 int aktuelleSzene = 0;
 bool cursorDisabled = true;
 bool inventarOffen = false;
+static int pendingSwitch = -1;
 
 void Scene::framebuffer_size_callback(GLFWwindow* window, const int width, const int height)
 {
 	kamera.setAspectRatio(static_cast<float>(width) / static_cast<float>(height));
 	glViewport(0, 0, width, height);
+}
+
+void Scene::requestSceneSwitch(int index) {
+	pendingSwitch = index;
 }
 
 void Scene::szeneWechseln(int index) {
@@ -67,13 +73,19 @@ void Scene::szeneWechseln(int index) {
 		LightManager::getInstance().cleanup();
 	}
 
+	// Reset shared input state so the new scene starts with first-person controls
+	cursorDisabled = true;
+	inventarOffen = false;
+
 	aktuelleSzene = index;
 	if (index == 0) {
 		scene = new UnterwasserszeneWesen();
 	} else if (index == 1) {
 		scene = new WeltraumszeneWesen();
-	} else {
+	} else if (index == 2) {
 		scene = new LabsWesen();
+	} else {
+		scene = new RaumschiffInnenWesen();
 	}
 	scene->init();
 	const auto& leviathanGroup = GroupManager::getInstance().getEntitiesInGroup("Leviathan");
@@ -166,6 +178,9 @@ void Scene::processInput(GLFWwindow* window) {
 	if (Input::isKeyJustPressed(GLFW_KEY_F4) && aktuelleSzene != 2) {
 		szeneWechseln(2);
 	}
+	if (Input::isKeyJustPressed(GLFW_KEY_F6) && aktuelleSzene != 3) {
+		requestSceneSwitch(3);
+	}
 }
 
 void Scene::renderLoop(GLFWwindow* window) {
@@ -190,6 +205,16 @@ void Scene::renderLoop(GLFWwindow* window) {
 		AudioManager::getInstance().updateListener(kamera.transform.position, kamera.transform.forward(), kamera.transform.up());
 		TweenManager::getInstance().update(deltaTime);
 		MusicManager::getInstance().onUpdate(window, deltaTime, kamera.transform);
+
+		// Deferred scene switch: executed at a safe point, outside scene/tween traversal,
+		// so cutscene tween callbacks can request a switch without use-after-free.
+		if (pendingSwitch >= 0) {
+			const int ziel = pendingSwitch;
+			pendingSwitch = -1;
+			szeneWechseln(ziel);
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			continue;
+		}
 
 	    glm::mat4 view = kamera.getViewMatrix();
 	    glm::mat4 projection = kamera.getProjectionMatrix();

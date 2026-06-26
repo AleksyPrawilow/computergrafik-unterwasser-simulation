@@ -53,7 +53,7 @@ void InventarHUD::onInit() {
 }
 
 void InventarHUD::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (Input::isKeyJustPressed(GLFW_KEY_I)) {
+    if (Input::isKeyJustPressed(GLFW_KEY_I) && (!inventarOffen || offen)) {
         umschalten(window);
     }
 

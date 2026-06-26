@@ -155,15 +155,32 @@ set(PROJECT_SOURCES
         src/dieWesen/seaweed.h
         src/dieWesen/schildPickup.cpp
         src/dieWesen/schildPickup.h
+        src/dieWesen/spielerLaser.cpp
+        src/dieWesen/spielerLaser.h
+        src/dieWesen/alienLaser.cpp
+        src/dieWesen/alienLaser.h
+        src/dieWesen/alien.cpp
+        src/dieWesen/alien.h
         src/dieWesen/feuerEmitter.cpp
         src/dieWesen/feuerEmitter.h
         src/szenes/labsProps.h
         src/szenes/labsWesen.cpp
         src/szenes/labsWesen.h
+        src/szenes/raumschiffInnenWesen.cpp
+        src/szenes/raumschiffInnenWesen.h
+        src/szenes/raumschiffInnenProps.h
         src/dieWesen/megalodon.cpp
         src/dieWesen/megalodon.h
         src/dieWesen/ui/cinematicBars.cpp
         src/dieWesen/ui/cinematicBars.h
+        src/dieWesen/spaceshipEnterable.cpp
+        src/dieWesen/spaceshipEnterable.h
+        src/dieWesen/ui/fadeOverlay.cpp
+        src/dieWesen/ui/fadeOverlay.h
+        src/dieWesen/ui/starWarsIntro.cpp
+        src/dieWesen/ui/starWarsIntro.h
+        src/dieWesen/ui/logo.cpp
+        src/dieWesen/ui/logo.h
 )
 
 set(SOIL_SOURCES
@@ -219,6 +236,8 @@ set(IMGUI_SOURCES
         src/dieWesen/ui/werkbankHUD.h
         src/dieWesen/ui/ofenHUD.cpp
         src/dieWesen/ui/ofenHUD.h
+        src/dieWesen/ui/schiffslaborHUD.cpp
+        src/dieWesen/ui/schiffslaborHUD.h
         src/dieWesen/platzierbaresObjekt.cpp
         src/dieWesen/platzierbaresObjekt.h
         src/dieWesen/grabLoch.cpp
