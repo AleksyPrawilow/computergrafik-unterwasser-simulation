@@ -37,7 +37,8 @@ enum class GegenstandID {
     SCHALTKREIS,
     ROBOTERARM,
     TODESSTERN,
-    LABORKONSOLE
+    LABORKONSOLE,
+    PHOTONENBLASTER
 };
 
 enum class WerkzeugTyp {
@@ -65,6 +66,7 @@ struct GegenstandInfo {
     int werkzeugSchaden = 0;
     bool istPlatzierbar = false;
     bool istKonsumierbar = false;
+    bool istWaffe = false;
     std::string modellPfad;
     std::string modellAlbedoPfad;
     float modellSkalierung = 0.3f;

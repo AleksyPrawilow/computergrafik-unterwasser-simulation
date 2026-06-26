@@ -6,6 +6,9 @@
 
 #include <GLFW/glfw3.h>
 #include <gtc/matrix_transform.hpp>
+
+#include "dieWesen/megalodon.h"
+#include "dieWesen/ui/cinematicBars.h"
 #include "werkzeuge/himmelsboxWesen.h"
 
 class SeaweedBatch : public Wesen {
@@ -75,10 +78,10 @@ void UnterwasserszeneWesen::init() {
     addChild(new Wasser());
     addChild(new Island());
     addChild(new Player());
-    auto* leviathan = new Leviathan();
-    leviathan->transform.position = glm::vec3(0.0f, -120.0f, 0.0f);
-    leviathan->transform.scale = glm::vec3(4.0f);
-    addChild(leviathan);
+    // auto* leviathan = new Leviathan();
+    // leviathan->transform.position = glm::vec3(0.0f, -120.0f, 0.0f);
+    // leviathan->transform.scale = glm::vec3(4.0f);
+    // addChild(leviathan);
 
     // JELLYFISHES
     // auto * jellyfish = new Jellyfish();
@@ -102,6 +105,22 @@ void UnterwasserszeneWesen::init() {
         carrier->addChild(jelly);
         addChild(carrier);
     }
+
+    Path3D * megalodonPath = new Path3D();
+    megalodonPath->transform.position = glm::vec3(-141.0f, -240.0f, -704.0f);
+    megalodonPath->generateCircle(25.0f, 100);
+    addChild(megalodonPath);
+
+    PathFollower* carrier = new PathFollower();
+    carrier->targetPath = megalodonPath;
+    carrier->moveSpeed = 10.0f;
+
+    carrier->currentNodeIndex = 0;
+    carrier->transform.position = megalodonPath->frames[carrier->currentNodeIndex].position;
+    addChild(carrier);
+    auto * megalodon = new Megalodon();
+    megalodon->followTarget = carrier;
+    addChild(megalodon);
 
     // FISHES
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
@@ -214,7 +233,7 @@ void UnterwasserszeneWesen::init() {
     }
 
     auto * chest = new Chest();
-    chest->transform.position = glm::vec3(-690.0f, 27.0f, -225.0f);
+    chest->transform.position = glm::vec3(-690.0f, 24.0f, -225.0f);
     addChild(chest);
 
     auto* schatzMarkierung = new Wesen();
@@ -241,6 +260,7 @@ void UnterwasserszeneWesen::init() {
 
     addChild(new UnterwasserszeneQuests());
     addChild(new Thunderstorm());
+    addChild(new CinematicBars());
     //addChild(new UnterwasserszeneVisualHelper());
 
     constexpr float mapSize = 2000.0f;

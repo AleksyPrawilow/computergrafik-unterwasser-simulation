@@ -16,6 +16,7 @@
 extern Kamera kamera;
 
 void Uboot::init() {
+    name = "Uboot";
     isCollidable = true;
     material.albedo = Kern::LoadTexture("assets/textures/sub_albedo.png");
     material.roughness = Kern::LoadTexture("assets/textures/sub_metallic.png");
@@ -165,7 +166,7 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
 
     if (!isActive) return;
 
-    float sprintMult = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT) ? 2.0f : 1.0f;
+    float sprintMult = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT) ? 10.0f : 1.0f;
 
     if (targetWaveInfluence > 0.5f && Input::isKeyJustPressed(GLFW_KEY_G)) {
         isActive = false;
@@ -234,21 +235,26 @@ void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) c
 
     if (viewMode == ViewMode::THIRD_PERSON) {
         targetCamPos = shipPos - forward * 9.0f + up * 1.5f;
-        lookAtTarget = shipPos + up * 0.5f;
+        lookAtTarget = (cameraFollowTarget != nullptr)
+            ? cameraFollowTarget->getGlobalTransform().position
+            : shipPos + up * 0.5f;
         camFollowSpeed = 6.0f;
-        camRotateSpeed = 8.0f;
+        // Use a slightly gentler rotation speed when tracking an external target
+        camRotateSpeed = (cameraFollowTarget != nullptr) ? 3.0f : 8.0f;
     } else if (viewMode == ViewMode::THIRD_PERSON_BACK) {
         targetCamPos = shipPos + forward * 9.0f + up * 1.5f;
-        lookAtTarget = shipPos + up * 0.5f;
-
+        lookAtTarget = (cameraFollowTarget != nullptr)
+            ? cameraFollowTarget->getGlobalTransform().position
+            : shipPos + up * 0.5f;
         camFollowSpeed = 6.0f;
-        camRotateSpeed = 8.0f;
-    } else {
+        camRotateSpeed = (cameraFollowTarget != nullptr) ? 3.0f : 8.0f;
+    } else { // FIRST_PERSON
         targetCamPos = shipPos + forward * 2.1f;
-        lookAtTarget = shipPos + forward * 10.0f;
-
+        lookAtTarget = (cameraFollowTarget != nullptr)
+            ? cameraFollowTarget->getGlobalTransform().position
+            : shipPos + forward * 10.0f;
         camFollowSpeed = 200.0f;
-        camRotateSpeed = 40.0f;
+        camRotateSpeed = (cameraFollowTarget != nullptr) ? 5.0f : 40.0f;
     }
 
     glm::vec3 swayedCamPos = targetCamPos;
@@ -268,7 +274,11 @@ void Uboot::updateCameraTransform(Transform& cameraTransform, float deltaTime) c
     const glm::quat targetCamRot = cameraTransform.rotation;
 
     const float tFollow = viewMode == ViewMode::FIRST_PERSON ? 1.0f : 1.0f - glm::exp(-camFollowSpeed * deltaTime);
-    const float tRotate = viewMode == ViewMode::FIRST_PERSON ? 1.0f : 1.0f - glm::exp(-camRotateSpeed * deltaTime);
+
+    // Ensure rotation transitions smoothly in first person mode when tracking a target
+    const float tRotate = (viewMode == ViewMode::FIRST_PERSON && cameraFollowTarget == nullptr)
+        ? 1.0f
+        : 1.0f - glm::exp(-camRotateSpeed * deltaTime);
 
     cameraTransform.position = glm::mix(cameraTransform.position, swayedCamPos, tFollow);
     cameraTransform.rotation = glm::slerp(currentCamRot, targetCamRot, tRotate);

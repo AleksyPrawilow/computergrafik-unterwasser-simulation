@@ -5,6 +5,7 @@
 #include "raumschiffInnenWesen.h"
 
 #include "dieWesen/player.h"
+#include "dieWesen/alien.h"
 #include "dieWesen/feindschiff.h"
 #include "dieWesen/aufhebbar.h"
 #include "dieWesen/platzierbaresObjekt.h"
@@ -17,6 +18,10 @@
 #include "werkzeuge/textur.h"
 #include "werkzeuge/random.h"
 #include "werkzeuge/gegenstandDaten.h"
+#include "werkzeuge/inventar.h"
+#include "werkzeuge/renderWerkzeuge.h"
+#include "werkzeuge/ui/uiLabel.h"
+#include "werkzeuge/ui/uiContainers.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/visual/worldEnvironment.h"
 
@@ -64,9 +69,9 @@ void RaumschiffInnenWesen::init() {
     GLuint bodenAlbedo = Kern::LoadTexture("assets/textures/platform_albedo.png");
     GLuint bodenNormal = Kern::LoadTexture("assets/textures/platform_normal.png");
     GLuint bodenRough = Kern::LoadTexture("assets/textures/platform_roughness.png");
-    GLuint wandAlbedo = Kern::LoadTexture("assets/textures/raumschiff_albedo.png");
-    GLuint wandNormal = Kern::LoadTexture("assets/textures/raumschiff_normal.png");
-    GLuint wandRough = Kern::LoadTexture("assets/textures/raumschiff_roughness.png");
+    GLuint wandAlbedo = Kern::LoadTexture("assets/textures/metall_wand.png");
+    GLuint wandNormal = Kern::LoadTexture("assets/textures/metall_wand_normal.png");
+    GLuint wandRough = Kern::LoadTexture("assets/textures/RockTexture001_metallic.png");
 
     // Footprint: X [-33, 33], Z [-41, 25]. Floor top at Y = 0, ends at the window plane (Z=-41).
     addChild(makeBoden(glm::vec3(0.0f, -0.5f, -7.0f), glm::vec3(70.0f, 1.0f, 68.0f),
@@ -156,14 +161,89 @@ void RaumschiffInnenWesen::init() {
     wandZ(-11.0f, -19.0f, 3.0f, true, -8.0f);
     wandZ(11.0f, -19.0f, 3.0f, true, -8.0f);
 
+    // === Decorative pillars at doorways and junctions (non-collidable, just visual breakup) ===
+    GLuint bridgeAlbedo = Kern::LoadTexture("assets/textures/bridge_albedo.png");
+    GLuint bridgeNormal = Kern::LoadTexture("assets/textures/bridge_normal.png");
+    GLuint bridgeRough = Kern::LoadTexture("assets/textures/bridge_roughness.png");
+
+    auto makePillar = [&](const glm::vec3& pos) {
+        auto* p = new Wesen();
+        p->loadModel("assets/models/cube.obj");
+        p->material.albedo = wandAlbedo;
+        p->material.normal = wandNormal;
+        p->material.roughness = wandRough;
+        p->material.shader = ShaderManager::getInstance().getShader("default");
+        p->transform.position = pos + glm::vec3(0.0f, WAND_HOEHE * 0.5f, 0.0f);
+        p->transform.scale = glm::vec3(1.0f, WAND_HOEHE * 0.5f, 1.0f);
+        p->isCollidable = true;
+        p->addToGroup("hauswand");
+        addChild(p);
+    };
+
+    // Hub-to-entry doorway pillars
+    makePillar(glm::vec3(-3.0f, 0.0f, 3.0f));
+    makePillar(glm::vec3(3.0f, 0.0f, 3.0f));
+    // Engine room door pillars
+    makePillar(glm::vec3(-11.0f, 0.0f, -5.0f));
+    makePillar(glm::vec3(-11.0f, 0.0f, -11.0f));
+    // Cargo room door pillars
+    makePillar(glm::vec3(11.0f, 0.0f, -5.0f));
+    makePillar(glm::vec3(11.0f, 0.0f, -11.0f));
+    // Bridge doorway pillars (engine side)
+    makePillar(glm::vec3(-25.0f, 0.0f, -19.0f));
+    makePillar(glm::vec3(-19.0f, 0.0f, -19.0f));
+    // Bridge doorway pillars (cargo side)
+    makePillar(glm::vec3(19.0f, 0.0f, -19.0f));
+    makePillar(glm::vec3(25.0f, 0.0f, -19.0f));
+    // Entry room corner pillars
+    makePillar(glm::vec3(-11.0f, 0.0f, 25.0f));
+    makePillar(glm::vec3(11.0f, 0.0f, 25.0f));
+    // Bridge far corners
+    makePillar(glm::vec3(-33.0f, 0.0f, -41.0f));
+    makePillar(glm::vec3(33.0f, 0.0f, -41.0f));
+
+    // === Ceiling light strips (glowing emissive bars running along corridors) ===
+    GLuint lichtTex = Kern::LoadTexture("assets/textures/emission_cyan.png");
+    auto makeLicht = [&](const glm::vec3& pos, const glm::vec3& size) {
+        auto* l = new Wesen();
+        l->loadModel("assets/models/cube.obj");
+        l->material.albedo = lichtTex;
+        l->material.emission = lichtTex;
+        l->material.bloomStrength = 0.7f;
+        l->material.shader = ShaderManager::getInstance().getShader("default");
+        l->transform.position = pos;
+        l->transform.scale = size * 0.5f;
+        addChild(l);
+    };
+    // Entry corridor ceiling strips
+    makeLicht(glm::vec3(0.0f, WAND_HOEHE - 0.3f, 14.0f), glm::vec3(0.4f, 0.3f, 20.0f));
+    // Hub ceiling strip
+    makeLicht(glm::vec3(0.0f, WAND_HOEHE - 0.3f, -8.0f), glm::vec3(0.4f, 0.3f, 18.0f));
+    // Engine room strip
+    makeLicht(glm::vec3(-22.0f, WAND_HOEHE - 0.3f, -8.0f), glm::vec3(0.4f, 0.3f, 18.0f));
+    // Cargo bay strip
+    makeLicht(glm::vec3(22.0f, WAND_HOEHE - 0.3f, -8.0f), glm::vec3(0.4f, 0.3f, 18.0f));
+    // Bridge strips (four parallel lines)
+    makeLicht(glm::vec3(-16.0f, WAND_HOEHE - 0.3f, -30.0f), glm::vec3(0.4f, 0.3f, 20.0f));
+    makeLicht(glm::vec3(-6.0f, WAND_HOEHE - 0.3f, -30.0f), glm::vec3(0.4f, 0.3f, 20.0f));
+    makeLicht(glm::vec3(6.0f, WAND_HOEHE - 0.3f, -30.0f), glm::vec3(0.4f, 0.3f, 20.0f));
+    makeLicht(glm::vec3(16.0f, WAND_HOEHE - 0.3f, -30.0f), glm::vec3(0.4f, 0.3f, 20.0f));
+
+    // --- Inventory reset: clear everything, equip photon blaster in slot 1 ---
+    Inventar::getInstance().reset();
+    Inventar::getInstance().hinzufuegen(GegenstandID::PHOTONENBLASTER, 1);
+    Inventar::getInstance().ausruesten(0, GegenstandID::PHOTONENBLASTER);
+
     // --- Player (spawn in entry, facing north toward the hub) ---
+    glm::vec3 spielerStart = glm::vec3(0.0f, 3.0f, 18.0f);
     auto * player = new Player();
     player->affectedByWater = false;
     player->benutzeInsel = false;
     player->bodenHoehe = 0.0f;
     player->targetY = 3.0f;
+    player->spawnPosition = spielerStart;
     addChild(player);
-    player->transform.position = glm::vec3(0.0f, 3.0f, 18.0f);
+    player->transform.position = spielerStart;
 
     // --- Lab console (centre of the bridge) ---
     auto * konsole = new PlatzierbaresObjekt(GegenstandID::LABORKONSOLE);
@@ -221,6 +301,51 @@ void RaumschiffInnenWesen::init() {
         feind->material.bloomStrength = 0.12f;
     }
 
+    // --- Aliens patrolling corridors ---
+    struct AlienSpawn { glm::vec3 a, b; };
+    const AlienSpawn alienSpawns[] = {
+        { glm::vec3(0.0f, 0.0f, -4.0f),   glm::vec3(0.0f, 0.0f, -16.0f) },   // hub corridor
+        { glm::vec3(-22.0f, 0.0f, -2.0f),  glm::vec3(-22.0f, 0.0f, -16.0f) }, // engine room
+        { glm::vec3(22.0f, 0.0f, -2.0f),   glm::vec3(22.0f, 0.0f, -16.0f) },  // cargo bay
+        { glm::vec3(-20.0f, 0.0f, -28.0f), glm::vec3(20.0f, 0.0f, -28.0f) },  // bridge front
+        { glm::vec3(-10.0f, 0.0f, -36.0f), glm::vec3(10.0f, 0.0f, -36.0f) },  // bridge back
+    };
+    for (const auto& as : alienSpawns) {
+        auto* alien = new Alien();
+        alien->wegpunkte.push_back(as.a);
+        alien->wegpunkte.push_back(as.b);
+        addChild(alien);
+        alien->transform.position = as.a + glm::vec3(0.0f, 1.5f, 0.0f);
+    }
+
+    // --- Health HUD (top-left) ---
+    auto* lebenHUD = new VBoxUI(8.0f);
+    addChild(lebenHUD);
+    lebenHUD->transform.position = glm::vec3(80.0f, 20.0f, 0.0f);
+
+    auto* lebenReihe = new HBoxUI();
+    lebenReihe->init();
+    lebenHUD->addChild(lebenReihe);
+
+    auto* herzIcon = new UIElement();
+    herzIcon->init();
+    herzIcon->material.albedo = Kern::LoadTexture("assets/textures/heart.png", true);
+    herzIcon->transform.scale = glm::vec3(48.0f, 48.0f, 1.0f);
+    lebenReihe->addChild(herzIcon);
+
+    lebenLabel = new UILabel();
+    lebenLabel->setText("100", 48.0f);
+    lebenLabel->init();
+    lebenReihe->addChild(lebenLabel);
+
+    // --- Damage vignette ---
+    schadenVignette = new UIElement();
+    addChild(schadenVignette);
+    schadenVignette->material.albedo = Kern::LoadTexture("assets/textures/schaden_vignette.png", true);
+    schadenVignette->visible = false;
+
+    spielerRef = player;
+
     // --- HUDs ---
     addChild(new InventarHUD());
     addChild(new HandwerkHUD());
@@ -228,4 +353,20 @@ void RaumschiffInnenWesen::init() {
     addChild(new AusruestungsLeiste());
 
     MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 1.5f, true);
+}
+
+void RaumschiffInnenWesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
+    if (spielerRef != nullptr) {
+        lebenLabel->text = std::to_string(static_cast<int>(spielerRef->getLeben()));
+
+        if (spielerRef->schadenBlitz > 0.0f) {
+            schadenVignette->visible = true;
+        } else {
+            schadenVignette->visible = false;
+        }
+
+        glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
+        schadenVignette->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+        schadenVignette->transform.scale = glm::vec3(viewport.x, viewport.y, 1.0f);
+    }
 }

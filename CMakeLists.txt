@@ -155,6 +155,12 @@ set(PROJECT_SOURCES
         src/dieWesen/seaweed.h
         src/dieWesen/schildPickup.cpp
         src/dieWesen/schildPickup.h
+        src/dieWesen/spielerLaser.cpp
+        src/dieWesen/spielerLaser.h
+        src/dieWesen/alienLaser.cpp
+        src/dieWesen/alienLaser.h
+        src/dieWesen/alien.cpp
+        src/dieWesen/alien.h
         src/dieWesen/feuerEmitter.cpp
         src/dieWesen/feuerEmitter.h
         src/szenes/labsProps.h
@@ -163,6 +169,10 @@ set(PROJECT_SOURCES
         src/szenes/raumschiffInnenWesen.cpp
         src/szenes/raumschiffInnenWesen.h
         src/szenes/raumschiffInnenProps.h
+        src/dieWesen/megalodon.cpp
+        src/dieWesen/megalodon.h
+        src/dieWesen/ui/cinematicBars.cpp
+        src/dieWesen/ui/cinematicBars.h
 )
 
 set(SOIL_SOURCES

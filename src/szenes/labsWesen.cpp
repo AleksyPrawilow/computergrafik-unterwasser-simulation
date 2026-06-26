@@ -47,6 +47,7 @@ void LabsWesen::init() {
     auto sceneData = getLabsProps();
     for (const auto& [className, transforms] : sceneData) {
         for (const auto& t : transforms) {
+
             Wesen * entity = nullptr;
             if (className == "cave") {
                 entity = new Prop(t.position, t.rotation, t.scale);
@@ -89,10 +90,15 @@ void LabsWesen::init() {
                 entity->material.shader = ShaderManager::getInstance().getShader("default");
                 entity->material.albedo = Kern::LoadTexture("assets/textures/platform_albedo.png");
                 entity->material.normal = Kern::LoadTexture("assets/textures/platform_normal.png");
-                entity->material.metallic = Kern::LoadTexture("assets/textures/platform_roughness.png");
+                entity->material.metallic = Kern::LoadTexture("assets/textures/platform_metllic.png");
+                entity->material.roughness = Kern::LoadTexture("assets/textures/platform_roughness.png");
             }
             if (entity != nullptr) {
                 addChild(entity);
+                entity->transform.position = t.position;
+                entity->transform.rotation = t.rotation;
+                entity->transform.scale = t.scale;
+                std::cout << entity->transform.position.x << " " << entity->transform.position.y <<  " " << entity->transform.position.z << std::endl;
             }
         }
     }

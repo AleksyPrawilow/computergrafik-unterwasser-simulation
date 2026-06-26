@@ -73,6 +73,9 @@ void GegenstandDaten::init() {
     registrieren(GegenstandID::LABORKONSOLE, "Lab Console", "assets/textures/icon_laborkonsole.png", 1);
     registry[static_cast<int>(GegenstandID::LABORKONSOLE)].istPlatzierbar = true;
 
+    registrieren(GegenstandID::PHOTONENBLASTER, "Photon Blaster", "assets/textures/icon_photonenblaster.png", 1);
+    registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].istWaffe = true;
+
     // --- Hand recipes ---
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::HOLZ, GegenstandID::PLANKE, 1, RezeptQuelle::HAND);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::STEIN, GegenstandID::AXT, 1, RezeptQuelle::HAND);

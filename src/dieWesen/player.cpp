@@ -8,14 +8,18 @@
 #include "aufhebbar.h"
 #include "grabLoch.h"
 #include "platzierbaresObjekt.h"
+#include "spielerLaser.h"
 #include "ui/fadenkreuz.h"
 #include "werkzeuge/input.h"
 #include "werkzeuge/gegenstandDaten.h"
 #include "werkzeuge/inventar.h"
+#include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/audio/audioManager.h"
 #include "werkzeuge/visual/questManager.h"
+
+extern Kamera kamera;
 
 void Player::init() {
     transform.scale = glm::vec3(1.0f);
@@ -47,6 +51,9 @@ void Player::init() {
     addChild(raycastTimer);
     raycastTimer->startTimer(0.1f, [this]() { updateRaycast(); });
 
+    schussTimer = new Timer();
+    addChild(schussTimer);
+
     addToGroup("playerWalking");
 }
 
@@ -59,6 +66,8 @@ void Player::onUpdate(GLFWwindow* window, const float deltaTime, Transform& came
             jumpMultiplier = 1.0f;
         }
     }
+    if (spawnSchutz > 0.0f) spawnSchutz -= deltaTime;
+    if (schadenBlitz > 0.0f) schadenBlitz -= deltaTime * 3.0f;
 
     processInput(deltaTime);
     if (isActive) handleRotations(window, deltaTime);
@@ -247,6 +256,18 @@ void Player::handleItemAction(GLFWwindow* window) {
         platzPos.y = bodenHoehe + 0.5f;
     }
 
+    if (info.istWaffe && kannSchiessen && parent != nullptr) {
+        kannSchiessen = false;
+        schussTimer->startTimer(0.3f, [this]() { kannSchiessen = true; });
+
+        glm::vec3 schussPos = transform.position + transform.forward() * 2.0f;
+        auto* laser = new SpielerLaser();
+        parent->addChild(laser);
+        laser->abfeuern(schussPos, transform.rotation);
+        AudioManager::getInstance().play2D("assets/audio/shoot.mp3", false, true);
+        return;
+    }
+
     if (info.istKonsumierbar) {
         int hotbarIdx = Inventar::getInstance().getAktiverSlot();
         Inventar::getInstance().hotbarVerbrauchen(hotbarIdx);
@@ -268,5 +289,18 @@ void Player::handleItemAction(GLFWwindow* window) {
         parent->addChild(objekt);
 
         AudioManager::getInstance().play2D("assets/audio/pickup.mp3", false, true);
+    }
+}
+
+void Player::schadenNehmen(float schaden) {
+    if (spawnSchutz > 0.0f) return;
+    kamera.addShake(0.3f, 0.2f);
+    schadenBlitz = 1.0f;
+    leben -= schaden;
+    if (leben <= 0.0f) {
+        leben = 100.0f;
+        transform.position = spawnPosition;
+        targetY = spawnPosition.y;
+        spawnSchutz = 2.0f;
     }
 }
