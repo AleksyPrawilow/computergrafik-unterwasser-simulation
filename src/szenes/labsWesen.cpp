@@ -9,7 +9,6 @@
 #include "dieWesen/spaceshipEnterable.h"
 #include "dieWesen/uboot.h"
 #include "dieWesen/wasser.h"
-#include "dieWesen/ui/fadeUI.h"
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
@@ -102,10 +101,4 @@ void LabsWesen::init() {
             }
         }
     }
-
-    auto * fadeEffect = new FadeUI();
-    fadeEffect->init();
-    addChild(fadeEffect);
-    fadeEffect->setFadeColor(glm::vec3(0.0f, 0.0f, 0.0f));
-    fadeEffect->fadeOut(1.0f);
 }
