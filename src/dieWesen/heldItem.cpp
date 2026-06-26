@@ -218,8 +218,8 @@ void HeldItem::ausruestungAktualisieren() {
         material.roughness = 0;
         material.metallic = 0;
         material.shader = ShaderManager::getInstance().getShader("default");
-        transform.scale = glm::vec3(0.15f);
-        transform.position = glm::vec3(0.5f, -0.3f, -1.0f);
+        transform.scale = glm::vec3(info.modellSkalierung);
+        transform.position = glm::vec3(0.7f, -0.4f, -1.0f);
         istAxt = false;
     } else {
         mesh = cubeModelMesh;

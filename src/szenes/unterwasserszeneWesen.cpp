@@ -368,6 +368,16 @@ void UnterwasserszeneWesen::init() {
             if (p) p->setActive(false);
         }
 
+        // Complete all quests so the HUD is clean
+        QuestManager::getInstance().cleanup();
+
+        // Hide quest HUD
+        const auto& questHuds = getNodesInGroup("QuestManager");
+        for (auto* q : questHuds) q->visible = false;
+
+        // Play the ship scene music
+        MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 1.5f, true);
+
         // Add cinematic bars
         auto* bars = new CinematicBars();
         addChild(bars);
@@ -387,7 +397,7 @@ void UnterwasserszeneWesen::init() {
         cutsceneLeviathan->material.normal = Kern::LoadTexture("assets/textures/leviathan_normal.png");
         cutsceneLeviathan->material.bloomStrength = 0.3f;
         cutsceneLeviathan->material.shader = ShaderManager::getInstance().getShader("default");
-        cutsceneLeviathan->transform.position = glm::vec3(-700.0f, -80.0f, -220.0f);
+        cutsceneLeviathan->transform.position = glm::vec3(-500.0f, -60.0f, -100.0f);
         cutsceneLeviathan->transform.scale = glm::vec3(4.0f);
         addChild(cutsceneLeviathan);
 
@@ -405,9 +415,9 @@ void UnterwasserszeneWesen::init() {
             dummy->transform.position = saberPos[i];
         }
 
-        // Camera starts underwater looking at the leviathan
-        cameraZielPos = glm::vec3(-700.0f, -20.0f, -120.0f);
-        cameraBlickZiel = glm::vec3(-700.0f, -80.0f, -220.0f);
+        // Camera above open water, looking down at the leviathan
+        cameraZielPos = glm::vec3(-500.0f, 15.0f, -20.0f);
+        cameraBlickZiel = glm::vec3(-500.0f, -60.0f, -100.0f);
 
         createTween()
             ->tweenInterval(2.0f)
