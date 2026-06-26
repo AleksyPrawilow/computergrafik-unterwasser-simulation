@@ -54,8 +54,8 @@ void WeltraumszeneWesen::init() {
     umwelt->params.sunDirection = glm::normalize(glm::vec3(0.3f, 0.8f, 0.2f));
     umwelt->params.sunColor = glm::vec3(1.0f, 1.0f, 0.98f);
     umwelt->params.sunEnergy = 2.0f;
-    umwelt->params.ambientColor = glm::vec3(0.15f, 0.15f, 0.2f);
-    umwelt->params.ambientEnergy = 0.05f;
+    umwelt->params.ambientColor = glm::vec3(0.2f, 0.2f, 0.25f);
+    umwelt->params.ambientEnergy = 0.3f;
     umwelt->params.fogEnabled = false;
     umwelt->params.heightFogEnabled = false;
     umwelt->params.causticsEnabled = false;
@@ -296,10 +296,13 @@ void WeltraumszeneWesen::spawnWave(int numA, int numB, bool mitBoss) {
             );
         }
         addChild(boss);
+        boss->loadModel("assets/models/boss_spaceship.obj");
         boss->transform.scale = glm::vec3(100.0f);
         boss->boundingRadius = 120.0f;
-        boss->material.albedo = Kern::LoadTexture("assets/textures/boss_gold.png");
-        boss->material.emission = Kern::LoadTexture("assets/textures/boss_gold.png");
+        boss->material.albedo = Kern::LoadTexture("assets/textures/boss_spaceship/panels.png");
+        boss->material.emission = Kern::LoadTexture("assets/textures/boss_spaceship/engine.png");
+        boss->material.normal = Kern::LoadTexture("assets/textures/boss_spaceship/normalMap1.png");
+        boss->material.metallic = Kern::LoadTexture("assets/textures/boss_spaceship/metalnessMap1.png");
         boss->material.bloomStrength = 0.2f;
         boss->laserGroesse = glm::vec3(0.4f, 0.4f, 8.0f);
         boss->laserOffset = 30.0f;

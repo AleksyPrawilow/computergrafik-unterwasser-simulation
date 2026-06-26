@@ -406,7 +406,7 @@ void UnterwasserszeneWesen::init() {
         }
 
         // Camera starts underwater looking at the leviathan
-        cameraZielPos = glm::vec3(-700.0f, -40.0f, -180.0f);
+        cameraZielPos = glm::vec3(-700.0f, -20.0f, -120.0f);
         cameraBlickZiel = glm::vec3(-700.0f, -80.0f, -220.0f);
 
         createTween()

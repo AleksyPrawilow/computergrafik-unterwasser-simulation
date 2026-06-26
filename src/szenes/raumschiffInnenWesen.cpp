@@ -512,6 +512,10 @@ void RaumschiffInnenWesen::startePhase2() {
 
     if (spielerRef) spielerRef->setActive(false);
 
+    auto aliens = getNodesInGroup("aliens");
+    for (auto* a : aliens) a->queueDestroy();
+    auto alienLaser = getNodesInGroup("feindlaser");
+    for (auto* l : alienLaser) l->queueDestroy();
     auto feinde = getNodesInGroup("feinde");
     for (auto* f : feinde) f->queueDestroy();
 

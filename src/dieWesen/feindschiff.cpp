@@ -10,12 +10,11 @@
 #include "szenes/weltraumszeneWesen.h"
 
 void Feindschiff::init() {
-    loadModel("assets/models/spaceship2.obj");
-    material.albedo = Kern::LoadTexture("assets/textures/feindschiff_albedo.png");
-    material.emission = Kern::LoadTexture("assets/textures/feindschiff_albedo.png");
-    material.roughness = Kern::LoadTexture("assets/textures/raumschiff_roughness.png");
-    material.metallic = Kern::LoadTexture("assets/textures/raumschiff_metallic.png");
-    material.normal = Kern::LoadTexture("assets/textures/raumschiff_normal.png");
+    loadModel("assets/models/enemy_spaceship.obj");
+    material.albedo = Kern::LoadTexture("assets/textures/enemy_spaceship/Raven_sketchfablambert5SG.png");
+    material.emission = Kern::LoadTexture("assets/textures/enemy_spaceship/emissiveMap1.png");
+    material.metallic = Kern::LoadTexture("assets/textures/enemy_spaceship/metalnessMap1.png");
+    material.normal = Kern::LoadTexture("assets/textures/enemy_spaceship/normalMap1.png");
     material.bloomStrength = 0.1f;
     material.shader = ShaderManager::getInstance().loadShader(
         "default",

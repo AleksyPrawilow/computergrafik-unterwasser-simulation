@@ -14,7 +14,7 @@ void Alien::init() {
     material.shader = ShaderManager::getInstance().getShader("default");
     transform.scale = glm::vec3(1.0f);
     boundingRadius = 2.5f;
-    bodenY = 1.5f;
+    bodenY = 0.5f;
     addToGroup("aliens");
     name = "alien";
     schussTimer = Random::range(0.0f, schussIntervall);
@@ -88,7 +88,7 @@ void Alien::laserAbfeuern() {
     if (spieler.empty()) return;
 
     glm::vec3 spielerPos = spieler[0]->getGlobalTransform().position;
-    glm::vec3 pos = getGlobalTransform().position;
+    glm::vec3 pos = getGlobalTransform().position + glm::vec3(0.0f, 2.0f, 0.0f);
     glm::vec3 richtung = spielerPos - pos;
     if (glm::length(richtung) < 1.0f) return;
 
