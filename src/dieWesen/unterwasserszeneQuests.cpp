@@ -25,7 +25,10 @@ void UnterwasserszeneQuests::init() {
 }
 
 void UnterwasserszeneQuests::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-
+    if (Input::isKeyJustPressed(GLFW_KEY_J)) {
+        QuestManager::getInstance().activeQuests[QuestManager::getInstance().activeQuests.size() - 1].isCompleted = true;
+        QuestManager::getInstance().activeQuests[QuestManager::getInstance().activeQuests.size() - 1].onComplete();
+    }
 
     switch (currentQuest) {
     case TUTORIAL:
