@@ -114,7 +114,7 @@ void RaumschiffInnenWesen::init() {
         addChild(w);
     };
 
-    MusicManager::getInstance().playMusic("doom_music.mp3");
+    MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3", 2.0f, true);
 
     // Full-height collidable wall, given an XZ centre at floor level.
     auto makeWand = [&](const glm::vec3& center, const glm::vec3& size) {
@@ -395,7 +395,7 @@ void RaumschiffInnenWesen::init() {
     addChild(new SchiffslaborHUD());
     addChild(new AusruestungsLeiste());
 
-    MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 1.5f, true);
+    MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3", 1.5f, true);
 
     if (cutscenePhase == 2) {
         cutscenePhase = 0;

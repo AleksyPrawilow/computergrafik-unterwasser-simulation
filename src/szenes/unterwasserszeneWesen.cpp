@@ -377,7 +377,7 @@ void UnterwasserszeneWesen::init() {
         for (auto* q : questHuds) q->visible = false;
 
         // Play the ship scene music
-        MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 1.5f, true);
+        MusicManager::getInstance().playMusic("assets/audio/doom_music.mp3", 1.5f, true);
 
         // Add cinematic bars
         auto* bars = new CinematicBars();

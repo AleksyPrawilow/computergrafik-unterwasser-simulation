@@ -76,7 +76,7 @@ void GegenstandDaten::init() {
     registrieren(GegenstandID::PHOTONENBLASTER, "Photon Blaster", "assets/textures/icon_photonenblaster.png", 1);
     registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].istWaffe = true;
     registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].modellPfad = "assets/models/ray_gun.obj";
-    registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].modellAlbedoPfad = "assets/textures/ray_gun/OutterBody.png";
+    registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].modellAlbedoPfad = "assets/textures/ray_gun/metalnessMap1.png";
     registry[static_cast<int>(GegenstandID::PHOTONENBLASTER)].modellSkalierung = 0.02f;
 
     // --- Hand recipes ---
