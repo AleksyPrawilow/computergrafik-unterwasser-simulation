@@ -18,6 +18,8 @@ public:
 #include "dieWesen/earth.h"
 #include "dieWesen/island.h"
 #include "dieWesen/jellyfish.h"
+#include "dieWesen/crab.h"
+#include "dieWesen/turtle.h"
 #include "dieWesen/flockManager.h"
 #include "dieWesen/path3d.h"
 #include "dieWesen/pathFollower.h"
@@ -110,6 +112,33 @@ void UnterwasserszeneWesen::init() {
     flock->targetPath = fishPath;
     // flock->transform.position = glm::vec3(-12.f, -10.f, 0.f);
     addChild(flock);
+
+    // Crab* crab = new Crab(2);
+    // crab->transform.position = glm::vec3(-684.0f, 31.5f, -224.0f);
+    // addChild(crab);
+
+    // Turtle
+    Path3D* turtlePath = new Path3D();
+    turtlePath->transform.position = glm::vec3(-600.0f, -10.0f, -165.0f);
+    turtlePath->generateFigureEight(40.0f, 10.0f, 40.0f);
+    addChild(turtlePath);
+
+    for (int i = 0; i < 4; i++) {
+        PathFollower* carrier = new PathFollower();
+        carrier->targetPath = turtlePath;
+        carrier->moveSpeed = 3.5f;
+
+        carrier->currentNodeIndex = i * 25;
+        carrier->transform.position = turtlePath->frames[carrier->currentNodeIndex].position;
+
+        int currentType = (i % 2) + 1;
+        Turtle* turtle = new Turtle(currentType);
+
+        turtle->transform.scale = glm::vec3(0.8f + (rand() % 100 / 250.0f));
+
+        carrier->addChild(turtle);
+        addChild(carrier);
+    }
 
     auto * bottle = new Bottle();
     bottle->transform.position = glm::vec3(-580.0f, 2.0f, -180.0f);
