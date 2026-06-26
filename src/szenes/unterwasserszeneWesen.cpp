@@ -124,7 +124,7 @@ void UnterwasserszeneWesen::init() {
 
     // FISHES
     // fishPath->transform.position = glm::vec3(-700.0f, -10.0f, -210.0f);
-    fishPath->transform.position = glm::vec3(-650.0f, -10.0f, -175.0f);
+    fishPath->transform.position = glm::vec3(-511.0f, -14.0f, -174.0f);
     fishPath->generateFigureEight(40.0f, 10.0f, 40.0f);
     addChild(fishPath);
     flock->transform.position = fishPath->transform.position;
@@ -138,7 +138,7 @@ void UnterwasserszeneWesen::init() {
 
     // Turtle
     Path3D* turtlePath = new Path3D();
-    turtlePath->transform.position = glm::vec3(-600.0f, -10.0f, -165.0f);
+    turtlePath->transform.position = glm::vec3(-391.0f, -12.0f, -154.0f);
     turtlePath->generateFigureEight(40.0f, 10.0f, 40.0f);
     addChild(turtlePath);
 
