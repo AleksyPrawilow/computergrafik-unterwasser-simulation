@@ -87,6 +87,7 @@ void Uboot::init() {
     glm::vec2 screenSize = Kern::GetViewportSize();
     interactLabel->transform.position = glm::vec3(screenSize.x / 2.0f, screenSize.y / 2.0f, 0.0f);
     interactLabel->visible = false;
+    addToGroup("player");
 }
 
 void Uboot::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform){
