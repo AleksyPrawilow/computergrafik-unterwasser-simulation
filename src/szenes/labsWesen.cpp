@@ -6,8 +6,10 @@
 #include "labsProps.h"
 #include "dieWesen/player.h"
 #include "dieWesen/prop.h"
+#include "dieWesen/spaceshipEnterable.h"
 #include "dieWesen/uboot.h"
 #include "dieWesen/wasser.h"
+#include "dieWesen/ui/fadeUI.h"
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
@@ -76,13 +78,7 @@ void LabsWesen::init() {
                 entity->material.roughness = Kern::LoadTexture("assets/textures/bridge_roughness.png");
                 entity->material.metallic = Kern::LoadTexture("assets/textures/bridge_roughness.png");
             } else if (className == "spaceship") {
-                entity = new Prop(t.position, t.rotation, t.scale);
-                entity->loadModel("assets/models/spaceship2.obj");
-                entity->material.shader = ShaderManager::getInstance().getShader("default");
-                entity->material.albedo = Kern::LoadTexture("assets/textures/raumschiff_albedo.png");
-                entity->material.roughness = Kern::LoadTexture("assets/textures/raumschiff_roughness.png");
-                entity->material.metallic = Kern::LoadTexture("assets/textures/raumschiff_metallic.png");
-                entity->material.normal = Kern::LoadTexture("assets/textures/raumschiff_normal.png");
+                entity = new SpaceshipEnterable();
 
             } else if (className == "platform") {
                 entity = new Prop(t.position, t.rotation, t.scale);
@@ -92,6 +88,10 @@ void LabsWesen::init() {
                 entity->material.normal = Kern::LoadTexture("assets/textures/platform_normal.png");
                 entity->material.metallic = Kern::LoadTexture("assets/textures/platform_metallic.png");
                 entity->material.roughness = Kern::LoadTexture("assets/textures/platform_roughness.png");
+            } else if (className == "camerapos") {
+                entity = new Prop(t.position, t.rotation, t.scale);
+                entity->addToGroup("CameraPos");
+                entity->visible = false;
             }
             if (entity != nullptr) {
                 addChild(entity);
@@ -102,4 +102,10 @@ void LabsWesen::init() {
             }
         }
     }
+
+    auto * fadeEffect = new FadeUI();
+    fadeEffect->init();
+    addChild(fadeEffect);
+    fadeEffect->setFadeColor(glm::vec3(0.0f, 0.0f, 0.0f));
+    fadeEffect->fadeOut(1.0f);
 }
