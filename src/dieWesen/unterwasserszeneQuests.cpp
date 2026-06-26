@@ -343,15 +343,6 @@ void UnterwasserszeneQuests::setupInvestigateTheSounds() {
     encounterObjective.description = "Investigate the strange sounds";
     encounterObjective.requiredCount = 1;
 
-    uiMarker = new WorldspaceUI();
-    parent->addChild(uiMarker);
-    uiMarker->material.albedo = Kern::LoadTexture("assets/textures/quest_marker.png");
-    uiMarker->transform.scale = glm::vec3(128.0f, 128.0f, 1.0f);
-    uiMarker->expansion = UIExpansion::CENTER;
-    uiMarker->setTarget(getNodesInGroup("F")[0], glm::vec3(0.0f, 4.0f, 0.0f));
-    uiMarker->shouldScale = true;
-    uiMarker->enabled = false;
-
     quest.objectives.push_back(encounterObjective);
 
     quest.onComplete = [this]() {

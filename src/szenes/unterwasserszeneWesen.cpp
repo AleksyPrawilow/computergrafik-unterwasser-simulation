@@ -186,7 +186,7 @@ void UnterwasserszeneWesen::init() {
     auto* questHUD = new QuestHUD();
     addChild(questHUD);
 
-    static bool startItemsGegeben = true;
+    static bool startItemsGegeben = false;
     Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);
     if (!startItemsGegeben) {
         Inventar::getInstance().hinzufuegen(GegenstandID::HOLZAXT, 1);

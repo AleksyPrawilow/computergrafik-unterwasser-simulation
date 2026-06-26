@@ -27,7 +27,7 @@ public:
     Transform transform;
 
     float nearPlane = 0.05f;
-    float farPlane = 5000.0f;
+    float farPlane = 1000.0f;
 
     [[nodiscard]] glm::mat4 getViewMatrix() const;
     [[nodiscard]] glm::mat4 getProjectionMatrix() const;
