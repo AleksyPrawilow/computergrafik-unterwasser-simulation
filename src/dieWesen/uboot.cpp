@@ -166,7 +166,7 @@ void Uboot::processInput(GLFWwindow* window, const float deltaTime) {
 
     if (!isActive) return;
 
-    float sprintMult = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT) ? 10.0f : 1.0f;
+    float sprintMult = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT) ? 3.0f : 1.0f;
 
     if (targetWaveInfluence > 0.5f && Input::isKeyJustPressed(GLFW_KEY_G)) {
         isActive = false;

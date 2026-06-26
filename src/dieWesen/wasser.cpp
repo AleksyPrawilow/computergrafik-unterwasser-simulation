@@ -17,7 +17,7 @@ void Wasser::init() {
     material.normal = Kern::LoadTexture("assets/textures/water_normal.png");
     material.isTransparent = true;
     transform.position = glm::vec3(-350.0f, 0.0f, 0.0f);
-    transform.scale = glm::vec3(3.0f, 1.0f, 3.0f);
+    transform.scale = glm::vec3(5.0f, 1.0f, 5.0f);
     name = "wasser";
     isCollidable = false;
 }
