@@ -12,6 +12,11 @@
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/groupManager.h"
 #include "werkzeuge/input.h"
+#include "werkzeuge/textur.h"
+#include "werkzeuge/renderWerkzeuge.h"
+#include "sceneManager.h"
+
+extern bool cursorDisabled;
 
 int WeltraumszeneWesen::abschuesse = 0;
 
@@ -71,6 +76,21 @@ void WeltraumszeneWesen::init() {
     spawnDelay = new Timer();
     addChild(spawnDelay);
 
+    bordTimer = new Timer();
+    addChild(bordTimer);
+
+    bordPrompt = new UILabel();
+    bordPrompt->setText("Press [E] to board the wreck", 40.0f);
+    bordPrompt->color = glm::vec4(1.0f, 0.9f, 0.4f, 1.0f);
+    bordPrompt->expansion = UIExpansion::CENTER;
+    addChild(bordPrompt);
+    bordPrompt->visible = false;
+
+    schwarzOverlay = new UIElement();
+    schwarzOverlay->material.albedo = Kern::LoadTexture("assets/textures/schwarz.png", true);
+    addChild(schwarzOverlay);
+    schwarzOverlay->visible = false;
+
     MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
 
     spawnDelay->startTimer(1.0f, [this]() {
@@ -82,6 +102,45 @@ void WeltraumszeneWesen::onUpdate(GLFWwindow* window, float deltaTime, Transform
     if (Input::isKeyJustPressed(GLFW_KEY_G) && aktuelleWelle < 2) {
         alleFeindeEntfernen();
         welleStarten(2);
+    }
+
+    bordenPruefen(window);
+}
+
+void WeltraumszeneWesen::bordenPruefen(GLFWwindow* window) {
+    if (bordVorgang) return;
+
+    // Only once the boss corpse exists (wave 3 cleared) and the player ship is around.
+    const auto& leichen = getNodesInGroup("bossLeiche");
+    if (leichen.empty() || raumschiff == nullptr) {
+        if (bordPrompt) bordPrompt->visible = false;
+        return;
+    }
+
+    glm::vec3 spielerPos = raumschiff->getGlobalTransform().position;
+    glm::vec3 wrackPos = leichen[0]->getGlobalTransform().position;
+    // Boss corpse can be at any Y in space -> full 3D distance, never flattened.
+    float abstand = glm::distance(spielerPos, wrackPos);
+
+    bool inReichweite = abstand < 160.0f;
+
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
+    bordPrompt->transform.position = glm::vec3(viewport.x * 0.5f, viewport.y * 0.75f, 0.0f);
+    bordPrompt->visible = inReichweite;
+
+    if (inReichweite && Input::isKeyJustPressed(GLFW_KEY_E)) {
+        bordVorgang = true;
+        bordPrompt->visible = false;
+        raumschiff->setIstAktiv(false);
+
+        // Hard cut to black, hold ~1s, then defer the scene switch to a safe point.
+        schwarzOverlay->visible = true;
+        schwarzOverlay->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
+        schwarzOverlay->transform.scale = glm::vec3(viewport.x, viewport.y, 1.0f);
+
+        bordTimer->startTimer(1.0f, []() {
+            Scene::requestSceneSwitch(3);
+        });
     }
 }
 

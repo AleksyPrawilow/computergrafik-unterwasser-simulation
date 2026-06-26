@@ -160,6 +160,9 @@ set(PROJECT_SOURCES
         src/szenes/labsProps.h
         src/szenes/labsWesen.cpp
         src/szenes/labsWesen.h
+        src/szenes/raumschiffInnenWesen.cpp
+        src/szenes/raumschiffInnenWesen.h
+        src/szenes/raumschiffInnenProps.h
 )
 
 set(SOIL_SOURCES
@@ -215,6 +218,8 @@ set(IMGUI_SOURCES
         src/dieWesen/ui/werkbankHUD.h
         src/dieWesen/ui/ofenHUD.cpp
         src/dieWesen/ui/ofenHUD.h
+        src/dieWesen/ui/schiffslaborHUD.cpp
+        src/dieWesen/ui/schiffslaborHUD.h
         src/dieWesen/platzierbaresObjekt.cpp
         src/dieWesen/platzierbaresObjekt.h
         src/dieWesen/grabLoch.cpp

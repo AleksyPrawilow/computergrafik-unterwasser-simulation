@@ -17,6 +17,7 @@ namespace Scene {
     void renderLoop(GLFWwindow* window);
     void shutdown(GLFWwindow* window);
     void szeneWechseln(int index);
+    void requestSceneSwitch(int index);
 
     void framebuffer_size_callback(GLFWwindow* window, int width, int height);
     void processInput(GLFWwindow* window);

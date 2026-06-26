@@ -32,7 +32,12 @@ enum class GegenstandID {
     HAUS,
     SAND,
     GLAS,
-    OFEN
+    OFEN,
+    METALLSCHROTT,
+    SCHALTKREIS,
+    ROBOTERARM,
+    TODESSTERN,
+    LABORKONSOLE
 };
 
 enum class WerkzeugTyp {
@@ -45,7 +50,8 @@ enum class WerkzeugTyp {
 enum class RezeptQuelle {
     HAND,
     WERKBANK,
-    OFEN
+    OFEN,
+    SCHIFFSLABOR
 };
 
 struct GegenstandInfo {

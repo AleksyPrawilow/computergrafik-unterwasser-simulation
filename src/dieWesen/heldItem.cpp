@@ -67,7 +67,8 @@ void HeldItem::init() {
     shovelHitSound = new AudioPlayer("assets/audio/shovel.mp3", false, 10.0f);
     addChild(shovelHitSound);
 
-    island = dynamic_cast<Island *>(getNodesInGroup("Island")[0]);
+    const auto& inseln = getNodesInGroup("Island");
+    island = inseln.empty() ? nullptr : dynamic_cast<Island *>(inseln[0]);
 
     visible = false;
 }
@@ -310,7 +311,9 @@ void HeldItem::hitTree() {
 
 void HeldItem::hitGround() const {
     shovelHitSound->play();
-    island->graben(parent->getGlobalTransform().position, 4.0f, 1.5f);
+    if (island != nullptr) {
+        island->graben(parent->getGlobalTransform().position, 4.0f, 1.5f);
+    }
 }
 
 void HeldItem::shovelDig() {

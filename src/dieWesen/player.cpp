@@ -21,7 +21,8 @@ void Player::init() {
     transform.scale = glm::vec3(1.0f);
     transform.position = glm::vec3(-700.0f, 0.0f, -220.0f);
     addToGroup("spielerInsel");
-    island = dynamic_cast<Island *>(getNodesInGroup("Island")[0]);
+    const auto& inseln = getNodesInGroup("Island");
+    island = inseln.empty() ? nullptr : dynamic_cast<Island *>(inseln[0]);
     auto * crosshair = new Fadenkreuz();
     crosshair->init(16.0f / 7.0f);
     addChild(crosshair);
@@ -72,7 +73,9 @@ void Player::processInput(const float deltaTime) {
 
     if (!isActive) return;
 
-    float islandHeight = island->getHeight(transform.position.x, transform.position.z);
+    float islandHeight = (benutzeInsel && island != nullptr)
+        ? island->getHeight(transform.position.x, transform.position.z)
+        : bodenHoehe;
 
     const auto time = static_cast<float>(glfwGetTime());
     float waterHeight = Uboot::getWaterHeight(transform.position.x, transform.position.z, time) * 2.0f;
@@ -238,8 +241,10 @@ void Player::handleItemAction(GLFWwindow* window) {
             glm::vec3 hausPos = nahestesHaus->getGlobalTransform().position;
             platzPos = hausPos + glm::vec3(0.0f, 6.3f, 3.8f);
         }
-    } else {
+    } else if (benutzeInsel && island != nullptr) {
         platzPos.y = island->getHeight(platzPos.x, platzPos.z) + 0.5f;
+    } else {
+        platzPos.y = bodenHoehe + 0.5f;
     }
 
     if (info.istKonsumierbar) {

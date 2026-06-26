@@ -20,6 +20,8 @@ public:
     void setActive(bool active);
     [[nodiscard]] bool getActive() const { return isActive; }
     bool affectedByWater = true;
+    bool benutzeInsel = true;   // false = flat floor at bodenHoehe (ship interior)
+    float bodenHoehe = 0.0f;
     float targetY = 0.0f;
 private:
     Wesen * rayTargetHelper = nullptr;
