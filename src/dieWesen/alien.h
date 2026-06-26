@@ -22,6 +22,7 @@ private:
     float bodenY = 1.5f;
 
     void laserAbfeuern();
+    bool hatSichtlinie(const glm::vec3& von, const glm::vec3& nach) const;
 };
 
 #endif

@@ -44,6 +44,39 @@ void Alien::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTrans
     }
 }
 
+bool Alien::hatSichtlinie(const glm::vec3& von, const glm::vec3& nach) const {
+    glm::vec3 richtung = nach - von;
+    float strecke = glm::length(richtung);
+    if (strecke < 0.01f) return true;
+    glm::vec3 dir = richtung / strecke;
+
+    const auto& waende = getNodesInGroup("hauswand");
+    for (auto* wand : waende) {
+        glm::mat4 invModel = glm::inverse(wand->getGlobalModelMatrix());
+        glm::vec3 localOrigin = glm::vec3(invModel * glm::vec4(von, 1.0f));
+        glm::vec3 localDir = glm::vec3(invModel * glm::vec4(dir, 0.0f));
+
+        glm::vec3 bMin = wand->localAABB.min;
+        glm::vec3 bMax = wand->localAABB.max;
+
+        float tmin = 0.0f, tmax = strecke;
+        for (int i = 0; i < 3; i++) {
+            if (glm::abs(localDir[i]) < 0.0001f) {
+                if (localOrigin[i] < bMin[i] || localOrigin[i] > bMax[i]) { tmin = strecke + 1.0f; break; }
+            } else {
+                float t1 = (bMin[i] - localOrigin[i]) / localDir[i];
+                float t2 = (bMax[i] - localOrigin[i]) / localDir[i];
+                if (t1 > t2) std::swap(t1, t2);
+                tmin = glm::max(tmin, t1);
+                tmax = glm::min(tmax, t2);
+                if (tmin > tmax) break;
+            }
+        }
+        if (tmin <= tmax && tmin < strecke) return false;
+    }
+    return true;
+}
+
 void Alien::laserAbfeuern() {
     if (parent == nullptr) return;
 
@@ -57,6 +90,8 @@ void Alien::laserAbfeuern() {
 
     float abstand = glm::length(richtung);
     if (abstand > 40.0f) return;
+
+    if (!hatSichtlinie(pos, spielerPos)) return;
 
     glm::quat schussRotation = Transform::quatLookAt(glm::normalize(richtung), glm::vec3(0.0f, 1.0f, 0.0f));
 

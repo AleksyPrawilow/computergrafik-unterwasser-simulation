@@ -19,6 +19,13 @@ private:
     Player* spielerRef = nullptr;
     UILabel* lebenLabel = nullptr;
     UIElement* schadenVignette = nullptr;
+
+    static constexpr int KOMPASS_MAX = 10;
+    static constexpr float KOMPASS_BREITE = 500.0f;
+    UIElement* kompassHG = nullptr;
+    UIElement* kompassPunkte[KOMPASS_MAX] = {};
+
+    void kompassAktualisieren();
 };
 
 

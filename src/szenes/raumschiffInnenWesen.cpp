@@ -346,6 +346,20 @@ void RaumschiffInnenWesen::init() {
 
     spielerRef = player;
 
+    // --- Enemy compass bar ---
+    kompassHG = new UIElement();
+    addChild(kompassHG);
+    kompassHG->material.albedo = Kern::LoadTexture("assets/textures/kompass_hg.png", true);
+
+    GLuint punktTex = Kern::LoadTexture("assets/textures/emission_lila.png");
+    for (int i = 0; i < KOMPASS_MAX; i++) {
+        kompassPunkte[i] = new UIElement();
+        addChild(kompassPunkte[i]);
+        kompassPunkte[i]->material.albedo = punktTex;
+        kompassPunkte[i]->transform.scale = glm::vec3(10.0f, 10.0f, 1.0f);
+        kompassPunkte[i]->visible = false;
+    }
+
     // --- HUDs ---
     addChild(new InventarHUD());
     addChild(new HandwerkHUD());
@@ -368,5 +382,61 @@ void RaumschiffInnenWesen::onUpdate(GLFWwindow* window, float deltaTime, Transfo
         glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
         schadenVignette->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
         schadenVignette->transform.scale = glm::vec3(viewport.x, viewport.y, 1.0f);
+    }
+
+    kompassAktualisieren();
+}
+
+void RaumschiffInnenWesen::kompassAktualisieren() {
+    glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
+    float kompassX = (viewport.x - KOMPASS_BREITE) * 0.5f;
+    float kompassY = 10.0f;
+    float kompassH = 28.0f;
+    float kompassMitte = kompassX + KOMPASS_BREITE * 0.5f;
+
+    kompassHG->transform.position = glm::vec3(kompassX, kompassY, 0.0f);
+    kompassHG->transform.scale = glm::vec3(KOMPASS_BREITE, kompassH, 1.0f);
+
+    if (spielerRef == nullptr) return;
+
+    glm::vec3 spielerPos = spielerRef->getGlobalTransform().position;
+    glm::vec3 vorwaerts = spielerRef->transform.forward();
+    vorwaerts.y = 0.0f;
+    if (glm::length2(vorwaerts) > 0.001f) vorwaerts = glm::normalize(vorwaerts);
+    glm::vec3 rechts = spielerRef->transform.right();
+    rechts.y = 0.0f;
+    if (glm::length2(rechts) > 0.001f) rechts = glm::normalize(rechts);
+
+    const auto& aliens = getNodesInGroup("aliens");
+    int idx = 0;
+
+    for (auto* a : aliens) {
+        if (idx >= KOMPASS_MAX) break;
+
+        glm::vec3 delta = a->getGlobalTransform().position - spielerPos;
+        delta.y = 0.0f;
+        float dist = glm::length(delta);
+        if (dist < 0.5f) continue;
+
+        glm::vec3 dir = delta / dist;
+        float vorne = glm::dot(dir, vorwaerts);
+        float seite = glm::dot(dir, rechts);
+        float winkel = glm::atan(seite, vorne);
+
+        float halbeBreite = KOMPASS_BREITE * 0.5f - 8.0f;
+        float xPos = glm::clamp(winkel / 3.14159f * halbeBreite, -halbeBreite, halbeBreite);
+
+        auto* punkt = kompassPunkte[idx];
+        punkt->visible = true;
+        punkt->transform.position = glm::vec3(
+            kompassMitte + xPos - 5.0f,
+            kompassY + (kompassH - 10.0f) * 0.5f,
+            0.0f
+        );
+        idx++;
+    }
+
+    for (int i = idx; i < KOMPASS_MAX; i++) {
+        kompassPunkte[i]->visible = false;
     }
 }

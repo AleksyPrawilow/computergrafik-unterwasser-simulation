@@ -220,6 +220,22 @@ void Player::updateRaycast() {
 
 void Player::handleItemAction(GLFWwindow* window) {
     GegenstandID aktiv = Inventar::getInstance().getAktivesItem();
+
+    if (aktiv != GegenstandID::KEINE && parent != nullptr) {
+        const auto& waffenInfo = GegenstandDaten::getInstance().getInfo(aktiv);
+        bool leftClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+        if (waffenInfo.istWaffe && leftClick && kannSchiessen) {
+            kannSchiessen = false;
+            schussTimer->startTimer(0.15f, [this]() { kannSchiessen = true; });
+
+            glm::vec3 schussPos = transform.position + transform.forward() * 2.0f;
+            auto* laser = new SpielerLaser();
+            parent->addChild(laser);
+            laser->abfeuern(schussPos, transform.rotation);
+            AudioManager::getInstance().play2D("assets/audio/shoot.mp3", false, true);
+        }
+    }
+
     bool rightClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_RIGHT) == GLFW_PRESS;
 
     if (!rightClick) {
@@ -256,17 +272,7 @@ void Player::handleItemAction(GLFWwindow* window) {
         platzPos.y = bodenHoehe + 0.5f;
     }
 
-    if (info.istWaffe && kannSchiessen && parent != nullptr) {
-        kannSchiessen = false;
-        schussTimer->startTimer(0.3f, [this]() { kannSchiessen = true; });
-
-        glm::vec3 schussPos = transform.position + transform.forward() * 2.0f;
-        auto* laser = new SpielerLaser();
-        parent->addChild(laser);
-        laser->abfeuern(schussPos, transform.rotation);
-        AudioManager::getInstance().play2D("assets/audio/shoot.mp3", false, true);
-        return;
-    }
+    if (info.istWaffe) return;
 
     if (info.istKonsumierbar) {
         int hotbarIdx = Inventar::getInstance().getAktiverSlot();
