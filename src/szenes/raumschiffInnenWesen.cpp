@@ -14,7 +14,11 @@
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/ui/schiffslaborHUD.h"
 #include "dieWesen/ui/fadeOverlay.h"
+#include "dieWesen/ui/cinematicBars.h"
+#include "dieWesen/ui/questCompletedBanner.h"
+#include "dieWesen/explosion.h"
 #include "werkzeuge/himmelsboxWesen.h"
+#include "werkzeuge/kamera.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
 #include "werkzeuge/random.h"
@@ -25,6 +29,9 @@
 #include "werkzeuge/ui/uiContainers.h"
 #include "werkzeuge/audio/musicManager.h"
 #include "werkzeuge/visual/worldEnvironment.h"
+#include "werkzeuge/visual/tween.h"
+
+extern Kamera kamera;
 
 namespace {
     constexpr float WAND_HOEHE = 8.0f;
@@ -361,11 +368,19 @@ void RaumschiffInnenWesen::init() {
         kompassPunkte[i]->visible = false;
     }
 
-    // --- Fade in from black ---
-    auto* fadeIn = new FadeOverlay();
-    addChild(fadeIn);
-    fadeIn->sofort(1.0f);
-    fadeIn->fadeOut(1.0f);
+    // --- Cutscene support ---
+    cinematicBars = new CinematicBars();
+    addChild(cinematicBars);
+
+    fadeOverlay = new FadeOverlay();
+    addChild(fadeOverlay);
+    fadeOverlay->sofort(1.0f);
+    fadeOverlay->fadeOut(1.0f);
+
+    // --- Death Star callback ---
+    player->onTodessternBenutzt = [this]() {
+        if (!cutsceneGestartet) starteCutscene();
+    };
 
     // --- HUDs ---
     addChild(new InventarHUD());
@@ -389,6 +404,12 @@ void RaumschiffInnenWesen::onUpdate(GLFWwindow* window, float deltaTime, Transfo
         glm::vec2 viewport = Kern::GetViewportSize() / UIElement::dpiScale;
         schadenVignette->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
         schadenVignette->transform.scale = glm::vec3(viewport.x, viewport.y, 1.0f);
+    }
+
+    if (cutsceneAktiv) {
+        const float tFolge = 1.0f - glm::exp(-3.0f * deltaTime);
+        cameraTransform.position = glm::mix(cameraTransform.position, cameraZielPos, tFolge);
+        cameraTransform.lookAt(cameraBlickZiel, glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
     kompassAktualisieren();
@@ -447,3 +468,101 @@ void RaumschiffInnenWesen::kompassAktualisieren() {
         kompassPunkte[i]->visible = false;
     }
 }
+
+void RaumschiffInnenWesen::starteCutscene() {
+    cutsceneGestartet = true;
+    cutsceneAktiv = true;
+
+    if (spielerRef) spielerRef->setActive(false);
+    cinematicBars->setEnabled(true);
+
+    // Spawn Death Star sphere at the window
+    todessternKugel = new Wesen();
+    todessternKugel->loadModel("assets/models/sphere.obj");
+    todessternKugel->material.albedo = Kern::LoadTexture("assets/textures/icon_todesstern.png");
+    todessternKugel->material.emission = Kern::LoadTexture("assets/textures/emission_gruen.png");
+    todessternKugel->material.bloomStrength = 0.5f;
+    todessternKugel->material.shader = ShaderManager::getInstance().getShader("default");
+    todessternKugel->transform.position = glm::vec3(0.0f, 4.0f, -42.0f);
+    todessternKugel->transform.scale = glm::vec3(1.0f);
+    addChild(todessternKugel);
+
+    // Spawn decorative Leviathan far below
+    leviathanModell = new Wesen();
+    leviathanModell->loadModel("assets/models/leviathan.obj");
+    leviathanModell->material.albedo = Kern::LoadTexture("assets/textures/leviathan_albedo.png");
+    leviathanModell->material.emission = Kern::LoadTexture("assets/textures/leviathan_emissive.png");
+    leviathanModell->material.normal = Kern::LoadTexture("assets/textures/leviathan_normal.png");
+    leviathanModell->material.bloomStrength = 0.3f;
+    leviathanModell->material.shader = ShaderManager::getInstance().getShader("default");
+    leviathanModell->transform.position = glm::vec3(20.0f, -200.0f, -140.0f);
+    leviathanModell->transform.scale = glm::vec3(4.0f);
+    addChild(leviathanModell);
+
+    cameraZielPos = glm::vec3(0.0f, 4.0f, -30.0f);
+    cameraBlickZiel = glm::vec3(0.0f, 4.0f, -100.0f);
+
+    createTween()
+        // Camera settles on the window view
+        ->tweenInterval(1.0f)
+        // Death Star flies out and grows
+        ->tweenProperty(&todessternKugel->transform.position.z, -120.0f, 3.0f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.scale.x, 50.0f, 3.0f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.scale.y, 50.0f, 3.0f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        ->tweenProperty(&todessternKugel->transform.scale.z, 50.0f, 3.0f, EaseType::EASE_OUT_CUBIC)
+        ->parallel()
+        // Leviathan rises from below
+        ->tweenProperty(&leviathanModell->transform.position.y, 0.0f, 2.5f, EaseType::EASE_OUT_SINE)
+        // Face off pause
+        ->tweenInterval(1.5f)
+        // Fire the laser
+        ->tweenCallback([this]() { spawnRiesenLaser(); })
+        ->tweenInterval(0.8f)
+        // Leviathan explodes
+        ->tweenCallback([this]() {
+            if (leviathanModell) {
+                addChild(new Explosion(leviathanModell->getGlobalTransform().position, 40.0f));
+                addChild(new Explosion(leviathanModell->getGlobalTransform().position + glm::vec3(10.0f, 5.0f, -5.0f), 25.0f));
+                addChild(new Explosion(leviathanModell->getGlobalTransform().position + glm::vec3(-15.0f, -3.0f, 8.0f), 30.0f));
+                leviathanModell->queueDestroy();
+                leviathanModell = nullptr;
+            }
+        })
+        ->tweenInterval(2.0f)
+        // Fade to black + victory
+        ->tweenCallback([this]() {
+            fadeOverlay->fadeIn(2.0f, [this]() {
+                addChild(new QuestCompletedBanner("The End.", "Y O U   W I N"));
+            });
+        });
+}
+
+void RaumschiffInnenWesen::spawnRiesenLaser() {
+    if (!todessternKugel || !leviathanModell) return;
+
+    glm::vec3 von = todessternKugel->getGlobalTransform().position;
+    glm::vec3 nach = leviathanModell->getGlobalTransform().position;
+    glm::vec3 richtung = nach - von;
+    float laenge = glm::length(richtung);
+    if (laenge < 1.0f) return;
+
+    glm::vec3 mitte = (von + nach) * 0.5f;
+    glm::quat rot = Transform::quatLookAt(glm::normalize(richtung), glm::vec3(0.0f, 1.0f, 0.0f));
+
+    auto* laser = new Wesen();
+    laser->loadModel("assets/models/cube.obj");
+    laser->material.albedo = Kern::LoadTexture("assets/textures/emission_gruen.png");
+    laser->material.emission = Kern::LoadTexture("assets/textures/emission_gruen.png");
+    laser->material.bloomStrength = 1.5f;
+    laser->material.shader = ShaderManager::getInstance().getShader("default");
+    laser->transform.position = mitte;
+    laser->transform.rotation = rot;
+    laser->transform.scale = glm::vec3(3.0f, 3.0f, laenge * 0.5f);
+    addChild(laser);
+
+    kamera.addShake(1.0f, 0.5f);
+}
+

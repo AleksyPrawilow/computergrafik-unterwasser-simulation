@@ -91,8 +91,6 @@ void GegenstandDaten::init() {
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::STEIN, GegenstandID::SCHAUFEL, 1, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::SEIL, GegenstandID::FLOSS, 1, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::HOLZ, GegenstandID::SEIL, GegenstandID::FACKEL, 2, RezeptQuelle::WERKBANK);
-    rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::PLANKE, GegenstandID::ZAUN, 3, RezeptQuelle::WERKBANK);
-    rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::AXT, GegenstandID::TRUHE, 1, RezeptQuelle::WERKBANK);
     rezeptHinzufuegen(GegenstandID::PLANKE, GegenstandID::HOLZ, GegenstandID::HAUS, 1, RezeptQuelle::WERKBANK);
 
     // --- Furnace recipes ---

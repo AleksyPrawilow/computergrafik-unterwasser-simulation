@@ -9,6 +9,8 @@
 #include "werkzeuge/ui/wesenUI.h"
 
 class Player;
+class FadeOverlay;
+class CinematicBars;
 
 class RaumschiffInnenWesen : public Wesen {
 public:
@@ -19,13 +21,24 @@ private:
     Player* spielerRef = nullptr;
     UILabel* lebenLabel = nullptr;
     UIElement* schadenVignette = nullptr;
+    FadeOverlay* fadeOverlay = nullptr;
+    CinematicBars* cinematicBars = nullptr;
 
     static constexpr int KOMPASS_MAX = 10;
     static constexpr float KOMPASS_BREITE = 500.0f;
     UIElement* kompassHG = nullptr;
     UIElement* kompassPunkte[KOMPASS_MAX] = {};
 
+    bool cutsceneGestartet = false;
+    bool cutsceneAktiv = false;
+    glm::vec3 cameraZielPos = glm::vec3(0.0f, 4.0f, -30.0f);
+    glm::vec3 cameraBlickZiel = glm::vec3(0.0f, 4.0f, -100.0f);
+    Wesen* todessternKugel = nullptr;
+    Wesen* leviathanModell = nullptr;
+
     void kompassAktualisieren();
+    void starteCutscene();
+    void spawnRiesenLaser();
 };
 
 

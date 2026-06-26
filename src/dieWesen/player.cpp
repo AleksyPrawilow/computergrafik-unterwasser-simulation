@@ -54,6 +54,9 @@ void Player::init() {
     schussTimer = new Timer();
     addChild(schussTimer);
 
+    rollTimer = new Timer();
+    addChild(rollTimer);
+
     addToGroup("playerWalking");
 }
 
@@ -69,8 +72,40 @@ void Player::onUpdate(GLFWwindow* window, const float deltaTime, Transform& came
     if (spawnSchutz > 0.0f) spawnSchutz -= deltaTime;
     if (schadenBlitz > 0.0f) schadenBlitz -= deltaTime * 3.0f;
 
-    processInput(deltaTime);
-    if (isActive) handleRotations(window, deltaTime);
+    if (istRollend) {
+        rollZeit += deltaTime;
+        float t = rollZeit / rollDauer;
+        if (t >= 1.0f) {
+            istRollend = false;
+            rollWinkel = 0.0f;
+            grounded = true;
+            verticalVelocity = 0.0f;
+            transform.position.y = targetY;
+            rollAbklingzeit = true;
+            rollTimer->startTimer(0.3f, [this]() { rollAbklingzeit = false; });
+        } else {
+            float geschw = rollGeschwindigkeit * rollSprintMult * (1.0f - t * 0.5f);
+            glm::vec3 oldPos = transform.position;
+            transform.position += rollRichtung * geschw * deltaTime;
+            transform.position.y = targetY;
+            rollWinkel = glm::sin(t * 3.14159f) * 35.0f * rollKippRichtung;
+
+            const auto& waende = getNodesInGroup("hauswand");
+            for (auto* wand : waende) {
+                glm::mat4 invModel = glm::inverse(wand->getGlobalModelMatrix());
+                glm::vec3 localPt = glm::vec3(invModel * glm::vec4(transform.position, 1.0f));
+                if (localPt.x > wand->localAABB.min.x && localPt.x < wand->localAABB.max.x
+                    && localPt.y > wand->localAABB.min.y && localPt.y < wand->localAABB.max.y
+                    && localPt.z > wand->localAABB.min.z && localPt.z < wand->localAABB.max.z) {
+                    transform.position = oldPos;
+                    break;
+                }
+            }
+        }
+    } else {
+        processInput(deltaTime);
+    }
+    if (isActive && !istRollend) handleRotations(window, deltaTime);
     if (isActive) updateCameraTransform(cameraTransform, deltaTime);
     if (isActive) handleItemAction(window);
 }
@@ -120,6 +155,31 @@ void Player::processInput(const float deltaTime) {
     if (Input::isKeyJustPressed(GLFW_KEY_SPACE) && grounded) {
         verticalVelocity = activeJumpForce;
         grounded = false;
+    }
+
+    if (!istRollend && !rollAbklingzeit && grounded && !benutzeInsel) {
+        glm::vec3 rechts = transform.right();
+        rechts.y = 0.0f;
+        if (glm::length2(rechts) > 0.001f) rechts = glm::normalize(rechts);
+        bool sprint = Input::isKeyPressed(GLFW_KEY_LEFT_SHIFT);
+        if (Input::isKeyJustPressed(GLFW_KEY_Z)) {
+            istRollend = true;
+            rollZeit = 0.0f;
+            rollRichtung = -rechts;
+            rollSprintMult = sprint ? 2.0f : 1.0f;
+            rollKippRichtung = 1.0f;
+            verticalVelocity = 0.0f;
+            spawnSchutz = rollDauer;
+        }
+        if (Input::isKeyJustPressed(GLFW_KEY_X)) {
+            istRollend = true;
+            rollZeit = 0.0f;
+            rollRichtung = rechts;
+            rollSprintMult = sprint ? 2.0f : 1.0f;
+            rollKippRichtung = -1.0f;
+            verticalVelocity = 0.0f;
+            spawnSchutz = rollDauer;
+        }
     }
 
     if (glm::length2(direction) > 0.0f) {
@@ -202,8 +262,13 @@ void Player::handleRotations(GLFWwindow* window, float deltaTime) {
 }
 
 void Player::updateCameraTransform(Transform& cameraTransform, float deltaTime) const {
-    cameraTransform.rotation = transform.rotation;
     cameraTransform.position = transform.position;
+    if (istRollend) {
+        glm::quat rollTilt = glm::angleAxis(glm::radians(rollWinkel), transform.forward());
+        cameraTransform.rotation = transform.rotation * rollTilt;
+    } else {
+        cameraTransform.rotation = transform.rotation;
+    }
 }
 
 void Player::updateRaycast() {
@@ -222,8 +287,16 @@ void Player::handleItemAction(GLFWwindow* window) {
     GegenstandID aktiv = Inventar::getInstance().getAktivesItem();
 
     if (aktiv != GegenstandID::KEINE && parent != nullptr) {
-        const auto& waffenInfo = GegenstandDaten::getInstance().getInfo(aktiv);
         bool leftClick = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS;
+
+        if (aktiv == GegenstandID::TODESSTERN && leftClick && onTodessternBenutzt) {
+            int idx = Inventar::getInstance().getAktiverSlot();
+            Inventar::getInstance().hotbarVerbrauchen(idx);
+            onTodessternBenutzt();
+            return;
+        }
+
+        const auto& waffenInfo = GegenstandDaten::getInstance().getInfo(aktiv);
         if (waffenInfo.istWaffe && leftClick && kannSchiessen) {
             kannSchiessen = false;
             schussTimer->startTimer(0.15f, [this]() { kannSchiessen = true; });
