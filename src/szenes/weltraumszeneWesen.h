@@ -17,7 +17,7 @@ public:
 
     static void abschussZaehlen() { abschuesse++; }
     static int getAbschuesse() { return abschuesse; }
-
+    void welleStarten(int welle);
 private:
     static int abschuesse;
     int aktuelleWelle = 0;
@@ -31,8 +31,6 @@ private:
     FadeOverlay* fadeOverlay = nullptr;
     CinematicBars* cinematicBars = nullptr;
     bool bordVorgang = false;
-
-    void welleStarten(int welle);
     void spawnWave(int numA, int numB, bool mitBoss);
     void alleFeindeEntfernen();
     void wellenPruefung();

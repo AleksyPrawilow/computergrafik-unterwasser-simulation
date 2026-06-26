@@ -177,6 +177,10 @@ set(PROJECT_SOURCES
         src/dieWesen/spaceshipEnterable.h
         src/dieWesen/ui/fadeOverlay.cpp
         src/dieWesen/ui/fadeOverlay.h
+        src/dieWesen/ui/starWarsIntro.cpp
+        src/dieWesen/ui/starWarsIntro.h
+        src/dieWesen/ui/logo.cpp
+        src/dieWesen/ui/logo.h
 )
 
 set(SOIL_SOURCES

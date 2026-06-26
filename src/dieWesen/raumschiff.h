@@ -32,7 +32,7 @@ public:
     void setIstAktiv(bool aktiv) { istAktiv = aktiv; }
     void setSpawnSchutz(float dauer) { spawnSchutz = dauer; }
     std::function<void()> onDeath;
-
+    bool cutscene = true;
 private:
     Fadenkreuz * fadenkreuz = nullptr;
     AnsichtModus ansichtModus = AnsichtModus::DRITTE_PERSON;
