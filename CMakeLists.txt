@@ -175,6 +175,8 @@ set(PROJECT_SOURCES
         src/dieWesen/ui/cinematicBars.h
         src/dieWesen/spaceshipEnterable.cpp
         src/dieWesen/spaceshipEnterable.h
+        src/dieWesen/ui/fadeOverlay.cpp
+        src/dieWesen/ui/fadeOverlay.h
 )
 
 set(SOIL_SOURCES

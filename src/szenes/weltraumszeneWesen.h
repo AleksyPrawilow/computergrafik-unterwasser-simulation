@@ -7,6 +7,8 @@
 #include "werkzeuge/ui/uiLabel.h"
 
 class Raumschiff;
+class FadeOverlay;
+class CinematicBars;
 
 class WeltraumszeneWesen : public Wesen {
 public:
@@ -26,7 +28,8 @@ private:
     Raumschiff* raumschiff = nullptr;
 
     UILabel* bordPrompt = nullptr;
-    UIElement* schwarzOverlay = nullptr;
+    FadeOverlay* fadeOverlay = nullptr;
+    CinematicBars* cinematicBars = nullptr;
     bool bordVorgang = false;
 
     void welleStarten(int welle);

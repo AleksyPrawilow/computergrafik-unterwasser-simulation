@@ -13,6 +13,7 @@
 #include "dieWesen/ui/handwerkHUD.h"
 #include "dieWesen/ui/ausruestungsLeiste.h"
 #include "dieWesen/ui/schiffslaborHUD.h"
+#include "dieWesen/ui/fadeOverlay.h"
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/shaderManager.h"
 #include "werkzeuge/textur.h"
@@ -359,6 +360,12 @@ void RaumschiffInnenWesen::init() {
         kompassPunkte[i]->transform.scale = glm::vec3(10.0f, 10.0f, 1.0f);
         kompassPunkte[i]->visible = false;
     }
+
+    // --- Fade in from black ---
+    auto* fadeIn = new FadeOverlay();
+    addChild(fadeIn);
+    fadeIn->sofort(1.0f);
+    fadeIn->fadeOut(1.0f);
 
     // --- HUDs ---
     addChild(new InventarHUD());

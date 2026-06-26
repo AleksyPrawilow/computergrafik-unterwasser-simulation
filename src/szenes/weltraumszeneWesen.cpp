@@ -5,6 +5,8 @@
 #include "dieWesen/raumschiff.h"
 #include "dieWesen/ui/questCompletedBanner.h"
 #include "dieWesen/ui/weltraumHudPanel.h"
+#include "dieWesen/ui/fadeOverlay.h"
+#include "dieWesen/ui/cinematicBars.h"
 #include "werkzeuge/himmelsboxWesen.h"
 #include "werkzeuge/random.h"
 #include "werkzeuge/visual/worldEnvironment.h"
@@ -86,10 +88,11 @@ void WeltraumszeneWesen::init() {
     addChild(bordPrompt);
     bordPrompt->visible = false;
 
-    schwarzOverlay = new UIElement();
-    schwarzOverlay->material.albedo = Kern::LoadTexture("assets/textures/schwarz.png", true);
-    addChild(schwarzOverlay);
-    schwarzOverlay->visible = false;
+    fadeOverlay = new FadeOverlay();
+    addChild(fadeOverlay);
+
+    cinematicBars = new CinematicBars();
+    addChild(cinematicBars);
 
     MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
 
@@ -133,13 +136,13 @@ void WeltraumszeneWesen::bordenPruefen(GLFWwindow* window) {
         bordPrompt->visible = false;
         raumschiff->setIstAktiv(false);
 
-        // Hard cut to black, hold ~1s, then defer the scene switch to a safe point.
-        schwarzOverlay->visible = true;
-        schwarzOverlay->transform.position = glm::vec3(0.0f, 0.0f, 0.0f);
-        schwarzOverlay->transform.scale = glm::vec3(viewport.x, viewport.y, 1.0f);
+        // Cinematic bars slide in, then fade to black, then switch scene.
+        cinematicBars->setEnabled(true);
 
-        bordTimer->startTimer(1.0f, []() {
-            Scene::requestSceneSwitch(3);
+        bordTimer->startTimer(0.5f, [this]() {
+            fadeOverlay->fadeIn(0.8f, []() {
+                Scene::requestSceneSwitch(3);
+            });
         });
     }
 }
