@@ -47,6 +47,7 @@ public:
 
     bool shouldFloat = true;
     Player * player = nullptr;
+    Wesen * cameraFollowTarget = nullptr;
 private:
     float leben = 100.0f;
     float spawnSchutz = 0.0f;

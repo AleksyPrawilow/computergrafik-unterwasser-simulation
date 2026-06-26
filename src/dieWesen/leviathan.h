@@ -36,10 +36,10 @@ public:
     float clawYOffset = 3.3f;
     float clawZOffset = 20.7f;
     float lightsabersYOffset = -5.0f;
+    float moveSpeed = 9.0f;
 private:
     UnterwasserszeneAudioHelper * music = nullptr;
 
-    float moveSpeed = 9.0f;
     float idleSpeed = 2.0f;
     float u_spiralRadius = 2.2f;
     float u_spiralFrequency = 2.5f;
@@ -62,8 +62,12 @@ private:
     float grabDamage = 40.0f;
     float knockbackForce = 150.0f;
 
+    AudioPlayer * roars[3] = {nullptr};
+    AudioPlayer * growls[3] = {nullptr};
+    Wesen * target = nullptr;
+
     Wesen* findClosestTarget() const;
-    void grabAndThrow(Uboot* uboot);
+    void grabAndThrow(Wesen * uboot);
     void chase(float deltaTime, const glm::vec3& toTarget, float distance);
     void patrol(float deltaTime);
 };

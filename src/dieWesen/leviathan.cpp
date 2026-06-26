@@ -8,6 +8,8 @@
 #include "werkzeuge/visual/questManager.h"
 #include <gtx/quaternion.hpp>
 
+#include "megalodon.h"
+
 extern Kamera kamera;
 
 void Leviathan::init() {
@@ -19,7 +21,6 @@ void Leviathan::init() {
     material.metallic = Kern::LoadTexture("assets/textures/leviathan_metallic.png");
     material.roughness = Kern::LoadTexture("assets/textures/leviathan_metallic.png");
     material.emission = Kern::LoadTexture("assets/textures/leviathan_emissive.png");
-    material.bloomStrength = 0.02f;
 
     material.shader = ShaderManager::getInstance().loadShader(
         "leviathan",
@@ -42,6 +43,15 @@ void Leviathan::init() {
     startClawPositions[2] = glm::vec3(-clawXOffset,  clawYOffset, clawZOffset); // Upper Left
     startClawPositions[3] = glm::vec3(-clawXOffset, -clawYOffset, clawZOffset); // Lower Left
 
+    for (int i = 0; i < 3; ++i) {
+        auto * roar = new AudioPlayer("assets/audio/levi_roar" + std::to_string(i + 1) + ".mp3", false, 3.0f, false, false);
+        auto * growl = new AudioPlayer("assets/audio/levi_growl" + std::to_string(i + 1) + ".mp3", false, 3.0f, false, false);
+        roars[i] = roar;
+        growls[i] = growl;
+        addChild(roar);
+        addChild(growl);
+    }
+
     const std::string colors[4] = {"red", "purple", "green", "blue"};
     for (int i = 0; i < 4; i++) {
         auto * dummy = new Wesen();
@@ -50,6 +60,7 @@ void Leviathan::init() {
         addChild(dummy);
         lightsabers[i] = dummy;
         dummy->addChild(saber);
+        dummy->visible = false;
     }
 }
 
@@ -68,7 +79,7 @@ Wesen* Leviathan::findClosestTarget() const {
         }
     }
 
-    const auto& walkers = getNodesInGroup("playerWalking");
+    const auto& walkers = getNodesInGroup("F");
     for (auto* walker : walkers) {
         float d = glm::distance(basePosition, walker->getGlobalTransform().position);
         if (d < closestDist) {
@@ -82,7 +93,6 @@ Wesen* Leviathan::findClosestTarget() const {
 
 
 void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
-    if (cutscene) return;
 
     startClawPositions[0] = glm::vec3( clawXOffset,  clawYOffset, clawZOffset); // Upper Right
     startClawPositions[1] = glm::vec3( clawXOffset, -clawYOffset, clawZOffset); // Lower Right
@@ -94,23 +104,25 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     if (attackCooldown > 0.0f) {
         attackCooldown -= deltaTime;
     }
-
-    Wesen* target = findClosestTarget();
+    Wesen * newTarget = findClosestTarget();
+    if (newTarget != target) {
+        growls[0]->play();
+    }
+    target = newTarget;
     if (target == nullptr) {
-        patrol(deltaTime);
+        //patrol(deltaTime);
         return;
     }
 
     glm::vec3 targetPos = target->getGlobalTransform().position;
     glm::vec3 toTargetWorld = targetPos - basePosition;
     float distance = glm::length(toTargetWorld);
-
     if (distance < 300.0f) {
         chase(deltaTime, toTargetWorld, distance);
 
         if (grabCooldown > 0.0f) grabCooldown -= deltaTime;
 
-        if (auto* uboot = dynamic_cast<Uboot*>(target)) {
+        if (true) {
             glm::mat4 invModel = glm::inverse(getGlobalModelMatrix());
             glm::vec3 localPt = glm::vec3(invModel * glm::vec4(targetPos, 1.0f));
 
@@ -140,10 +152,15 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
                 glm::vec3 worldNormal = glm::normalize(normalMat * normals[minIdx]);
 
                 if (localPt.z > headZThreshold && grabCooldown <= 0.0f) {
-                    grabAndThrow(uboot);
+                    if (auto * megalodon = dynamic_cast<Megalodon*>(target)) {
+                        megalodon->isGrabbed = true;
+                    }
+                    grabAndThrow(target);
                 } else if (attackCooldown <= 0.0f) {
-                    uboot->schadenNehmen(attackDamage);
-                    uboot->knockback(worldNormal, knockbackForce);
+                    if (auto * uboot = dynamic_cast<Uboot * >(target)) {
+                        uboot->schadenNehmen(attackDamage);
+                        uboot->knockback(worldNormal, knockbackForce);
+                    }
                     attackCooldown = attackInterval;
                 }
             }
@@ -156,9 +173,10 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     } else {
         if (wasChasing) {
             wasChasing = false;
+            roars[2]->play();
         }
         music->stopChasing();
-        patrol(deltaTime);
+        //patrol(deltaTime);
     }
 
     neckRot = glm::angleAxis(u_neckYaw, glm::vec3(0.0f, 1.0f, 0.0f)) *
@@ -182,10 +200,12 @@ void Leviathan::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraT
     }
 }
 
-void Leviathan::grabAndThrow(Uboot* uboot) {
+void Leviathan::grabAndThrow(Wesen * target) {
     grabCooldown = grabInterval;
     attackCooldown = grabInterval;
-    uboot->schadenNehmen(grabDamage);
+    if (auto * uboot = dynamic_cast<Uboot * >(target)) {
+        uboot->schadenNehmen(grabDamage);
+    }
 
     glm::mat4 model = getGlobalModelMatrix();
     glm::vec3 headLocal = glm::vec3(0.0f, 0.0f, localAABB.max.z);
@@ -197,30 +217,67 @@ void Leviathan::grabAndThrow(Uboot* uboot) {
     glm::vec3 right = glm::normalize(
         glm::vec3(model * glm::vec4(1.0f, 0.0f, 0.0f, 0.0f)));
 
-    kamera.addShake(1.0f, 0.8f);
+    kamera.addShake(1.0f, 2.5f);
+
+    float currentYaw = u_neckYaw;
+    float currentPitch = u_neckPitch;
+
+    roars[1]->play();
+
+    if (cutscene) MusicManager::getInstance().stopAll();
 
     float s = 10.0f;
     createTween()
-        ->tweenProperty(&uboot->transform.position, mouthPos, 0.25f, EaseType::EASE_IN_CUBIC)
-        ->tweenProperty(&uboot->transform.position, mouthPos + right * s, 0.1f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos - right * s, 0.1f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 1.2f, 0.1f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 1.2f, 0.1f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 0.8f, 0.1f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 0.8f, 0.1f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 1.5f, 0.12f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 1.5f, 0.12f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos + right * s * 0.5f, 0.08f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos - right * s * 0.5f, 0.08f, EaseType::EASE_OUT_SINE)
-        ->tweenProperty(&uboot->transform.position, mouthPos, 0.15f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos, 0.25f, EaseType::EASE_IN_CUBIC)
+        ->tweenProperty(&target->transform.position, mouthPos + right * s, 0.2f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw + 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos - right * s, 0.2f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw - 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos + right * s * 1.2f, 0.2f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw + 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos - right * s * 1.2f, 0.2f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw - 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos + right * s * 0.8f, 0.2f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw + 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos - right * s * 0.8f, 0.2f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw - 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos + right * s * 1.5f, 0.12f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw + 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos - right * s * 1.5f, 0.12f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw - 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos + right * s * 0.5f, 0.08f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw + 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos - right * s * 0.5f, 0.08f, EaseType::EASE_OUT_SINE)
+        ->parallel()
+        ->tweenProperty(&u_neckYaw, currentYaw - 0.2f, 0.1, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&target->transform.position, mouthPos, 0.15f, EaseType::EASE_OUT_SINE)
+        ->tweenProperty(&u_neckYaw, currentYaw, 0.1, EaseType::EASE_OUT_SINE)
         ->tweenInterval(0.2f)
-        ->tweenCallback([uboot, headOutward]() {
-            uboot->knockback(headOutward, 200.0f);
-        });
+        ->tweenCallback([this, target, headOutward]() {
+            if (auto * uboot = dynamic_cast<Uboot *>(target)) {
+                uboot->knockback(headOutward, 200.0f);
+                growls[1]->play();
+            } else if (auto * megalodon = dynamic_cast<Megalodon *>(target)) {
+                megalodon->getEaten();
+                growls[0]->play();
+            }
+        })
+        ->tweenProperty(&u_neckPitch, currentPitch - 0.3f, 0.3f, EaseType::EASE_OUT_SINE)
+        ->tweenInterval(0.3)
+        ->tweenProperty(&u_neckPitch, currentPitch, 0.5f, EaseType::EASE_OUT_BACK);
 }
 
 void Leviathan::chase(float deltaTime, const glm::vec3& toTarget, float distance) {
-    music->initiateChase();
+    if (!cutscene) music->initiateChase();
 
     if (distance < 0.5f) return;
 
@@ -261,6 +318,7 @@ void Leviathan::chase(float deltaTime, const glm::vec3& toTarget, float distance
 }
 
 void Leviathan::patrol(float deltaTime) {
+    std::cout << "patrol" << std::endl;
     float angle = elapsedTime * 0.3f;
     float patrolRadius = 30.0f;
 

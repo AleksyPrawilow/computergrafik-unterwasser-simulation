@@ -162,6 +162,8 @@ set(PROJECT_SOURCES
         src/szenes/labsWesen.h
         src/dieWesen/megalodon.cpp
         src/dieWesen/megalodon.h
+        src/dieWesen/ui/cinematicBars.cpp
+        src/dieWesen/ui/cinematicBars.h
 )
 
 set(SOIL_SOURCES

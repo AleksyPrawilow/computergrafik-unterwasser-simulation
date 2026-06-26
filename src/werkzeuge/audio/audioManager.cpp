@@ -64,7 +64,7 @@ void AudioManager::play3D(const std::string& filepath, const glm::vec3& position
     ma_result result = ma_sound_init_from_file(targetEngine, filepath.c_str(), MA_SOUND_FLAG_DECODE, NULL, NULL, sound);
     if (result == MA_SUCCESS) {
         ma_sound_set_min_distance(sound, 5.0f);
-        ma_sound_set_max_distance(sound, 60.0f);
+        ma_sound_set_max_distance(sound, 300.0f);
         ma_sound_set_rolloff(sound, 1.0f);
 
         ma_sound_set_position(sound, position.x, position.y, position.z);

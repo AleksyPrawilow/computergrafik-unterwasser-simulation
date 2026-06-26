@@ -13,6 +13,9 @@ public:
     void init() override;
     void onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) override;
     void prepareUniforms() const override;
+    void getEaten();
+    Wesen * followTarget = nullptr;
+    bool isGrabbed = false;
 private:
     bool triggeredCutscene = false;
     void cutscene();
