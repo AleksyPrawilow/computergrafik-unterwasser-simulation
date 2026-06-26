@@ -35,6 +35,7 @@ private:
     glm::vec3 cameraBlickZiel = glm::vec3(0.0f, 4.0f, -100.0f);
     Wesen* todessternKugel = nullptr;
     Wesen* leviathanModell = nullptr;
+    Wesen* riesenLaser = nullptr;
 
     void kompassAktualisieren();
     void starteCutscene();
