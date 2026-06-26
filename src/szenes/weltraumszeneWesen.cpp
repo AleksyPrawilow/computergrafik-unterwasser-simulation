@@ -17,6 +17,7 @@
 #include "werkzeuge/textur.h"
 #include "werkzeuge/renderWerkzeuge.h"
 #include "sceneManager.h"
+#include "dieWesen/ui/starWarsIntro.h"
 
 extern bool cursorDisabled;
 
@@ -94,11 +95,8 @@ void WeltraumszeneWesen::init() {
     cinematicBars = new CinematicBars();
     addChild(cinematicBars);
 
+    addChild(new StarWarsIntro());
     MusicManager::getInstance().playMusic("assets/audio/beatit.mp3", 2.0f, true);
-
-    spawnDelay->startTimer(1.0f, [this]() {
-        welleStarten(0);
-    });
 }
 
 void WeltraumszeneWesen::onUpdate(GLFWwindow* window, float deltaTime, Transform& cameraTransform) {
